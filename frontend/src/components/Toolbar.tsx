@@ -6,7 +6,11 @@ import { useDesignsStore } from '../store/useDesignsStore';
 const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
 const DOTS_TO_MM = (dots: number) => Math.round(dots / 8.03);
 
-export function Toolbar() {
+interface Props {
+  onNavigateToMyDesigns: () => void;
+}
+
+export function Toolbar({ onNavigateToMyDesigns }: Props) {
   const { labelWidth, labelHeight, setLabelSize } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, openLoadModal, activeDesignName } = useDesignsStore();
@@ -52,6 +56,13 @@ export function Toolbar() {
           title="Load design"
         >
           Load
+        </button>
+        <button
+          onClick={onNavigateToMyDesigns}
+          className="text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          title="Browse all my designs"
+        >
+          My Designs
         </button>
       </div>
       <button
