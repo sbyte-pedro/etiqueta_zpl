@@ -10,6 +10,7 @@ const DEFAULT_SIZES: Record<ElementType, { width: number; height: number }> = {
   barcode128: { width: 300, height: 100 },
   qrcode: { width: 100, height: 100 },
   rect: { width: 200, height: 100 },
+  line: { width: 200, height: 8 },
   'image-placeholder': { width: 150, height: 150 },
 };
 

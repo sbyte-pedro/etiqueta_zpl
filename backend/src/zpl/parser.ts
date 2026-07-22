@@ -129,6 +129,24 @@ export function parseZpl(zpl: string): ParseResult {
     matched.add(m[0]);
   }
 
+  // 8. Line: ^FO(\d+),(\d+)^GB(\d+),(\d+),3^FS
+  const lineRegex = /\^FO(\d+),(\d+)\^GB(\d+),(\d+),3\^FS/g;
+  while ((m = lineRegex.exec(zpl)) !== null) {
+    const x = parseInt(m[1], 10);
+    const y = parseInt(m[2], 10);
+    const width = parseInt(m[3], 10);
+    const height = parseInt(m[4], 10);
+    elements.push({
+      id: nextId(),
+      type: 'line',
+      x,
+      y,
+      width,
+      height,
+    });
+    matched.add(m[0]);
+  }
+
   // 8. Collect unknown ^CMD patterns not already matched
   // Match any ^[A-Z][^\^]* token
   const cmdRegex = /\^[A-Z][^\^]*/g;

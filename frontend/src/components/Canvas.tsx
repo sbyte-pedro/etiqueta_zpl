@@ -7,6 +7,7 @@ import { TextElement } from './elements/TextElement';
 import { BarcodeElement } from './elements/BarcodeElement';
 import { QRCodeElement } from './elements/QRCodeElement';
 import { RectElement } from './elements/RectElement';
+import { LineElement } from './elements/LineElement';
 import { ImagePlaceholder } from './elements/ImagePlaceholder';
 
 const SCALE = 2;
@@ -17,6 +18,7 @@ function ElementRenderer({ element }: { element: DesignElement }) {
     case 'barcode128': return <BarcodeElement element={element} scale={SCALE} />;
     case 'qrcode': return <QRCodeElement element={element} scale={SCALE} />;
     case 'rect': return <RectElement element={element} scale={SCALE} />;
+    case 'line': return <LineElement element={element} scale={SCALE} />;
     case 'image-placeholder': return <ImagePlaceholder element={element} scale={SCALE} />;
   }
 }

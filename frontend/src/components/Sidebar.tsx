@@ -7,6 +7,7 @@ const PALETTE: { type: ElementType; label: string; icon: string; img?: string }[
   { type: 'barcode128', label: 'Barcode 128', icon: '', img: '/code_128.png' },
   { type: 'qrcode', label: 'QR Code', icon: '', img: '/qr_code.png' },
   { type: 'rect', label: 'Box', icon: '▭' },
+  { type: 'line', label: 'Line', icon: '—' },
   { type: 'image-placeholder', label: 'Image', icon: '🖼' },
 ];
 

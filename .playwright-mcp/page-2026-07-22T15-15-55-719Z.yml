@@ -1,0 +1,14 @@
+- generic [ref=e4]:
+  - heading "Zebra Label Designer" [level=1] [ref=e5]
+  - paragraph [ref=e6]: Sign in to your account
+  - generic [ref=e7]:
+    - button "Login" [ref=e8] [cursor=pointer]
+    - button "Register" [active] [ref=e9] [cursor=pointer]
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e12]: Username
+      - textbox "At least 3 characters" [ref=e13]: alice
+    - generic [ref=e14]:
+      - generic [ref=e15]: Password
+      - textbox "At least 6 characters" [ref=e16]: secret123
+    - button "Create Account" [ref=e19] [cursor=pointer]

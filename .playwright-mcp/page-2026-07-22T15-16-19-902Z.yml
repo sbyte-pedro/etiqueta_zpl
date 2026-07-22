@@ -1,0 +1,62 @@
+- generic [ref=e20]:
+  - generic [ref=e21]:
+    - generic [ref=e22]: Zebra Label Designer
+    - generic [ref=e23]: Width (mm)
+    - spinbutton [ref=e24]: "100"
+    - generic [ref=e25]: Height (mm)
+    - spinbutton [ref=e26]: "149"
+    - generic [ref=e27]:
+      - button "Save" [ref=e28] [cursor=pointer]
+      - button "Load" [ref=e29] [cursor=pointer]
+    - button "Logout" [ref=e30] [cursor=pointer]
+  - generic [ref=e31]:
+    - generic [ref=e32]:
+      - paragraph [ref=e33]: Components
+      - button "T Text" [active] [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]: T
+        - generic [ref=e36]: Text
+      - button "▐▌ Barcode 128" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: ▐▌
+        - generic [ref=e39]: Barcode 128
+      - button "⊞ QR Code" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: ⊞
+        - generic [ref=e42]: QR Code
+      - button "▭ Rectangle" [ref=e43] [cursor=pointer]:
+        - generic [ref=e44]: ▭
+        - generic [ref=e45]: Rectangle
+      - button "🖼 Image" [ref=e46] [cursor=pointer]:
+        - generic [ref=e47]: 🖼
+        - generic [ref=e48]: Image
+    - generic [ref=e49]:
+      - generic [ref=e51]:
+        - button "⊞ Design" [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]: ⊞
+          - text: Design
+        - button "</> Code" [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]: </>
+          - text: Code
+      - generic [ref=e56]:
+        - button "New Text" [ref=e62]:
+          - generic [ref=e63]: New Text
+        - status [ref=e59]
+    - generic [ref=e60]:
+      - paragraph [ref=e61]: text
+      - generic [ref=e72]:
+        - generic [ref=e73]: X (mm)
+        - spinbutton [ref=e74]: "6.2"
+      - generic [ref=e75]:
+        - generic [ref=e76]: Y (mm)
+        - spinbutton [ref=e77]: "6.2"
+      - generic [ref=e78]:
+        - generic [ref=e79]: Width (mm)
+        - spinbutton [ref=e80]: "24.9"
+      - generic [ref=e81]:
+        - generic [ref=e82]: Height (mm)
+        - spinbutton [ref=e83]: "5"
+      - generic [ref=e84]:
+        - generic [ref=e85]: Value
+        - textbox [ref=e86]: New Text
+      - generic [ref=e87]:
+        - generic [ref=e88]: Font Size
+        - spinbutton [ref=e89]: "34"
+      - button "Delete element" [ref=e90] [cursor=pointer]

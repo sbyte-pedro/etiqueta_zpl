@@ -19,6 +19,9 @@ function renderElement(el: Element): string {
     case 'rect': {
       return `${fo}^GB${el.width},${el.height},8^FS`;
     }
+    case 'line': {
+      return `${fo}^GB${el.width},${el.height},3^FS`;
+    }
     case 'image-placeholder': {
       return `${fo}^GB${el.width},${el.height},3,B,5^FS`;
     }

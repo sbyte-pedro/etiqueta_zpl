@@ -1,4 +1,4 @@
-export type ElementType = 'text' | 'barcode128' | 'qrcode' | 'rect' | 'image-placeholder';
+export type ElementType = 'text' | 'barcode128' | 'qrcode' | 'rect' | 'line' | 'image-placeholder';
 
 export interface DesignElement {
   id: string;
