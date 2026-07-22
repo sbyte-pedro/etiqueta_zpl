@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { DesignElement } from '../types';
@@ -98,9 +98,44 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
 export function Canvas() {
   const { labelWidth, labelHeight, elements, selectElement, zoom } = useDesignerStore();
   const { setNodeRef } = useDroppable({ id: 'canvas' });
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const panState = useRef({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
+  const [isPanning, setIsPanning] = useState(false);
 
   const canvasWidth = labelWidth * zoom;
   const canvasHeight = labelHeight * zoom;
+
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 2) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    panState.current = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      scrollLeft: wrapper.scrollLeft,
+      scrollTop: wrapper.scrollTop,
+    };
+    setIsPanning(true);
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!panState.current.active) return;
+      const dx = ev.clientX - panState.current.startX;
+      const dy = ev.clientY - panState.current.startY;
+      wrapper.scrollLeft = panState.current.scrollLeft - dx;
+      wrapper.scrollTop = panState.current.scrollTop - dy;
+    };
+
+    const onMouseUp = () => {
+      panState.current.active = false;
+      setIsPanning(false);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, delta } = event;
@@ -116,7 +151,13 @@ export function Canvas() {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="flex-1 overflow-auto bg-gray-100 p-4">
+      <div
+        ref={wrapperRef}
+        className="h-full overflow-auto bg-gray-100 p-4"
+        style={{ cursor: isPanning ? 'grabbing' : undefined }}
+        onMouseDown={handleMouseDown}
+        onContextMenu={e => e.preventDefault()}
+      >
         <div
           ref={setNodeRef}
           onClick={() => selectElement(null)}
