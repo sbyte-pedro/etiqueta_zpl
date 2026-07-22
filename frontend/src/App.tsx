@@ -5,13 +5,17 @@ import { Canvas } from './components/Canvas';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { TabSwitcher } from './components/TabSwitcher';
 import { CodeEditor } from './components/CodeEditor';
+import { SaveDesignModal } from './components/SaveDesignModal';
+import { LoadDesignModal } from './components/LoadDesignModal';
 import { useDesignerStore } from './store/useDesignerStore';
 import { useAuthStore } from './store/useAuthStore';
+import { useDesignsStore } from './store/useDesignsStore';
 import { LoginPage } from './pages/LoginPage';
 
 export default function App() {
   const { activeTab } = useDesignerStore();
   const { token } = useAuthStore();
+  const { showSaveModal, showLoadModal } = useDesignsStore();
 
   if (!token) return <LoginPage />;
 
@@ -28,6 +32,8 @@ export default function App() {
         </div>
         <PropertiesPanel />
       </div>
+      {showSaveModal && <SaveDesignModal />}
+      {showLoadModal && <LoadDesignModal />}
     </div>
   );
 }

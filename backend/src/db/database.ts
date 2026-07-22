@@ -22,7 +22,28 @@ export function initDb(): void {
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    )
+    );
+
+    CREATE TABLE IF NOT EXISTS designs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(user_id, name)
+    );
+
+    CREATE TABLE IF NOT EXISTS design_versions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      design_id INTEGER NOT NULL REFERENCES designs(id) ON DELETE CASCADE,
+      version_number INTEGER NOT NULL,
+      zpl TEXT NOT NULL,
+      elements_json TEXT NOT NULL,
+      label_width INTEGER NOT NULL,
+      label_height INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(design_id, version_number)
+    );
   `);
 }
 
