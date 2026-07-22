@@ -4,6 +4,7 @@ type Direction = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 interface Props {
   direction: Direction;
+  onResizeStart: () => void;
   onResize: (dx: number, dy: number, dir: Direction) => void;
 }
 
@@ -23,14 +24,19 @@ const POSITIONS: Record<Direction, React.CSSProperties> = {
   sw: { bottom: -4, left: -4 },
 };
 
-export function ResizeHandle({ direction, onResize }: Props) {
+export function ResizeHandle({ direction, onResizeStart, onResize }: Props) {
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     const startX = e.clientX;
     const startY = e.clientY;
 
+    // Capture element's initial state before any movement
+    onResizeStart();
+
     const onMove = (me: MouseEvent) => {
+      // Always report cumulative delta from the drag start
+      // Consumer uses the captured initial state, not current state
       onResize(me.clientX - startX, me.clientY - startY, direction);
     };
     const onUp = () => {
@@ -39,11 +45,13 @@ export function ResizeHandle({ direction, onResize }: Props) {
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-  }, [direction, onResize]);
+  }, [direction, onResizeStart, onResize]);
 
   return (
     <div
       onMouseDown={onMouseDown}
+      // Stop pointer events so dnd-kit does not start a drag while resizing
+      onPointerDown={e => e.stopPropagation()}
       style={{
         position: 'absolute',
         width: 8, height: 8,

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { DesignElement } from '../types';
@@ -27,18 +27,36 @@ function DraggableElement({ element }: { element: DesignElement }) {
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: element.id });
 
+  // Snapshot of the element state at the moment a resize drag starts
+  const resizeSnapshot = useRef<DesignElement | null>(null);
+
+  const handleResizeStart = useCallback(() => {
+    resizeSnapshot.current = { ...element };
+  }, [element]);
+
   const handleResize = useCallback((dx: number, dy: number, dir: string) => {
+    const snap = resizeSnapshot.current;
+    if (!snap) return;
+
     const dotDx = Math.round(dx / SCALE);
     const dotDy = Math.round(dy / SCALE);
     const patch: Partial<DesignElement> = {};
 
-    if (dir.includes('e')) patch.width = Math.max(20, element.width + dotDx);
-    if (dir.includes('s')) patch.height = Math.max(20, element.height + dotDy);
-    if (dir.includes('w')) { patch.x = element.x + dotDx; patch.width = Math.max(20, element.width - dotDx); }
-    if (dir.includes('n')) { patch.y = element.y + dotDy; patch.height = Math.max(20, element.height - dotDy); }
+    if (dir.includes('e')) patch.width = Math.max(20, snap.width + dotDx);
+    if (dir.includes('s')) patch.height = Math.max(20, snap.height + dotDy);
+    if (dir.includes('w')) {
+      const newWidth = Math.max(20, snap.width - dotDx);
+      patch.x = snap.x + (snap.width - newWidth);
+      patch.width = newWidth;
+    }
+    if (dir.includes('n')) {
+      const newHeight = Math.max(20, snap.height - dotDy);
+      patch.y = snap.y + (snap.height - newHeight);
+      patch.height = newHeight;
+    }
 
     updateElement(element.id, patch);
-  }, [element, updateElement]);
+  }, [element.id, updateElement]);
 
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -62,7 +80,12 @@ function DraggableElement({ element }: { element: DesignElement }) {
       {isSelected && (
         <>
           {(['n','s','e','w','ne','nw','se','sw'] as const).map(d => (
-            <ResizeHandle key={d} direction={d} onResize={handleResize} />
+            <ResizeHandle
+              key={d}
+              direction={d}
+              onResizeStart={handleResizeStart}
+              onResize={handleResize}
+            />
           ))}
         </>
       )}
