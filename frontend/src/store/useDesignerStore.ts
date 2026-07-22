@@ -28,6 +28,7 @@ interface DesignerStore {
   activeTab: 'design' | 'code';
   zplCode: string;
   previewUrl: string | null;
+  zoom: number;
   setLabelSize(width: number, height: number): void;
   addElement(type: ElementType, x?: number, y?: number): void;
   updateElement(id: string, patch: Partial<DesignElement>): void;
@@ -35,6 +36,7 @@ interface DesignerStore {
   selectElement(id: string | null): void;
   setActiveTab(tab: 'design' | 'code'): void;
   setZplCode(code: string): void;
+  setZoom(zoom: number): void;
   syncToCode(): Promise<void>;
   applyCodeToDesign(): Promise<void>;
   setPreviewUrl(url: string | null): void;
@@ -50,6 +52,7 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
   activeTab: 'design',
   zplCode: '^XA\n^PW800\n^LL1200\n^XZ',
   previewUrl: null,
+  zoom: 2,
 
   setLabelSize(width, height) {
     set({ labelWidth: width, labelHeight: height });
@@ -93,6 +96,10 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
 
   setZplCode(code) {
     set({ zplCode: code });
+  },
+
+  setZoom(zoom) {
+    set({ zoom: Math.min(6, Math.max(0.5, zoom)) });
   },
 
   async syncToCode() {

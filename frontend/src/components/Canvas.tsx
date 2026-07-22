@@ -10,20 +10,20 @@ import { RectElement } from './elements/RectElement';
 import { LineElement } from './elements/LineElement';
 import { ImagePlaceholder } from './elements/ImagePlaceholder';
 
-const SCALE = 2;
+const SCALE = 2; // base scale — actual scale comes from the store zoom
 
-function ElementRenderer({ element }: { element: DesignElement }) {
+function ElementRenderer({ element, scale }: { element: DesignElement; scale: number }) {
   switch (element.type) {
-    case 'text': return <TextElement element={element} scale={SCALE} />;
-    case 'barcode128': return <BarcodeElement element={element} scale={SCALE} />;
-    case 'qrcode': return <QRCodeElement element={element} scale={SCALE} />;
-    case 'rect': return <RectElement element={element} scale={SCALE} />;
-    case 'line': return <LineElement element={element} scale={SCALE} />;
-    case 'image-placeholder': return <ImagePlaceholder element={element} scale={SCALE} />;
+    case 'text': return <TextElement element={element} scale={scale} />;
+    case 'barcode128': return <BarcodeElement element={element} scale={scale} />;
+    case 'qrcode': return <QRCodeElement element={element} scale={scale} />;
+    case 'rect': return <RectElement element={element} scale={scale} />;
+    case 'line': return <LineElement element={element} scale={scale} />;
+    case 'image-placeholder': return <ImagePlaceholder element={element} scale={scale} />;
   }
 }
 
-function DraggableElement({ element }: { element: DesignElement }) {
+function DraggableElement({ element, scale }: { element: DesignElement; scale: number }) {
   const { selectedId, selectElement, updateElement, deleteElement } = useDesignerStore();
   const isSelected = selectedId === element.id;
 
@@ -40,8 +40,8 @@ function DraggableElement({ element }: { element: DesignElement }) {
     const snap = resizeSnapshot.current;
     if (!snap) return;
 
-    const dotDx = Math.round(dx / SCALE);
-    const dotDy = Math.round(dy / SCALE);
+    const dotDx = Math.round(dx / scale);
+    const dotDy = Math.round(dy / scale);
     const patch: Partial<DesignElement> = {};
 
     if (dir.includes('e')) patch.width = Math.max(20, snap.width + dotDx);
@@ -58,12 +58,12 @@ function DraggableElement({ element }: { element: DesignElement }) {
     }
 
     updateElement(element.id, patch);
-  }, [element.id, updateElement]);
+  }, [element.id, scale, updateElement]);
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: element.x * SCALE,
-    top: element.y * SCALE,
+    left: element.x * scale,
+    top: element.y * scale,
     cursor: 'move',
     outline: isSelected ? '2px solid #2563eb' : undefined,
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
@@ -78,7 +78,7 @@ function DraggableElement({ element }: { element: DesignElement }) {
       {...listeners}
       {...attributes}
     >
-      <ElementRenderer element={element} />
+      <ElementRenderer element={element} scale={scale} />
       {isSelected && (
         <>
           {(['n','s','e','w','ne','nw','se','sw'] as const).map(d => (
@@ -96,18 +96,18 @@ function DraggableElement({ element }: { element: DesignElement }) {
 }
 
 export function Canvas() {
-  const { labelWidth, labelHeight, elements, selectElement } = useDesignerStore();
+  const { labelWidth, labelHeight, elements, selectElement, zoom } = useDesignerStore();
   const { setNodeRef } = useDroppable({ id: 'canvas' });
 
-  const canvasWidth = labelWidth * SCALE;
-  const canvasHeight = labelHeight * SCALE;
+  const canvasWidth = labelWidth * zoom;
+  const canvasHeight = labelHeight * zoom;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, delta } = event;
     const el = elements.find(e => e.id === active.id);
     if (!el) return;
-    const dotDx = Math.round(delta.x / SCALE);
-    const dotDy = Math.round(delta.y / SCALE);
+    const dotDx = Math.round(delta.x / zoom);
+    const dotDy = Math.round(delta.y / zoom);
     useDesignerStore.getState().updateElement(el.id, {
       x: Math.max(0, el.x + dotDx),
       y: Math.max(0, el.y + dotDy),
@@ -126,13 +126,13 @@ export function Canvas() {
             height: canvasHeight,
             background: 'white',
             backgroundImage: 'radial-gradient(circle, #ccc 1px, transparent 1px)',
-            backgroundSize: `${8 * SCALE}px ${8 * SCALE}px`,
+            backgroundSize: `${8 * zoom}px ${8 * zoom}px`,
             margin: '0 auto',
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           }}
         >
           {elements.map(el => (
-            <DraggableElement key={el.id} element={el} />
+            <DraggableElement key={el.id} element={el} scale={zoom} />
           ))}
         </div>
       </div>
