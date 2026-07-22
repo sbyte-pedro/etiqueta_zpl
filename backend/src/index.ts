@@ -2,8 +2,8 @@ import { initDb } from './db/database';
 import app from './app';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('JWT_SECRET env var is required in production');
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET env var is required');
 }
 
 const DATABASE_URL = process.env.DATABASE_URL;
