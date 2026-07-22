@@ -55,7 +55,6 @@ function DraggableElement({ element }: { element: DesignElement }) {
       style={style}
       onClick={e => { e.stopPropagation(); selectElement(element.id); }}
       onKeyDown={e => { if (e.key === 'Delete' && isSelected) deleteElement(element.id); }}
-      tabIndex={0}
       {...listeners}
       {...attributes}
     >
