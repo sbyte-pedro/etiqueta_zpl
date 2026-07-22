@@ -1,3 +1,4 @@
+// @ts-nocheck — TODO(Task 3): replace SQLite prepare() calls with Drizzle queries
 import { getDb } from '../db/database';
 
 export interface DesignPayload {

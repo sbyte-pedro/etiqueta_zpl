@@ -1,12 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import { initDb } from './db/database';
 import { authRouter } from './routes/auth';
 import { authenticate } from './middleware/authenticate';
 import { zplRouter } from './routes/zpl';
 import { designsRouter } from './routes/designs';
-
-initDb();
 
 const app = express();
 app.use(cors());
