@@ -36,20 +36,32 @@ designsRouter.post('/', async (req: Request, res: Response) => {
 });
 
 designsRouter.get('/', async (req: Request, res: Response) => {
-  res.json(await listDesigns(req.user!.userId));
+  try {
+    res.json(await listDesigns(req.user!.userId));
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 designsRouter.get('/:id', async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const design = await getDesign(req.user!.userId, id);
-  if (!design) { res.status(404).json({ error: 'Design not found' }); return; }
-  res.json(design);
+  try {
+    const id = Number(req.params.id);
+    const design = await getDesign(req.user!.userId, id);
+    if (!design) { res.status(404).json({ error: 'Design not found' }); return; }
+    res.json(design);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 designsRouter.delete('/:id', async (req: Request, res: Response) => {
-  const deleted = await deleteDesign(req.user!.userId, Number(req.params.id));
-  if (!deleted) { res.status(404).json({ error: 'Design not found' }); return; }
-  res.status(204).end();
+  try {
+    const deleted = await deleteDesign(req.user!.userId, Number(req.params.id));
+    if (!deleted) { res.status(404).json({ error: 'Design not found' }); return; }
+    res.status(204).end();
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 designsRouter.post('/:id/versions', async (req: Request, res: Response) => {
@@ -68,12 +80,20 @@ designsRouter.post('/:id/versions', async (req: Request, res: Response) => {
 });
 
 designsRouter.get('/:id/versions', async (req: Request, res: Response) => {
-  const versions = await listVersions(req.user!.userId, Number(req.params.id));
-  res.json(versions);
+  try {
+    const versions = await listVersions(req.user!.userId, Number(req.params.id));
+    res.json(versions);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 designsRouter.get('/:id/versions/:vn', async (req: Request, res: Response) => {
-  const version = await getVersion(req.user!.userId, Number(req.params.id), Number(req.params.vn));
-  if (!version) { res.status(404).json({ error: 'Version not found' }); return; }
-  res.json(version);
+  try {
+    const version = await getVersion(req.user!.userId, Number(req.params.id), Number(req.params.vn));
+    if (!version) { res.status(404).json({ error: 'Version not found' }); return; }
+    res.json(version);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
