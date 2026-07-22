@@ -1,5 +1,7 @@
 const TOKEN_KEY = 'zpl_token';
 
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -13,7 +15,7 @@ export function clearToken(): void {
 }
 
 export async function apiRegister(username: string, password: string): Promise<void> {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
@@ -25,7 +27,7 @@ export async function apiRegister(username: string, password: string): Promise<v
 }
 
 export async function apiLogin(username: string, password: string): Promise<string> {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),

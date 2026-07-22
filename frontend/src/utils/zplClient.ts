@@ -1,6 +1,8 @@
 import { DesignElement } from '../types';
 import { getToken } from './authClient';
 
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
+
 function authHeaders(): Record<string, string> {
   const token = getToken();
   return {
@@ -23,7 +25,7 @@ export interface ParseResult {
 }
 
 export async function generateZpl(payload: GeneratePayload): Promise<string> {
-  const res = await fetch('/api/generate-zpl', {
+  const res = await fetch(`${API_BASE}/api/generate-zpl`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -33,7 +35,7 @@ export async function generateZpl(payload: GeneratePayload): Promise<string> {
 }
 
 export async function parseZpl(zpl: string): Promise<ParseResult> {
-  const res = await fetch('/api/parse-zpl', {
+  const res = await fetch(`${API_BASE}/api/parse-zpl`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ zpl }),
@@ -42,7 +44,7 @@ export async function parseZpl(zpl: string): Promise<ParseResult> {
 }
 
 export async function previewZpl(zpl: string, labelWidth: number, labelHeight: number): Promise<string> {
-  const res = await fetch('/api/preview', {
+  const res = await fetch(`${API_BASE}/api/preview`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ zpl, labelWidth, labelHeight }),
