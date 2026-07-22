@@ -1,11 +1,13 @@
 import React from 'react';
 import { useDesignerStore } from '../store/useDesignerStore';
+import { useAuthStore } from '../store/useAuthStore';
 
 const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
 const DOTS_TO_MM = (dots: number) => Math.round(dots / 8.03);
 
 export function Toolbar() {
   const { labelWidth, labelHeight, setLabelSize } = useDesignerStore();
+  const { logout } = useAuthStore();
 
   return (
     <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-4">
@@ -29,6 +31,12 @@ export function Toolbar() {
         max={1000}
         onChange={e => setLabelSize(labelWidth, MM_TO_DOTS(Number(e.target.value)))}
       />
+      <button
+        onClick={logout}
+        className="ml-2 text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+      >
+        Logout
+      </button>
     </div>
   );
 }

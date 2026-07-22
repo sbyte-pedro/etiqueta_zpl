@@ -1,0 +1,123 @@
+commit 2f7b1a01917aae979221b1eb59e77fc3b2008238
+Author: Engel <pedro.engel@sap.com>
+Date:   Wed Jul 22 09:58:44 2026 -0300
+
+    feat: ZPL generator with unit tests
+
+diff --git a/backend/src/zpl/generator.test.ts b/backend/src/zpl/generator.test.ts
+new file mode 100644
+index 0000000..f683ef1
+--- /dev/null
++++ b/backend/src/zpl/generator.test.ts
+@@ -0,0 +1,64 @@
++import { generateZpl } from './generator';
++import { GenerateRequest } from './types';
++
++const base: GenerateRequest = { labelWidth: 800, labelHeight: 1200, elements: [] };
++
++test('wraps output in ^XA / ^XZ', () => {
++  const zpl = generateZpl(base);
++  expect(zpl).toMatch(/^\^XA/);
++  expect(zpl).toMatch(/\^XZ$/);
++});
++
++test('sets label dimensions', () => {
++  const zpl = generateZpl(base);
++  expect(zpl).toContain('^PW800');
++  expect(zpl).toContain('^LL1200');
++});
++
++test('generates text element', () => {
++  const zpl = generateZpl({
++    ...base,
++    elements: [{ id: '1', type: 'text', x: 80, y: 80, width: 200, height: 40, value: 'Hello', fontSize: 34, fontName: '0' }],
++  });
++  expect(zpl).toContain('^FO80,80');
++  expect(zpl).toContain('^A0N,34,34');
++  expect(zpl).toContain('^FDHello^FS');
++});
++
++test('generates barcode128 element', () => {
++  const zpl = generateZpl({
++    ...base,
++    elements: [{ id: '2', type: 'barcode128', x: 100, y: 100, width: 300, height: 100, value: '12345' }],
++  });
++  expect(zpl).toContain('^FO100,100');
++  expect(zpl).toContain('^BCN,100,Y,N,N');
++  expect(zpl).toContain('^FD12345^FS');
++});
++
++test('generates qrcode element', () => {
++  const zpl = generateZpl({
++    ...base,
++    elements: [{ id: '3', type: 'qrcode', x: 50, y: 50, width: 100, height: 100, value: 'https://example.com' }],
++  });
++  expect(zpl).toContain('^FO50,50');
++  expect(zpl).toContain('^BQN,2,');
++  expect(zpl).toContain('^FDMA,https://example.com^FS');
++});
++
++test('generates rect element', () => {
++  const zpl = generateZpl({
++    ...base,
++    elements: [{ id: '4', type: 'rect', x: 10, y: 10, width: 200, height: 150 }],
++  });
++  expect(zpl).toContain('^FO10,10');
++  expect(zpl).toContain('^GB200,150,8^FS');
++});
++
++test('generates image-placeholder element', () => {
++  const zpl = generateZpl({
++    ...base,
++    elements: [{ id: '5', type: 'image-placeholder', x: 20, y: 20, width: 100, height: 100 }],
++  });
++  expect(zpl).toContain('^FO20,20');
++  expect(zpl).toContain('^GB100,100,3,B,5^FS');
++});
+diff --git a/backend/src/zpl/generator.ts b/backend/src/zpl/generator.ts
+new file mode 100644
+index 0000000..6be8609
+--- /dev/null
++++ b/backend/src/zpl/generator.ts
+@@ -0,0 +1,41 @@
++import { Element, GenerateRequest } from './types';
++
++function renderElement(el: Element): string {
++  const fo = `^FO${el.x},${el.y}`;
++
++  switch (el.type) {
++    case 'text': {
++      const fontName = el.fontName ?? '0';
++      const fontSize = el.fontSize ?? 30;
++      return `${fo}^A${fontName}N,${fontSize},${fontSize}^FD${el.value ?? ''}^FS`;
++    }
++    case 'barcode128': {
++      return `${fo}^BCN,${el.height},Y,N,N^FD${el.value ?? ''}^FS`;
++    }
++    case 'qrcode': {
++      const mag = Math.max(1, Math.round(el.width / 40));
++      return `${fo}^BQN,2,${mag}^FDMA,${el.value ?? ''}^FS`;
++    }
++    case 'rect': {
++      return `${fo}^GB${el.width},${el.height},8^FS`;
++    }
++    case 'image-placeholder': {
++      return `${fo}^GB${el.width},${el.height},3,B,5^FS`;
++    }
++    default: {
++      const _exhaustive: never = el.type;
++      return '';
++    }
++  }
++}
++
++export function generateZpl(req: GenerateRequest): string {
++  const lines: string[] = [
++    '^XA',
++    `^PW${req.labelWidth}`,
++    `^LL${req.labelHeight}`,
++    ...req.elements.map(renderElement),
++    '^XZ',
++  ];
++  return lines.join('\n');
++}

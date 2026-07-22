@@ -6,9 +6,14 @@ import { PropertiesPanel } from './components/PropertiesPanel';
 import { TabSwitcher } from './components/TabSwitcher';
 import { CodeEditor } from './components/CodeEditor';
 import { useDesignerStore } from './store/useDesignerStore';
+import { useAuthStore } from './store/useAuthStore';
+import { LoginPage } from './pages/LoginPage';
 
 export default function App() {
   const { activeTab } = useDesignerStore();
+  const { token } = useAuthStore();
+
+  if (!token) return <LoginPage />;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
