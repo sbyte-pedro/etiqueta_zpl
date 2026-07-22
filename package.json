@@ -11,5 +11,8 @@
   },
   "allowScripts": {
     "better-sqlite3@12.11.1": true
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
   }
 }
