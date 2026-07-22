@@ -18,13 +18,13 @@ const CreateDesignSchema = VersionPayloadSchema.extend({
   name: z.string().min(1).max(100),
 });
 
-designsRouter.post('/', (req: Request, res: Response) => {
+designsRouter.post('/', async (req: Request, res: Response) => {
   const parsed = CreateDesignSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   const userId = req.user!.userId;
   try {
     const { name, ...payload } = parsed.data;
-    const result = createDesign(userId, name, payload);
+    const result = await createDesign(userId, name, payload);
     res.status(201).json(result);
   } catch (e) {
     if (e instanceof Error && e.message === 'DESIGN_NAME_TAKEN') {
@@ -35,28 +35,28 @@ designsRouter.post('/', (req: Request, res: Response) => {
   }
 });
 
-designsRouter.get('/', (req: Request, res: Response) => {
-  res.json(listDesigns(req.user!.userId));
+designsRouter.get('/', async (req: Request, res: Response) => {
+  res.json(await listDesigns(req.user!.userId));
 });
 
-designsRouter.get('/:id', (req: Request, res: Response) => {
+designsRouter.get('/:id', async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const design = getDesign(req.user!.userId, id);
+  const design = await getDesign(req.user!.userId, id);
   if (!design) { res.status(404).json({ error: 'Design not found' }); return; }
   res.json(design);
 });
 
-designsRouter.delete('/:id', (req: Request, res: Response) => {
-  const deleted = deleteDesign(req.user!.userId, Number(req.params.id));
+designsRouter.delete('/:id', async (req: Request, res: Response) => {
+  const deleted = await deleteDesign(req.user!.userId, Number(req.params.id));
   if (!deleted) { res.status(404).json({ error: 'Design not found' }); return; }
   res.status(204).end();
 });
 
-designsRouter.post('/:id/versions', (req: Request, res: Response) => {
+designsRouter.post('/:id/versions', async (req: Request, res: Response) => {
   const parsed = VersionPayloadSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   try {
-    const version = createVersion(req.user!.userId, Number(req.params.id), parsed.data);
+    const version = await createVersion(req.user!.userId, Number(req.params.id), parsed.data);
     res.status(201).json(version);
   } catch (e) {
     if (e instanceof Error && e.message === 'DESIGN_NOT_FOUND') {
@@ -67,13 +67,13 @@ designsRouter.post('/:id/versions', (req: Request, res: Response) => {
   }
 });
 
-designsRouter.get('/:id/versions', (req: Request, res: Response) => {
-  const versions = listVersions(req.user!.userId, Number(req.params.id));
+designsRouter.get('/:id/versions', async (req: Request, res: Response) => {
+  const versions = await listVersions(req.user!.userId, Number(req.params.id));
   res.json(versions);
 });
 
-designsRouter.get('/:id/versions/:vn', (req: Request, res: Response) => {
-  const version = getVersion(req.user!.userId, Number(req.params.id), Number(req.params.vn));
+designsRouter.get('/:id/versions/:vn', async (req: Request, res: Response) => {
+  const version = await getVersion(req.user!.userId, Number(req.params.id), Number(req.params.vn));
   if (!version) { res.status(404).json({ error: 'Version not found' }); return; }
   res.json(version);
 });

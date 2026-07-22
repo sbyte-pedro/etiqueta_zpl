@@ -1,5 +1,6 @@
-// @ts-nocheck — TODO(Task 3): replace SQLite prepare() calls with Drizzle queries
+import { eq, and, sql, count } from 'drizzle-orm';
 import { getDb } from '../db/database';
+import { designsTable, designVersionsTable } from '../db/schema';
 
 export interface DesignPayload {
   zpl: string;
@@ -32,95 +33,133 @@ export interface VersionDetail {
   createdAt: string;
 }
 
-type DesignRow = { id: number; name: string; created_at: string; updated_at: string; version_count: number };
-type VersionRow = { id: number; version_number: number; zpl: string; elements_json: string; label_width: number; label_height: number; created_at: string };
-
-function toDesignSummary(row: DesignRow): DesignSummary {
-  return { id: row.id, name: row.name, createdAt: row.created_at, updatedAt: row.updated_at, versionCount: row.version_count };
+function toIso(d: Date | string): string {
+  return typeof d === 'string' ? d : d.toISOString();
 }
 
-function toVersionDetail(row: VersionRow): VersionDetail {
-  return {
-    id: row.id,
-    versionNumber: row.version_number,
-    zpl: row.zpl,
-    elements: JSON.parse(row.elements_json) as object[],
-    labelWidth: row.label_width,
-    labelHeight: row.label_height,
-    createdAt: row.created_at,
-  };
-}
-
-export function createDesign(userId: number, name: string, payload: DesignPayload): { designId: number; versionId: number } {
+export async function createDesign(userId: number, name: string, payload: DesignPayload): Promise<{ designId: number; versionId: number }> {
   const db = getDb();
-  const insert = db.prepare('INSERT INTO designs (user_id, name) VALUES (?, ?)');
   let designId: number;
   try {
-    designId = Number((insert.run(userId, name)).lastInsertRowid);
+    const rows = await db.insert(designsTable).values({ userId, name }).returning({ id: designsTable.id });
+    designId = rows[0].id;
   } catch {
     throw new Error('DESIGN_NAME_TAKEN');
   }
-  const versionId = insertVersion(designId, payload);
+  const versionId = await insertVersion(designId, payload);
   return { designId, versionId };
 }
 
-export function listDesigns(userId: number): DesignSummary[] {
-  const rows = getDb().prepare(`
-    SELECT d.id, d.name, d.created_at, d.updated_at,
-      (SELECT COUNT(*) FROM design_versions WHERE design_id = d.id) AS version_count
-    FROM designs d WHERE d.user_id = ? ORDER BY d.updated_at DESC
-  `).all(userId) as DesignRow[];
-  return rows.map(toDesignSummary);
-}
-
-export function getDesign(userId: number, designId: number): DesignSummary | undefined {
-  const row = getDb().prepare(`
-    SELECT d.id, d.name, d.created_at, d.updated_at,
-      (SELECT COUNT(*) FROM design_versions WHERE design_id = d.id) AS version_count
-    FROM designs d WHERE d.id = ? AND d.user_id = ?
-  `).get(designId, userId) as DesignRow | undefined;
-  return row ? toDesignSummary(row) : undefined;
-}
-
-export function deleteDesign(userId: number, designId: number): boolean {
-  const result = getDb().prepare('DELETE FROM designs WHERE id = ? AND user_id = ?').run(designId, userId);
-  return result.changes > 0;
-}
-
-function insertVersion(designId: number, payload: DesignPayload): number {
+export async function listDesigns(userId: number): Promise<DesignSummary[]> {
   const db = getDb();
-  const maxRow = db.prepare('SELECT COALESCE(MAX(version_number), 0) AS max_vn FROM design_versions WHERE design_id = ?').get(designId) as { max_vn: number };
-  const nextVn = maxRow.max_vn + 1;
-  const result = db.prepare(
-    'INSERT INTO design_versions (design_id, version_number, zpl, elements_json, label_width, label_height) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(designId, nextVn, payload.zpl, JSON.stringify(payload.elements), payload.labelWidth, payload.labelHeight);
-  // bump updated_at on parent design
-  db.prepare("UPDATE designs SET updated_at = datetime('now') WHERE id = ?").run(designId);
-  return Number(result.lastInsertRowid);
+  const rows = await db
+    .select({
+      id: designsTable.id,
+      name: designsTable.name,
+      createdAt: designsTable.createdAt,
+      updatedAt: designsTable.updatedAt,
+      versionCount: count(designVersionsTable.id),
+    })
+    .from(designsTable)
+    .leftJoin(designVersionsTable, eq(designVersionsTable.designId, designsTable.id))
+    .where(eq(designsTable.userId, userId))
+    .groupBy(designsTable.id)
+    .orderBy(sql`${designsTable.updatedAt} DESC`);
+  return rows.map(r => ({
+    id: r.id,
+    name: r.name,
+    createdAt: toIso(r.createdAt),
+    updatedAt: toIso(r.updatedAt),
+    versionCount: Number(r.versionCount),
+  }));
 }
 
-export function createVersion(userId: number, designId: number, payload: DesignPayload): VersionDetail {
-  const design = getDb().prepare('SELECT id FROM designs WHERE id = ? AND user_id = ?').get(designId, userId);
-  if (!design) throw new Error('DESIGN_NOT_FOUND');
-  const versionId = insertVersion(designId, payload);
-  const row = getDb().prepare('SELECT * FROM design_versions WHERE id = ?').get(versionId) as VersionRow;
-  return toVersionDetail(row);
+export async function getDesign(userId: number, designId: number): Promise<DesignSummary | undefined> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: designsTable.id,
+      name: designsTable.name,
+      createdAt: designsTable.createdAt,
+      updatedAt: designsTable.updatedAt,
+      versionCount: count(designVersionsTable.id),
+    })
+    .from(designsTable)
+    .leftJoin(designVersionsTable, eq(designVersionsTable.designId, designsTable.id))
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)))
+    .groupBy(designsTable.id);
+  const r = rows[0];
+  if (!r) return undefined;
+  return { id: r.id, name: r.name, createdAt: toIso(r.createdAt), updatedAt: toIso(r.updatedAt), versionCount: Number(r.versionCount) };
 }
 
-export function listVersions(userId: number, designId: number): VersionSummary[] {
-  const design = getDb().prepare('SELECT id FROM designs WHERE id = ? AND user_id = ?').get(designId, userId);
-  if (!design) return [];
-  const rows = getDb().prepare(
-    'SELECT id, version_number, created_at FROM design_versions WHERE design_id = ? ORDER BY version_number ASC'
-  ).all(designId) as { id: number; version_number: number; created_at: string }[];
-  return rows.map(r => ({ id: r.id, versionNumber: r.version_number, createdAt: r.created_at }));
+export async function deleteDesign(userId: number, designId: number): Promise<boolean> {
+  const rows = await getDb()
+    .delete(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)))
+    .returning({ id: designsTable.id });
+  return rows.length > 0;
 }
 
-export function getVersion(userId: number, designId: number, versionNumber: number): VersionDetail | undefined {
-  const design = getDb().prepare('SELECT id FROM designs WHERE id = ? AND user_id = ?').get(designId, userId);
-  if (!design) return undefined;
-  const row = getDb().prepare(
-    'SELECT * FROM design_versions WHERE design_id = ? AND version_number = ?'
-  ).get(designId, versionNumber) as VersionRow | undefined;
-  return row ? toVersionDetail(row) : undefined;
+async function insertVersion(designId: number, payload: DesignPayload): Promise<number> {
+  const db = getDb();
+  const maxRows = await db
+    .select({ max: sql<number>`COALESCE(MAX(${designVersionsTable.versionNumber}), 0)` })
+    .from(designVersionsTable)
+    .where(eq(designVersionsTable.designId, designId));
+  const nextVn = Number(maxRows[0].max) + 1;
+  const rows = await db.insert(designVersionsTable).values({
+    designId,
+    versionNumber: nextVn,
+    zpl: payload.zpl,
+    elementsJson: JSON.stringify(payload.elements),
+    labelWidth: payload.labelWidth,
+    labelHeight: payload.labelHeight,
+  }).returning({ id: designVersionsTable.id });
+  await db.update(designsTable).set({ updatedAt: new Date() }).where(eq(designsTable.id, designId));
+  return rows[0].id;
+}
+
+export async function createVersion(userId: number, designId: number, payload: DesignPayload): Promise<VersionDetail> {
+  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
+  if (!design.length) throw new Error('DESIGN_NOT_FOUND');
+  const versionId = await insertVersion(designId, payload);
+  const rows = await getDb().select().from(designVersionsTable).where(eq(designVersionsTable.id, versionId));
+  return toVersionDetail(rows[0]);
+}
+
+export async function listVersions(userId: number, designId: number): Promise<VersionSummary[]> {
+  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
+  if (!design.length) return [];
+  const rows = await getDb().select({
+    id: designVersionsTable.id,
+    versionNumber: designVersionsTable.versionNumber,
+    createdAt: designVersionsTable.createdAt,
+  }).from(designVersionsTable)
+    .where(eq(designVersionsTable.designId, designId))
+    .orderBy(designVersionsTable.versionNumber);
+  return rows.map(r => ({ id: r.id, versionNumber: r.versionNumber, createdAt: toIso(r.createdAt) }));
+}
+
+export async function getVersion(userId: number, designId: number, versionNumber: number): Promise<VersionDetail | undefined> {
+  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
+  if (!design.length) return undefined;
+  const rows = await getDb().select().from(designVersionsTable)
+    .where(and(eq(designVersionsTable.designId, designId), eq(designVersionsTable.versionNumber, versionNumber)));
+  return rows[0] ? toVersionDetail(rows[0]) : undefined;
+}
+
+function toVersionDetail(r: typeof designVersionsTable.$inferSelect): VersionDetail {
+  return {
+    id: r.id,
+    versionNumber: r.versionNumber,
+    zpl: r.zpl,
+    elements: JSON.parse(r.elementsJson) as object[],
+    labelWidth: r.labelWidth,
+    labelHeight: r.labelHeight,
+    createdAt: toIso(r.createdAt),
+  };
 }
