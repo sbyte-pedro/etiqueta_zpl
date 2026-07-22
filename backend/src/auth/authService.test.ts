@@ -1,16 +1,27 @@
-process.env.NODE_ENV = 'test';
+process.env.DATABASE_URL = process.env.DATABASE_URL ?? 'postgresql://localhost/etiqueta_test';
 process.env.JWT_SECRET = 'test-secret';
 
-import { initDb, _resetDb } from '../db/database';
+import { initDb, _resetDb, getDb } from '../db/database';
+import { usersTable } from '../db/schema';
+import { designsTable } from '../db/schema';
+import { designVersionsTable } from '../db/schema';
 import { registerUser, loginUser } from './authService';
 
-beforeEach(() => {
-  _resetDb();
-  initDb();
+beforeAll(async () => {
+  await initDb();
 });
 
-afterAll(() => {
-  _resetDb();
+beforeEach(async () => {
+  await _resetDb();
+  await initDb();
+  const db = getDb();
+  await db.delete(designVersionsTable);
+  await db.delete(designsTable);
+  await db.delete(usersTable);
+});
+
+afterAll(async () => {
+  await _resetDb();
 });
 
 test('registers a new user without error', async () => {
