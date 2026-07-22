@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
 import { useDesignsStore } from '../store/useDesignsStore';
 
+type Mode = 'overwrite' | 'version' | 'new';
+
 export function SaveDesignModal() {
-  const { activeDesignId, activeDesignName, closeSaveModal, saveNewDesign, saveVersion, error, setError } = useDesignsStore();
+  const {
+    activeDesignId, activeDesignName, activeVersionNumber,
+    closeSaveModal, saveNewDesign, saveVersion, overwriteVersion, error, setError,
+  } = useDesignsStore();
+
+  const defaultMode: Mode = activeDesignId
+    ? (activeVersionNumber !== null ? 'overwrite' : 'version')
+    : 'new';
+
+  const [mode, setMode] = useState<Mode>(defaultMode);
   const [name, setName] = useState('');
-  const [mode, setMode] = useState<'new' | 'version'>(activeDesignId ? 'version' : 'new');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === 'new') {
-        await saveNewDesign(name.trim());
-      } else {
+      if (mode === 'overwrite') {
+        await overwriteVersion();
+      } else if (mode === 'version') {
         await saveVersion();
         closeSaveModal();
+      } else {
+        await saveNewDesign(name.trim());
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed');
@@ -31,22 +43,36 @@ export function SaveDesignModal() {
 
         {activeDesignId && (
           <div className="flex rounded border border-gray-200 overflow-hidden text-sm mb-4">
+            {activeVersionNumber !== null && (
+              <button
+                onClick={() => setMode('overwrite')}
+                className={`flex-1 py-1.5 transition-colors ${mode === 'overwrite' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                Overwrite v{activeVersionNumber}
+              </button>
+            )}
             <button
               onClick={() => setMode('version')}
               className={`flex-1 py-1.5 transition-colors ${mode === 'version' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             >
-              Save version of "{activeDesignName}"
+              New version
             </button>
             <button
               onClick={() => setMode('new')}
               className={`flex-1 py-1.5 transition-colors ${mode === 'new' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             >
-              Save as new design
+              New design
             </button>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {mode === 'overwrite' && (
+            <p className="text-xs text-gray-500">
+              This will replace the content of <strong>v{activeVersionNumber}</strong> of "{activeDesignName}" with the current canvas. This cannot be undone.
+            </p>
+          )}
+
           {mode === 'new' && (
             <div>
               <label className="block text-xs text-gray-500 mb-1">Design name</label>
@@ -69,7 +95,7 @@ export function SaveDesignModal() {
               Cancel
             </button>
             <button type="submit" disabled={loading} className="text-sm px-4 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
-              {loading ? 'Saving…' : mode === 'new' ? 'Create & Save' : 'Save Version'}
+              {loading ? 'Saving…' : mode === 'overwrite' ? 'Overwrite' : mode === 'version' ? 'Save Version' : 'Create & Save'}
             </button>
           </div>
         </form>

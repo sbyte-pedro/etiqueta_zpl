@@ -163,3 +163,33 @@ function toVersionDetail(r: typeof designVersionsTable.$inferSelect): VersionDet
     createdAt: toIso(r.createdAt),
   };
 }
+
+export async function updateVersion(
+  userId: number,
+  designId: number,
+  versionNumber: number,
+  payload: DesignPayload
+): Promise<VersionDetail | undefined> {
+  const db = getDb();
+  const design = await db.select({ id: designsTable.id }).from(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
+  if (!design.length) return undefined;
+
+  const rows = await db
+    .update(designVersionsTable)
+    .set({
+      zpl: payload.zpl,
+      elementsJson: JSON.stringify(payload.elements),
+      labelWidth: payload.labelWidth,
+      labelHeight: payload.labelHeight,
+    })
+    .where(and(
+      eq(designVersionsTable.designId, designId),
+      eq(designVersionsTable.versionNumber, versionNumber)
+    ))
+    .returning();
+
+  if (!rows.length) return undefined;
+  await db.update(designsTable).set({ updatedAt: new Date() }).where(eq(designsTable.id, designId));
+  return toVersionDetail(rows[0]);
+}

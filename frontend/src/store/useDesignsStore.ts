@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useDesignerStore } from './useDesignerStore';
 import {
   apiCreateDesign, apiListDesigns, apiDeleteDesign,
-  apiCreateVersion, apiListVersions, apiGetVersion,
+  apiCreateVersion, apiListVersions, apiGetVersion, apiUpdateVersion,
   DesignSummary, VersionSummary,
 } from '../utils/designsClient';
 import { DesignElement } from '../types';
@@ -11,6 +11,7 @@ interface DesignsStore {
   designs: DesignSummary[];
   activeDesignId: number | null;
   activeDesignName: string;
+  activeVersionNumber: number | null;
   versions: VersionSummary[];
   showSaveModal: boolean;
   showLoadModal: boolean;
@@ -19,6 +20,7 @@ interface DesignsStore {
   fetchDesigns(): Promise<void>;
   saveNewDesign(name: string): Promise<void>;
   saveVersion(): Promise<void>;
+  overwriteVersion(): Promise<void>;
   loadVersion(designId: number, versionNumber: number): Promise<void>;
   deleteDesign(id: number): Promise<void>;
   fetchVersions(designId: number): Promise<void>;
@@ -34,6 +36,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
   designs: [],
   activeDesignId: null,
   activeDesignName: '',
+  activeVersionNumber: null,
   versions: [],
   showSaveModal: false,
   showLoadModal: false,
@@ -51,7 +54,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
   async saveNewDesign(name: string) {
     const { elements, zplCode: zpl, labelWidth, labelHeight } = useDesignerStore.getState();
     const result = await apiCreateDesign(name, { zpl, elements: elements as object[], labelWidth, labelHeight });
-    set({ activeDesignId: result.designId, activeDesignName: name, showSaveModal: false });
+    set({ activeDesignId: result.designId, activeDesignName: name, activeVersionNumber: 1, showSaveModal: false });
     await get().fetchDesigns();
   },
 
@@ -59,18 +62,25 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     const { activeDesignId } = get();
     if (!activeDesignId) return;
     const { elements, zplCode: zpl, labelWidth, labelHeight } = useDesignerStore.getState();
-    await apiCreateVersion(activeDesignId, { zpl, elements: elements as object[], labelWidth, labelHeight });
+    const version = await apiCreateVersion(activeDesignId, { zpl, elements: elements as object[], labelWidth, labelHeight });
+    set({ activeVersionNumber: version.versionNumber });
     await get().fetchDesigns();
     await get().fetchVersions(activeDesignId);
   },
 
+  async overwriteVersion() {
+    const { activeDesignId, activeVersionNumber } = get();
+    if (!activeDesignId || activeVersionNumber === null) return;
+    const { elements, zplCode: zpl, labelWidth, labelHeight } = useDesignerStore.getState();
+    await apiUpdateVersion(activeDesignId, activeVersionNumber, {
+      zpl, elements: elements as object[], labelWidth, labelHeight,
+    });
+    await get().fetchDesigns();
+    set({ showSaveModal: false });
+  },
+
   async loadVersion(designId: number, versionNumber: number) {
     const version = await apiGetVersion(designId, versionNumber);
-    const designerStore = useDesignerStore.getState();
-    designerStore.setLabelSize(version.labelWidth, version.labelHeight);
-    // Replace elements directly
-    const store = useDesignerStore.getState() as { elements: DesignElement[] } & typeof designerStore;
-    // Use internal setter via direct zustand access
     useDesignerStore.setState({
       elements: version.elements as DesignElement[],
       zplCode: version.zpl,
@@ -79,12 +89,12 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
       selectedId: null,
     });
     const designName = get().designs.find(d => d.id === designId)?.name ?? '';
-    set({ activeDesignId: designId, activeDesignName: designName, showLoadModal: false });
+    set({ activeDesignId: designId, activeDesignName: designName, activeVersionNumber: versionNumber, showLoadModal: false });
   },
 
   async deleteDesign(id: number) {
     await apiDeleteDesign(id);
-    if (get().activeDesignId === id) set({ activeDesignId: null, activeDesignName: '', versions: [] });
+    if (get().activeDesignId === id) set({ activeDesignId: null, activeDesignName: '', activeVersionNumber: null, versions: [] });
     await get().fetchDesigns();
   },
 

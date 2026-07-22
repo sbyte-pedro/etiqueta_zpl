@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import {
   createDesign, listDesigns, getDesign, deleteDesign,
-  createVersion, listVersions, getVersion,
+  createVersion, listVersions, getVersion, updateVersion,
 } from '../designs/designsService';
 
 export const designsRouter = Router();
@@ -93,6 +93,23 @@ designsRouter.get('/:id/versions/:vn', async (req: Request, res: Response) => {
     const version = await getVersion(req.user!.userId, Number(req.params.id), Number(req.params.vn));
     if (!version) { res.status(404).json({ error: 'Version not found' }); return; }
     res.json(version);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+designsRouter.put('/:id/versions/:vn', async (req: Request, res: Response) => {
+  const parsed = VersionPayloadSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  try {
+    const result = await updateVersion(
+      req.user!.userId,
+      Number(req.params.id),
+      Number(req.params.vn),
+      parsed.data
+    );
+    if (!result) { res.status(404).json({ error: 'Version not found' }); return; }
+    res.json(result);
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
