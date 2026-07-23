@@ -176,6 +176,7 @@ export function Canvas() {
             backgroundSize: `${8 * zoom}px ${8 * zoom}px`,
             margin: '0 auto',
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            overflow: 'visible',
           }}
         >
           {elements.filter(el => el.type !== 'comment').map(el => (

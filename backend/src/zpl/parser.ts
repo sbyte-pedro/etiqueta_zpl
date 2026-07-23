@@ -200,6 +200,7 @@ export function parseZpl(zpl: string): ParseResult {
         const h = parseInt(p[1], 10) || 1;
         const t = parseInt(p[2], 10) || 1;
         const type = gbType(w, h, t);
+        const isFilled = t >= Math.min(w, h);
         elements.push({
           id: nextId(),
           type,
@@ -207,6 +208,7 @@ export function parseZpl(zpl: string): ParseResult {
           y: fieldY,
           width: w,
           height: h,
+          ...(isFilled ? { filled: true } : {}),
           ...(fieldReversed ? { reversed: true } : {}),
         });
         known.add(cmd);
@@ -251,7 +253,7 @@ export function parseZpl(zpl: string): ParseResult {
             type: 'text',
             x: fieldX,
             y: fieldY,
-            width: Math.max(200, (fontWidth || fontSize) * fieldData.length),
+            width: Math.max(200, Math.round(fontSize * 0.65 * fieldData.length)),
             height: fontSize + 10,
             value: fieldData,
             fontSize,

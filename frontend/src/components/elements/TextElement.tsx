@@ -9,12 +9,12 @@ export function TextElement({ element, scale }: Props) {
   return (
     <div
       style={{
-        width: element.width * scale,
+        minWidth: element.width * scale,
+        width: 'max-content',
         height: element.height * scale,
         fontSize: Math.max(8, fontSize),
         display: 'flex',
         alignItems: 'center',
-        overflow: 'hidden',
         whiteSpace: 'nowrap',
         userSelect: 'none',
         background: reversed ? 'black' : 'transparent',

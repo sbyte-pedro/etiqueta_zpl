@@ -17,7 +17,8 @@ function renderElement(el: Element): string {
       return `${fo}^BQN,2,${mag}^FDMA,${el.value ?? ''}^FS`;
     }
     case 'rect': {
-      return `${fo}^GB${el.width},${el.height},8^FS`;
+      const thickness = el.filled ? Math.min(el.width, el.height) : 8;
+      return `${fo}^GB${el.width},${el.height},${thickness}^FS`;
     }
     case 'line': {
       return `${fo}^GB${el.width},${el.height},3^FS`;
