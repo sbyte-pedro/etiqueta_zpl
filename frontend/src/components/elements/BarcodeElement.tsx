@@ -15,19 +15,29 @@ export function BarcodeElement({ element, scale }: Props) {
       JsBarcode(ref.current, element.value || '000000', {
         format: 'CODE128',
         width: 2,
-        height: containerHeight - 20,
+        height: containerHeight - 24,
         displayValue: true,
-        fontSize: Math.max(8, containerHeight * 0.08),
+        fontSize: Math.max(10, containerHeight * 0.08),
         margin: 0,
       });
+      // JsBarcode sets width/height attributes to its natural pixel size.
+      // Read those, set them as viewBox, remove the attributes so CSS controls size.
+      const w = parseFloat(ref.current.getAttribute('width') ?? '0');
+      const h = parseFloat(ref.current.getAttribute('height') ?? '0');
+      if (w > 0 && h > 0) {
+        ref.current.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        ref.current.setAttribute('preserveAspectRatio', 'none');
+        ref.current.removeAttribute('width');
+        ref.current.removeAttribute('height');
+      }
     } catch (e) {
-      // invalid barcode value — render blank
+      // invalid barcode value
     }
   }, [element.value, containerWidth, containerHeight]);
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight, overflow: 'hidden' }}>
-      <svg ref={ref} style={{ width: '100%', height: '100%' }} />
+    <div style={{ width: containerWidth, height: containerHeight }}>
+      <svg ref={ref} style={{ width: containerWidth, height: containerHeight }} />
     </div>
   );
 }
