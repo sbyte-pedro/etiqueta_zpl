@@ -7,24 +7,25 @@ export function RectElement({ element, scale }: Props) {
   const filled = element.filled ?? false;
   const reversed = element.reversed ?? false;
 
-  let background = 'transparent';
-  let border = '2px solid black';
-
-  if (filled && !reversed) {
-    background = 'black';
-    border = 'none';
-  } else if (filled && reversed) {
-    // ^FR inverts a filled rect: solid black becomes solid white
-    background = 'white';
-    border = 'none';
+  if (filled && reversed) {
+    // ^FR inverts: paint solid white over whatever was drawn below
+    return (
+      <div style={{
+        width: element.width * scale,
+        height: element.height * scale,
+        background: 'white',
+        border: 'none',
+        boxSizing: 'border-box',
+      }} />
+    );
   }
 
   return (
     <div style={{
       width: element.width * scale,
       height: element.height * scale,
-      background,
-      border,
+      background: filled ? 'black' : 'transparent',
+      border: filled ? 'none' : '2px solid black',
       boxSizing: 'border-box',
     }} />
   );
