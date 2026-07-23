@@ -8,7 +8,8 @@ export function RectElement({ element, scale }: Props) {
   const reversed = element.reversed ?? false;
 
   if (filled && reversed) {
-    // ^FR inverts: paint solid white over whatever was drawn below
+    // ^FR inverts dot-level: white diff white = white (no-op on white bg);
+    // white diff black = white (shows white on black). Simulate with difference blend.
     return (
       <div style={{
         width: element.width * scale,
@@ -16,6 +17,7 @@ export function RectElement({ element, scale }: Props) {
         background: 'white',
         border: 'none',
         boxSizing: 'border-box',
+        mixBlendMode: 'difference',
       }} />
     );
   }
