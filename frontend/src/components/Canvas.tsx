@@ -70,14 +70,19 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
   };
 
+  const mergedPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button === 0) { e.stopPropagation(); selectElement(element.id); }
+    listeners?.onPointerDown?.(e);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      onClick={e => { e.stopPropagation(); selectElement(element.id); }}
-      onKeyDown={e => { if (e.key === 'Delete' && isSelected) deleteElement(element.id); }}
       {...listeners}
       {...attributes}
+      onPointerDown={mergedPointerDown}
+      onKeyDown={e => { if (e.key === 'Delete' && isSelected) deleteElement(element.id); }}
     >
       <ElementRenderer element={element} scale={scale} />
       {isSelected && (
