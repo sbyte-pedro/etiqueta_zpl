@@ -193,7 +193,6 @@ export function Canvas() {
             pointerEvents: 'none',
           }} />
         </div>
-        </div>
       </div>
     </DndContext>
   );
