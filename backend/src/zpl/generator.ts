@@ -12,7 +12,9 @@ function renderElement(el: Element): string {
     case 'barcode128': {
       const value = el.value ?? '';
       const charCount = value.length || 8;
-      const moduleWidth = Math.max(1, Math.round(el.width / (11 * charCount)));
+      // Code128 total modules = 11*(chars+2 start/check) + 13 stop = 11*chars + 35
+      const totalModules = 11 * charCount + 35;
+      const moduleWidth = Math.max(1, Math.floor(el.width / totalModules));
       return `${fo}^BY${moduleWidth}^BCN,${el.height},Y,N,N^FD${value}^FS`;
     }
     case 'qrcode': {

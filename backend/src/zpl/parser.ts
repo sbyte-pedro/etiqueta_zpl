@@ -225,7 +225,7 @@ export function parseZpl(zpl: string): ParseResult {
               type: 'barcode128',
               x: fieldX,
               y: fieldY,
-              width: byModuleWidth * 11 * (fieldData.length || 8),
+              width: byModuleWidth * (11 * (fieldData.length || 8) + 35),
               height: pendingBarcode.height,
               value: fieldData,
               ...(fieldReversed ? { reversed: true } : {}),
