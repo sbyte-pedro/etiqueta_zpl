@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash \"C:/Users/I760901/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief\" \"docs/superpowers/plans/2026-07-22-deployment-railway-postgres.md\" 3)",
+      "Bash(bash \"C:/Users/I760901/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package\" \"d6803b0fc1f6e147416ae5e4728443846736ffb6\" HEAD)",
+      "Bash(cd /c/Pedro/projects/etiqueta_zpl/backend && npm run build 2>&1 | tail -20)",
+      "Read(//c/Pedro/projects/etiqueta_zpl/backend/**)",
+      "Bash(grep -A 5 \"export const usersTable\" /c/Pedro/projects/etiqueta_zpl/backend/src/db/schema.ts)",
+      "Read(//c/Pedro/projects/etiqueta_zpl/backend/src/db/**)"
+    ]
+  }
+}
