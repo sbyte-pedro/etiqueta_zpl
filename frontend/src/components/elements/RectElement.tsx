@@ -14,9 +14,9 @@ export function RectElement({ element, scale }: Props) {
     background = 'black';
     border = 'none';
   } else if (filled && reversed) {
-    // White shape on black background — approximate as white fill with heavy black border
+    // ^FR inverts a filled rect: solid black becomes solid white
     background = 'white';
-    border = '4px solid black';
+    border = 'none';
   }
 
   return (
