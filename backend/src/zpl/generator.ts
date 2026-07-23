@@ -10,7 +10,10 @@ function renderElement(el: Element): string {
       return `${fo}^A${fontName}N,${fontSize},${fontSize}^FD${el.value ?? ''}^FS`;
     }
     case 'barcode128': {
-      return `${fo}^BCN,${el.height},Y,N,N^FD${el.value ?? ''}^FS`;
+      const value = el.value ?? '';
+      const charCount = value.length || 8;
+      const moduleWidth = Math.max(1, Math.round(el.width / (11 * charCount)));
+      return `${fo}^BY${moduleWidth}^BCN,${el.height},Y,N,N^FD${value}^FS`;
     }
     case 'qrcode': {
       const mag = Math.max(1, Math.round(el.width / 80));
