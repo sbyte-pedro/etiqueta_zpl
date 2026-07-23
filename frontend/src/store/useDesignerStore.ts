@@ -44,6 +44,7 @@ interface DesignerStore {
   syncToCode(): Promise<void>;
   setPreviewUrl(url: string | null): void;
   fetchPreview(): Promise<void>;
+  closePreview(): void;
 }
 
 let syncTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -168,5 +169,11 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
         previewError: e instanceof Error ? e.message : 'Preview failed',
       });
     }
+  },
+
+  closePreview() {
+    const { previewUrl } = get();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    set({ previewUrl: null, previewError: '' });
   },
 }));
