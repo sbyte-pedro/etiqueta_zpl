@@ -265,7 +265,18 @@ export function parseZpl(zpl: string): ParseResult {
       }
 
       // ── Silently known (no canvas representation needed) ─────────────────
-      case 'FX':   // comment
+      case 'FX':   // comment — preserved as a comment element
+        elements.push({
+          id: nextId(),
+          type: 'comment',
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          value: tail,
+        });
+        known.add(cmd);
+        break;
       case 'CI':   // encoding
       case 'LH':   // label home
       case 'FN':   // field number

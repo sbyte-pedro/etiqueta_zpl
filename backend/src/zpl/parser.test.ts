@@ -121,11 +121,36 @@ test('parses ^FR as reversed on a text element', () => {
   expect(result.elements[0].reversed).toBe(true);
 });
 
-test('ignores ^FX comment lines', () => {
+test('preserves ^FX comment lines as comment elements', () => {
   const zpl = '^XA\n^PW400\n^LL400\n^FX This is a comment\n^XZ';
   const result = parseZpl(zpl);
-  expect(result.elements).toHaveLength(0);
+  expect(result.elements).toHaveLength(1);
+  expect(result.elements[0].type).toBe('comment');
   expect(result.labelWidth).toBe(400);
+});
+
+test('parses ^FX as a comment element', () => {
+  const zpl = '^XA\n^PW800\n^LL600\n^FX Top section with logo\n^XZ';
+  const result = parseZpl(zpl);
+  expect(result.elements).toHaveLength(1);
+  expect(result.elements[0].type).toBe('comment');
+  expect(result.elements[0].value).toBe('Top section with logo');
+});
+
+test('generator emits ^FX for comment elements', () => {
+  const zpl = generateZpl({
+    labelWidth: 800, labelHeight: 600,
+    elements: [{ id: 'c1', type: 'comment', x: 0, y: 0, width: 0, height: 0, value: 'My comment' }],
+  });
+  expect(zpl).toContain('^FX My comment');
+});
+
+test('round-trip preserves ^FX comments in position', () => {
+  const original = '^XA\n^PW800\n^LL600\n^FX Top section\n^CF0,30\n^FO50,50^FDHello^FS\n^XZ';
+  const parsed = parseZpl(original);
+  const regenerated = generateZpl({ labelWidth: 800, labelHeight: 600, elements: parsed.elements });
+  expect(regenerated).toContain('^FX Top section');
+  expect(regenerated).toContain('^FDHello^FS');
 });
 
 test('parses the full labelary sample label', () => {

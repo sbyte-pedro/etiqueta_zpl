@@ -20,6 +20,7 @@ function ElementRenderer({ element, scale }: { element: DesignElement; scale: nu
     case 'rect': return <RectElement element={element} scale={scale} />;
     case 'line': return <LineElement element={element} scale={scale} />;
     case 'image-placeholder': return <ImagePlaceholder element={element} scale={scale} />;
+    case 'comment': return null;
   }
 }
 
@@ -172,7 +173,7 @@ export function Canvas() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           }}
         >
-          {elements.map(el => (
+          {elements.filter(el => el.type !== 'comment').map(el => (
             <DraggableElement key={el.id} element={el} scale={zoom} />
           ))}
         </div>
