@@ -172,15 +172,26 @@ export function Canvas() {
             width: canvasWidth,
             height: canvasHeight,
             background: 'white',
-            backgroundImage: 'radial-gradient(circle, #ccc 1px, transparent 1px)',
-            backgroundSize: `${8 * zoom}px ${8 * zoom}px`,
             margin: '0 auto',
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            overflow: 'visible',
           }}
         >
-          {elements.filter(el => el.type !== 'comment').map(el => (
-            <DraggableElement key={el.id} element={el} scale={zoom} />
-          ))}
+          {/* Elements layer — isolated so mix-blend-mode only interacts within */}
+          <div style={{ position: 'absolute', inset: 0, isolation: 'isolate' }}>
+            {elements.filter(el => el.type !== 'comment').map(el => (
+              <DraggableElement key={el.id} element={el} scale={zoom} />
+            ))}
+          </div>
+          {/* Dot grid rendered after elements via multiply — visible on white, invisible on black */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'radial-gradient(circle, #aaa 1px, transparent 1px)',
+            backgroundSize: `${8 * zoom}px ${8 * zoom}px`,
+            mixBlendMode: 'multiply',
+            pointerEvents: 'none',
+          }} />
         </div>
       </div>
     </DndContext>

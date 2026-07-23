@@ -10,14 +10,20 @@ function renderElement(el: Element): string {
       return `${fo}^A${fontName}N,${fontSize},${fontSize}^FD${el.value ?? ''}^FS`;
     }
     case 'barcode128': {
-      return `${fo}^BCN,${el.height},Y,N,N^FD${el.value ?? ''}^FS`;
+      const value = el.value ?? '';
+      const charCount = value.length || 8;
+      // Code128 total modules = 11*(chars+2 start/check) + 13 stop = 11*chars + 35
+      const totalModules = 11 * charCount + 35;
+      const moduleWidth = Math.max(1, Math.floor(el.width / totalModules));
+      return `${fo}^BY${moduleWidth}^BCN,${el.height},Y,N,N^FD${value}^FS`;
     }
     case 'qrcode': {
-      const mag = Math.max(1, Math.round(el.width / 40));
+      const mag = Math.max(1, Math.round(el.width / 80));
       return `${fo}^BQN,2,${mag}^FDMA,${el.value ?? ''}^FS`;
     }
     case 'rect': {
-      return `${fo}^GB${el.width},${el.height},8^FS`;
+      const thickness = el.filled ? Math.min(el.width, el.height) : 8;
+      return `${fo}^GB${el.width},${el.height},${thickness}^FS`;
     }
     case 'line': {
       return `${fo}^GB${el.width},${el.height},3^FS`;

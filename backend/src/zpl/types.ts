@@ -11,6 +11,7 @@ export interface Element {
   fontSize?: number;
   fontName?: string;
   reversed?: boolean;
+  filled?: boolean;
 }
 
 export interface LabelDimensions {

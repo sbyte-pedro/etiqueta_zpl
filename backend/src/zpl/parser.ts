@@ -200,6 +200,7 @@ export function parseZpl(zpl: string): ParseResult {
         const h = parseInt(p[1], 10) || 1;
         const t = parseInt(p[2], 10) || 1;
         const type = gbType(w, h, t);
+        const isFilled = t >= Math.min(w, h);
         elements.push({
           id: nextId(),
           type,
@@ -207,6 +208,7 @@ export function parseZpl(zpl: string): ParseResult {
           y: fieldY,
           width: w,
           height: h,
+          ...(isFilled ? { filled: true } : {}),
           ...(fieldReversed ? { reversed: true } : {}),
         });
         known.add(cmd);
@@ -223,13 +225,16 @@ export function parseZpl(zpl: string): ParseResult {
               type: 'barcode128',
               x: fieldX,
               y: fieldY,
-              width: byModuleWidth * 11 * (fieldData.length || 8),
+              width: byModuleWidth * (11 * (fieldData.length || 8) + 35),
               height: pendingBarcode.height,
               value: fieldData,
               ...(fieldReversed ? { reversed: true } : {}),
             });
           } else {
-            const size = pendingBarcode.mag * 40;
+            // QR size: mag * modules-per-side * dots-per-module
+            // A typical QR version 1 is 21 modules; use mag * 21 * mag ≈ mag*mag*21
+            // Simpler reliable estimate: mag * 80 dots (matches real label output well)
+            const size = pendingBarcode.mag * 80;
             elements.push({
               id: nextId(),
               type: 'qrcode',
@@ -251,7 +256,7 @@ export function parseZpl(zpl: string): ParseResult {
             type: 'text',
             x: fieldX,
             y: fieldY,
-            width: Math.max(200, (fontWidth || fontSize) * fieldData.length),
+            width: Math.max(200, Math.round(fontSize * 0.65 * fieldData.length)),
             height: fontSize + 10,
             value: fieldData,
             fontSize,
