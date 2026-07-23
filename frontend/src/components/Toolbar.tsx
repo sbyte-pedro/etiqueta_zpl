@@ -13,7 +13,7 @@ interface Props {
 export function Toolbar({ onNavigateToMyDesigns }: Props) {
   const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading } = useDesignerStore();
   const { logout } = useAuthStore();
-  const { openSaveModal, openLoadModal, activeDesignName } = useDesignsStore();
+  const { openSaveModal, activeDesignName } = useDesignsStore();
 
   return (
     <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-4">
@@ -49,13 +49,6 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           title="Save design"
         >
           Save
-        </button>
-        <button
-          onClick={openLoadModal}
-          className="text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-          title="Load design"
-        >
-          Load
         </button>
         <button
           onClick={() => fetchPreview()}

@@ -6,7 +6,6 @@ import { PropertiesPanel } from './components/PropertiesPanel';
 import { TabSwitcher } from './components/TabSwitcher';
 import { CodeEditor } from './components/CodeEditor';
 import { SaveDesignModal } from './components/SaveDesignModal';
-import { LoadDesignModal } from './components/LoadDesignModal';
 import { PreviewPanel } from './components/PreviewPanel';
 import { useDesignerStore } from './store/useDesignerStore';
 import { useAuthStore } from './store/useAuthStore';
@@ -19,7 +18,7 @@ type View = 'designer' | 'my-designs';
 export default function App() {
   const { activeTab } = useDesignerStore();
   const { token } = useAuthStore();
-  const { showSaveModal, showLoadModal } = useDesignsStore();
+  const { showSaveModal } = useDesignsStore();
   const [currentView, setCurrentView] = useState<View>('designer');
 
   if (!token) return <LoginPage />;
@@ -44,7 +43,6 @@ export default function App() {
         <PropertiesPanel />
       </div>
       {showSaveModal && <SaveDesignModal />}
-      {showLoadModal && <LoadDesignModal />}
     </div>
   );
 }
