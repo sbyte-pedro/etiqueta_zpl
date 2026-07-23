@@ -77,7 +77,7 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
       </div>
       <button
         onClick={logout}
-        className="ml-1 text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+        className="ml-1 text-xs px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
       >
         Logout
       </button>

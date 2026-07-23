@@ -31,7 +31,7 @@ export default function App() {
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
       <Toolbar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+        <Sidebar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
         <div className="flex flex-col flex-1 overflow-hidden">
           <TabSwitcher />
           <div className="flex-1 overflow-hidden">
