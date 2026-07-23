@@ -49,6 +49,10 @@ export async function previewZpl(zpl: string, labelWidth: number, labelHeight: n
     headers: authHeaders(),
     body: JSON.stringify({ zpl, labelWidth, labelHeight }),
   });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Preview failed' }));
+    throw new Error(err.error ?? `Preview failed (${res.status})`);
+  }
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }

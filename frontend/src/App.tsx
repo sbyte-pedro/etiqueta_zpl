@@ -7,6 +7,7 @@ import { TabSwitcher } from './components/TabSwitcher';
 import { CodeEditor } from './components/CodeEditor';
 import { SaveDesignModal } from './components/SaveDesignModal';
 import { LoadDesignModal } from './components/LoadDesignModal';
+import { PreviewPanel } from './components/PreviewPanel';
 import { useDesignerStore } from './store/useDesignerStore';
 import { useAuthStore } from './store/useAuthStore';
 import { useDesignsStore } from './store/useDesignsStore';
@@ -35,7 +36,9 @@ export default function App() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <TabSwitcher />
           <div className="flex-1 overflow-hidden">
-            {activeTab === 'design' ? <Canvas /> : <CodeEditor />}
+            {activeTab === 'design'
+              ? <div className="flex flex-col h-full overflow-auto"><Canvas /><PreviewPanel /></div>
+              : <CodeEditor />}
           </div>
         </div>
         <PropertiesPanel />

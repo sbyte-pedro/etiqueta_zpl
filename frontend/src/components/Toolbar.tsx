@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function Toolbar({ onNavigateToMyDesigns }: Props) {
-  const { labelWidth, labelHeight, setLabelSize } = useDesignerStore();
+  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, openLoadModal, activeDesignName } = useDesignsStore();
 
@@ -56,6 +56,14 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           title="Load design"
         >
           Load
+        </button>
+        <button
+          onClick={() => fetchPreview()}
+          disabled={previewLoading}
+          className="text-xs px-3 py-1 rounded border border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
+          title="Render label preview via Labelary"
+        >
+          {previewLoading ? 'Loading…' : 'Preview'}
         </button>
         <button
           onClick={onNavigateToMyDesigns}
