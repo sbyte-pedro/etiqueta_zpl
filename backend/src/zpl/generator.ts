@@ -25,6 +25,9 @@ function renderElement(el: Element): string {
     case 'image-placeholder': {
       return `${fo}^GB${el.width},${el.height},3,B,5^FS`;
     }
+    case 'comment': {
+      return `^FX ${el.value ?? ''}`;
+    }
     default: {
       const _exhaustive: never = el.type;
       return '';

@@ -1,164 +1,294 @@
 import { Element, ParseResult } from './types';
 
 let counter = 0;
-
 function nextId(): string {
   counter += 1;
   return `parsed-${counter}`;
 }
 
+// Split ZPL into command tokens. Each token starts with ^ or ~ and runs
+// until the next ^ / ~ or end-of-string.
+function tokenize(zpl: string): string[] {
+  const tokens: string[] = [];
+  const raw = zpl.replace(/\r\n|\r/g, '\n');
+  // Split on ^ or ~ keeping the delimiter
+  const parts = raw.split(/(?=\^|~)/);
+  for (const p of parts) {
+    const t = p.trim();
+    if (t.startsWith('^') || t.startsWith('~')) tokens.push(t);
+  }
+  return tokens;
+}
+
+// Parse a comma-separated parameter list from the tail of a command token.
+// e.g. "BCN,100,Y,N,N" → ["N","100","Y","N","N"]
+function params(tail: string): string[] {
+  return tail.split(',');
+}
+
+// Determine whether a ^GB is a line, rect, or solid-filled rect.
+// Priority order:
+//   1. w==t AND h==t         → filled solid rect (e.g. ^GB100,100,100)
+//   2. w==t OR  h==t         → line (one thin dimension, e.g. ^GB700,3,3)
+//   3. t >= min(w, h)        → filled rect (nearly solid)
+//   4. otherwise             → rect (border)
+function gbType(w: number, h: number, t: number): 'rect' | 'line' {
+  if (w === t && h === t) return 'rect';
+  if (w === t || h === t) return 'line';
+  if (t >= Math.min(w, h)) return 'rect';
+  return 'rect';
+}
+
 export function parseZpl(zpl: string): ParseResult {
-  // Reset counter for each call
   counter = 0;
 
   let labelWidth = 0;
   let labelHeight = 0;
   const elements: Element[] = [];
   const unknownCommands: string[] = [];
-  const matched = new Set<string>();
 
-  // 1. Label width
-  const pwRegex = /\^PW(\d+)/g;
-  let m: RegExpExecArray | null;
-  while ((m = pwRegex.exec(zpl)) !== null) {
-    labelWidth = parseInt(m[1], 10);
-    matched.add(m[0]);
+  // Stateful defaults that persist across fields (reset per label)
+  let defaultFontName = '0';
+  let defaultFontHeight = 30;
+  let defaultFontWidth = 0;   // 0 = proportional
+
+  // ^BY defaults for barcodes
+  let byModuleWidth = 2;
+  let byHeight = 10;
+
+  // Field-level state — reset after every ^FS
+  let fieldX = 0;
+  let fieldY = 0;
+  let fieldReversed = false;
+  let fieldFontName = '';
+  let fieldFontHeight = 0;
+  let fieldFontWidth = 0;
+  let fieldData = '';
+  let fieldHasFont = false;
+  // Pending barcode command (set between ^FO and ^FD)
+  type PendingBarcode = { kind: 'bc128'; orientation: string; height: number; printLine: boolean } |
+                        { kind: 'bqr';   orientation: string; model: number; mag: number };
+  let pendingBarcode: PendingBarcode | null = null;
+
+  function resetField() {
+    fieldReversed = false;
+    fieldFontName = '';
+    fieldFontHeight = 0;
+    fieldFontWidth = 0;
+    fieldData = '';
+    fieldHasFont = false;
+    pendingBarcode = null;
   }
 
-  // 2. Label height
-  const llRegex = /\^LL(\d+)/g;
-  while ((m = llRegex.exec(zpl)) !== null) {
-    labelHeight = parseInt(m[1], 10);
-    matched.add(m[0]);
-  }
+  const tokens = tokenize(zpl);
+  const known = new Set<string>();
 
-  // 3. Text: ^FO(\d+),(\d+)^A(\w)N,(\d+),\d+^FD([^^]*)^FS
-  const textRegex = /\^FO(\d+),(\d+)\^A(\w)N,(\d+),\d+\^FD([^^]*)\^FS/g;
-  while ((m = textRegex.exec(zpl)) !== null) {
-    const x = parseInt(m[1], 10);
-    const y = parseInt(m[2], 10);
-    const fontName = m[3];
-    const fontSize = parseInt(m[4], 10);
-    const value = m[5];
-    elements.push({
-      id: nextId(),
-      type: 'text',
-      x,
-      y,
-      width: 200,
-      height: fontSize + 10,
-      value,
-      fontSize,
-      fontName,
-    });
-    matched.add(m[0]);
-  }
+  for (const token of tokens) {
+    // Extract command name (letters after ^) and the rest
+    // ZPL commands are 1–2 uppercase letters; stop there so data (e.g. "Hello", "N,100") stays in tail
+    const cmdMatch = token.match(/^\^([A-Z]{1,2})([\s\S]*)/);
+    if (!cmdMatch) continue;
+    const cmd = cmdMatch[1];
+    const tail = cmdMatch[2].replace(/^\s*,?/, '');  // strip leading comma/space
 
-  // 4. Barcode128: ^FO(\d+),(\d+)^BCN,(\d+),Y,N,N^FD([^^]*)^FS
-  const barcodeRegex = /\^FO(\d+),(\d+)\^BCN,(\d+),Y,N,N\^FD([^^]*)\^FS/g;
-  while ((m = barcodeRegex.exec(zpl)) !== null) {
-    const x = parseInt(m[1], 10);
-    const y = parseInt(m[2], 10);
-    const height = parseInt(m[3], 10);
-    const value = m[4];
-    elements.push({
-      id: nextId(),
-      type: 'barcode128',
-      x,
-      y,
-      width: 300,
-      height,
-      value,
-    });
-    matched.add(m[0]);
-  }
+    switch (cmd) {
+      // ── Structural ──────────────────────────────────────────────────────────
+      case 'XA':
+      case 'XZ':
+        known.add(cmd);
+        break;
 
-  // 5. QRCode: ^FO(\d+),(\d+)^BQN,\d+,(\d+)^FDMA,([^^]*)^FS
-  const qrRegex = /\^FO(\d+),(\d+)\^BQN,\d+,(\d+)\^FDMA,([^^]*)\^FS/g;
-  while ((m = qrRegex.exec(zpl)) !== null) {
-    const x = parseInt(m[1], 10);
-    const y = parseInt(m[2], 10);
-    const mag = parseInt(m[3], 10);
-    const value = m[4];
-    elements.push({
-      id: nextId(),
-      type: 'qrcode',
-      x,
-      y,
-      width: mag * 40,
-      height: mag * 40,
-      value,
-    });
-    matched.add(m[0]);
-  }
+      // ── Label dimensions ────────────────────────────────────────────────────
+      case 'PW':
+        labelWidth = parseInt(tail, 10) || labelWidth;
+        known.add(cmd);
+        break;
 
-  // 6. Image placeholder (BEFORE rect — more specific suffix ,3,B,5):
-  // ^FO(\d+),(\d+)^GB(\d+),(\d+),3,B,5^FS
-  const imgRegex = /\^FO(\d+),(\d+)\^GB(\d+),(\d+),3,B,5\^FS/g;
-  while ((m = imgRegex.exec(zpl)) !== null) {
-    const x = parseInt(m[1], 10);
-    const y = parseInt(m[2], 10);
-    const width = parseInt(m[3], 10);
-    const height = parseInt(m[4], 10);
-    elements.push({
-      id: nextId(),
-      type: 'image-placeholder',
-      x,
-      y,
-      width,
-      height,
-    });
-    matched.add(m[0]);
-  }
+      case 'LL': {
+        const p = params(tail);
+        labelHeight = parseInt(p[0], 10) || labelHeight;
+        known.add(cmd);
+        break;
+      }
 
-  // 7. Rect: ^FO(\d+),(\d+)^GB(\d+),(\d+),8^FS
-  const rectRegex = /\^FO(\d+),(\d+)\^GB(\d+),(\d+),8\^FS/g;
-  while ((m = rectRegex.exec(zpl)) !== null) {
-    const x = parseInt(m[1], 10);
-    const y = parseInt(m[2], 10);
-    const width = parseInt(m[3], 10);
-    const height = parseInt(m[4], 10);
-    elements.push({
-      id: nextId(),
-      type: 'rect',
-      x,
-      y,
-      width,
-      height,
-    });
-    matched.add(m[0]);
-  }
+      // ── Default font (^CF fontName, height, width) ───────────────────────
+      case 'CF': {
+        const p = params(tail);
+        if (p[0] !== undefined && p[0] !== '') defaultFontName = p[0];
+        if (p[1] !== undefined && p[1] !== '') defaultFontHeight = parseInt(p[1], 10) || defaultFontHeight;
+        if (p[2] !== undefined && p[2] !== '') defaultFontWidth = parseInt(p[2], 10) || 0;
+        known.add(cmd);
+        break;
+      }
 
-  // 8. Line: ^FO(\d+),(\d+)^GB(\d+),(\d+),3^FS
-  const lineRegex = /\^FO(\d+),(\d+)\^GB(\d+),(\d+),3\^FS/g;
-  while ((m = lineRegex.exec(zpl)) !== null) {
-    const x = parseInt(m[1], 10);
-    const y = parseInt(m[2], 10);
-    const width = parseInt(m[3], 10);
-    const height = parseInt(m[4], 10);
-    elements.push({
-      id: nextId(),
-      type: 'line',
-      x,
-      y,
-      width,
-      height,
-    });
-    matched.add(m[0]);
-  }
+      // ── Field origin (^FO x, y, alignment) ──────────────────────────────
+      case 'FO': {
+        const p = params(tail);
+        fieldX = parseInt(p[0], 10) || 0;
+        fieldY = parseInt(p[1], 10) || 0;
+        known.add(cmd);
+        break;
+      }
 
-  // 8. Collect unknown ^CMD patterns not already matched
-  // Match any ^[A-Z][^\^]* token
-  const cmdRegex = /\^[A-Z][^\^]*/g;
-  while ((m = cmdRegex.exec(zpl)) !== null) {
-    const token = m[0];
-    // Skip structural commands and already-matched tokens
-    if (token === '^XA' || token === '^XZ') continue;
-    if (matched.has(token)) continue;
-    // Check if this token was part of a matched longer string
-    const alreadyMatched = [...matched].some((s) => s.includes(token));
-    if (alreadyMatched) continue;
-    unknownCommands.push(token);
+      // ── Field reverse print ──────────────────────────────────────────────
+      case 'FR':
+        fieldReversed = true;
+        known.add(cmd);
+        break;
+
+      // ── Field font (^A fontName, height, width) ──────────────────────────
+      case 'A': {
+        // Tail may look like "0N,60,60" or "A,30" etc.
+        // First char(s) before comma are fontName+orientation, rest are height, width
+        const p = params(tail);
+        // fontName is everything before digits in first param, orientation is last char
+        const fontRaw = p[0] ?? '';
+        // Strip trailing orientation letter (N/R/I/B) if present
+        const fontName = fontRaw.replace(/[NRIB]$/, '') || defaultFontName;
+        fieldFontName = fontName;
+        fieldFontHeight = parseInt(p[1], 10) || defaultFontHeight;
+        fieldFontWidth = parseInt(p[2], 10) || defaultFontWidth;
+        fieldHasFont = true;
+        known.add(cmd);
+        break;
+      }
+
+      // ── Barcode defaults (^BY moduleWidth, widthRatio, height) ──────────
+      case 'BY': {
+        const p = params(tail);
+        byModuleWidth = parseInt(p[0], 10) || byModuleWidth;
+        // p[1] is widthRatio — not used for canvas sizing
+        if (p[2] !== undefined && p[2] !== '') byHeight = parseInt(p[2], 10) || byHeight;
+        known.add(cmd);
+        break;
+      }
+
+      // ── Code 128 barcode (^BC orientation, height, line, lineAbove, checkDigit, mode) ─
+      case 'BC': {
+        const p = params(tail);
+        const orientation = p[0] ?? 'N';
+        // height defaults to ^BY height if omitted
+        const height = (p[1] !== undefined && p[1] !== '') ? parseInt(p[1], 10) : byHeight;
+        const printLine = (p[2] ?? 'Y').toUpperCase() !== 'N';
+        pendingBarcode = { kind: 'bc128', orientation, height, printLine };
+        known.add(cmd);
+        break;
+      }
+
+      // ── QR code (^BQ orientation, model, magnification, ...) ───────────
+      case 'BQ': {
+        const p = params(tail);
+        const orientation = p[0] ?? 'N';
+        const model = parseInt(p[1], 10) || 2;
+        const mag = parseInt(p[2], 10) || 2;
+        pendingBarcode = { kind: 'bqr', orientation, model, mag };
+        known.add(cmd);
+        break;
+      }
+
+      // ── Field data (^FD data) ────────────────────────────────────────────
+      case 'FD':
+        // For QR, data looks like "MA,https://..." — strip the "MA," prefix
+        fieldData = tail.startsWith('MA,') ? tail.slice(3) : tail;
+        known.add(cmd);
+        break;
+
+      // ── Graphic box (^GB width, height, thickness, color, rounding) ─────
+      case 'GB': {
+        const p = params(tail);
+        const w = parseInt(p[0], 10) || 1;
+        const h = parseInt(p[1], 10) || 1;
+        const t = parseInt(p[2], 10) || 1;
+        const type = gbType(w, h, t);
+        elements.push({
+          id: nextId(),
+          type,
+          x: fieldX,
+          y: fieldY,
+          width: w,
+          height: h,
+          ...(fieldReversed ? { reversed: true } : {}),
+        });
+        known.add(cmd);
+        resetField();
+        break;
+      }
+
+      // ── Field separator — emit the pending text or barcode element ───────
+      case 'FS': {
+        if (pendingBarcode) {
+          if (pendingBarcode.kind === 'bc128') {
+            elements.push({
+              id: nextId(),
+              type: 'barcode128',
+              x: fieldX,
+              y: fieldY,
+              width: byModuleWidth * 11 * (fieldData.length || 8),
+              height: pendingBarcode.height,
+              value: fieldData,
+              ...(fieldReversed ? { reversed: true } : {}),
+            });
+          } else {
+            const size = pendingBarcode.mag * 40;
+            elements.push({
+              id: nextId(),
+              type: 'qrcode',
+              x: fieldX,
+              y: fieldY,
+              width: size,
+              height: size,
+              value: fieldData,
+              ...(fieldReversed ? { reversed: true } : {}),
+            });
+          }
+        } else if (fieldData !== '') {
+          // Text element — use field font if set, else default font
+          const fontName = fieldHasFont ? fieldFontName : defaultFontName;
+          const fontSize = fieldHasFont ? fieldFontHeight : defaultFontHeight;
+          const fontWidth = fieldHasFont ? fieldFontWidth : defaultFontWidth;
+          elements.push({
+            id: nextId(),
+            type: 'text',
+            x: fieldX,
+            y: fieldY,
+            width: Math.max(200, (fontWidth || fontSize) * fieldData.length),
+            height: fontSize + 10,
+            value: fieldData,
+            fontSize,
+            fontName,
+            ...(fieldReversed ? { reversed: true } : {}),
+          });
+        }
+        known.add(cmd);
+        resetField();
+        break;
+      }
+
+      // ── Silently known (no canvas representation needed) ─────────────────
+      case 'FX':   // comment — preserved as a comment element
+        elements.push({
+          id: nextId(),
+          type: 'comment',
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          value: tail,
+        });
+        known.add(cmd);
+        break;
+      case 'CI':   // encoding
+      case 'LH':   // label home
+      case 'FN':   // field number
+      case 'SN':   // serialized data
+      case 'FP':   // field parameter
+        known.add(cmd);
+        break;
+
+      default:
+        unknownCommands.push(token);
+        break;
+    }
   }
 
   return { labelWidth, labelHeight, elements, unknownCommands };

@@ -20,6 +20,7 @@ function ElementRenderer({ element, scale }: { element: DesignElement; scale: nu
     case 'rect': return <RectElement element={element} scale={scale} />;
     case 'line': return <LineElement element={element} scale={scale} />;
     case 'image-placeholder': return <ImagePlaceholder element={element} scale={scale} />;
+    case 'comment': return null;
   }
 }
 
@@ -69,14 +70,19 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
   };
 
+  const mergedPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button === 0) { e.stopPropagation(); selectElement(element.id); }
+    listeners?.onPointerDown?.(e);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      onClick={e => { e.stopPropagation(); selectElement(element.id); }}
-      onKeyDown={e => { if (e.key === 'Delete' && isSelected) deleteElement(element.id); }}
       {...listeners}
       {...attributes}
+      onPointerDown={mergedPointerDown}
+      onKeyDown={e => { if (e.key === 'Delete' && isSelected) deleteElement(element.id); }}
     >
       <ElementRenderer element={element} scale={scale} />
       {isSelected && (
@@ -172,7 +178,7 @@ export function Canvas() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           }}
         >
-          {elements.map(el => (
+          {elements.filter(el => el.type !== 'comment').map(el => (
             <DraggableElement key={el.id} element={el} scale={zoom} />
           ))}
         </div>

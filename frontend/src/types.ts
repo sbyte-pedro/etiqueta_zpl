@@ -1,4 +1,4 @@
-export type ElementType = 'text' | 'barcode128' | 'qrcode' | 'rect' | 'line' | 'image-placeholder';
+export type ElementType = 'text' | 'barcode128' | 'qrcode' | 'rect' | 'line' | 'image-placeholder' | 'comment';
 
 export interface DesignElement {
   id: string;
@@ -10,4 +10,5 @@ export interface DesignElement {
   value?: string;
   fontSize?: number;
   fontName?: string;
+  reversed?: boolean;
 }

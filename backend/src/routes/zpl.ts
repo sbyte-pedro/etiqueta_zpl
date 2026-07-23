@@ -7,7 +7,7 @@ export const zplRouter = Router();
 
 const ElementSchema = z.object({
   id: z.string(),
-  type: z.enum(['text', 'barcode128', 'qrcode', 'rect', 'line', 'image-placeholder']),
+  type: z.enum(['text', 'barcode128', 'qrcode', 'rect', 'line', 'image-placeholder', 'comment']),
   x: z.number(),
   y: z.number(),
   width: z.number(),
@@ -15,6 +15,7 @@ const ElementSchema = z.object({
   value: z.string().optional(),
   fontSize: z.number().optional(),
   fontName: z.string().optional(),
+  reversed: z.boolean().optional(),
 });
 
 const GenerateSchema = z.object({
