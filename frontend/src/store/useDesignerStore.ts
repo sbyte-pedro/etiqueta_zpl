@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { DesignElement, ElementType } from '../types';
-import { generateZpl, parseZpl } from '../utils/zplClient';
+import { generateZpl, parseZpl, previewZpl } from '../utils/zplClient';
 
 let idCounter = 0;
 const nextId = () => `el-${Date.now()}-${++idCounter}`;
@@ -30,6 +30,8 @@ interface DesignerStore {
   zplCode: string;
   zplError: string;       // non-empty = parse error to show in editor
   previewUrl: string | null;
+  previewLoading: boolean;
+  previewError: string;
   zoom: number;
   setLabelSize(width: number, height: number): void;
   addElement(type: ElementType, x?: number, y?: number): void;
@@ -38,11 +40,11 @@ interface DesignerStore {
   selectElement(id: string | null): void;
   setActiveTab(tab: 'design' | 'code'): void;
   setZoom(zoom: number): void;
-  // Called by the code editor on every keystroke
   onCodeChange(code: string): void;
-  // Called by canvas mutations — generates ZPL without triggering a re-parse
   syncToCode(): Promise<void>;
   setPreviewUrl(url: string | null): void;
+  fetchPreview(): Promise<void>;
+  closePreview(): void;
 }
 
 let syncTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -62,6 +64,8 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
   zplCode: '^XA\n^PW800\n^LL1200\n^XZ',
   zplError: '',
   previewUrl: null,
+  previewLoading: false,
+  previewError: '',
   zoom: 2,
 
   setLabelSize(width, height) {
@@ -150,5 +154,26 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
 
   setPreviewUrl(url) {
     set({ previewUrl: url });
+  },
+
+  async fetchPreview() {
+    const { zplCode, labelWidth, labelHeight, previewUrl } = get();
+    set({ previewLoading: true, previewError: '' });
+    try {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const url = await previewZpl(zplCode, labelWidth, labelHeight);
+      set({ previewUrl: url, previewLoading: false });
+    } catch (e) {
+      set({
+        previewLoading: false,
+        previewError: e instanceof Error ? e.message : 'Preview failed',
+      });
+    }
+  },
+
+  closePreview() {
+    const { previewUrl } = get();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    set({ previewUrl: null, previewError: '' });
   },
 }));

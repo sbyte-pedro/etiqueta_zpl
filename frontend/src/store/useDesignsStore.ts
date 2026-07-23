@@ -14,7 +14,6 @@ interface DesignsStore {
   activeVersionNumber: number | null;
   versions: VersionSummary[];
   showSaveModal: boolean;
-  showLoadModal: boolean;
   error: string;
 
   fetchDesigns(): Promise<void>;
@@ -27,8 +26,6 @@ interface DesignsStore {
 
   openSaveModal(): void;
   closeSaveModal(): void;
-  openLoadModal(): void;
-  closeLoadModal(): void;
   setError(msg: string): void;
 }
 
@@ -39,7 +36,6 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
   activeVersionNumber: null,
   versions: [],
   showSaveModal: false,
-  showLoadModal: false,
   error: '',
 
   async fetchDesigns() {
@@ -89,7 +85,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
       selectedId: null,
     });
     const designName = get().designs.find(d => d.id === designId)?.name ?? '';
-    set({ activeDesignId: designId, activeDesignName: designName, activeVersionNumber: versionNumber, showLoadModal: false });
+    set({ activeDesignId: designId, activeDesignName: designName, activeVersionNumber: versionNumber });
   },
 
   async deleteDesign(id: number) {
@@ -105,10 +101,5 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
 
   openSaveModal() { set({ showSaveModal: true, error: '' }); },
   closeSaveModal() { set({ showSaveModal: false, error: '' }); },
-  openLoadModal() {
-    set({ showLoadModal: true, error: '' });
-    get().fetchDesigns();
-  },
-  closeLoadModal() { set({ showLoadModal: false, versions: [] }); },
   setError(msg: string) { set({ error: msg }); },
 }));

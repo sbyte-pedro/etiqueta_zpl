@@ -57,15 +57,15 @@ zplRouter.post('/preview', async (req: Request, res: Response) => {
     return;
   }
   const { zpl, labelWidth, labelHeight } = parsed.data;
-  // Convert dots to inches for Labelary (203 dpi)
-  const wIn = (labelWidth / 203).toFixed(2);
-  const hIn = (labelHeight / 203).toFixed(2);
+  // Convert dots to inches for Labelary (8 dots/mm = 203.2 dpi)
+  const wIn = (labelWidth / 203.2).toFixed(2);
+  const hIn = (labelHeight / 203.2).toFixed(2);
   const url = `http://api.labelary.com/v1/printers/8dpmm/labels/${wIn}x${hIn}/0/`;
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'image/png' },
-      body: `data=${encodeURIComponent(zpl)}`,
+      body: zpl,
     });
     if (!response.ok) {
       res.status(502).json({ error: 'Labelary API error' });
