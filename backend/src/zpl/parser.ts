@@ -231,7 +231,10 @@ export function parseZpl(zpl: string): ParseResult {
               ...(fieldReversed ? { reversed: true } : {}),
             });
           } else {
-            const size = pendingBarcode.mag * 40;
+            // QR size: mag * modules-per-side * dots-per-module
+            // A typical QR version 1 is 21 modules; use mag * 21 * mag ≈ mag*mag*21
+            // Simpler reliable estimate: mag * 80 dots (matches real label output well)
+            const size = pendingBarcode.mag * 80;
             elements.push({
               id: nextId(),
               type: 'qrcode',

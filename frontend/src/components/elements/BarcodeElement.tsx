@@ -6,26 +6,28 @@ interface Props { element: DesignElement; scale: number; }
 
 export function BarcodeElement({ element, scale }: Props) {
   const ref = useRef<SVGSVGElement>(null);
+  const containerWidth = element.width * scale;
+  const containerHeight = element.height * scale;
 
   useEffect(() => {
     if (!ref.current) return;
     try {
       JsBarcode(ref.current, element.value || '000000', {
         format: 'CODE128',
-        width: 1.5,
-        height: (element.height * scale) - 20,
+        width: 2,
+        height: containerHeight - 20,
         displayValue: true,
-        fontSize: 10,
+        fontSize: Math.max(8, containerHeight * 0.08),
         margin: 0,
       });
     } catch (e) {
       // invalid barcode value — render blank
     }
-  }, [element.value, element.height, scale]);
+  }, [element.value, containerWidth, containerHeight]);
 
   return (
-    <div style={{ width: element.width * scale, height: element.height * scale, overflow: 'hidden' }}>
-      <svg ref={ref} style={{ width: '100%' }} />
+    <div style={{ width: containerWidth, height: containerHeight, overflow: 'hidden' }}>
+      <svg ref={ref} style={{ width: '100%', height: '100%' }} />
     </div>
   );
 }

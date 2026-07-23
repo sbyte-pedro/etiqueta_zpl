@@ -13,7 +13,7 @@ function renderElement(el: Element): string {
       return `${fo}^BCN,${el.height},Y,N,N^FD${el.value ?? ''}^FS`;
     }
     case 'qrcode': {
-      const mag = Math.max(1, Math.round(el.width / 40));
+      const mag = Math.max(1, Math.round(el.width / 80));
       return `${fo}^BQN,2,${mag}^FDMA,${el.value ?? ''}^FS`;
     }
     case 'rect': {

@@ -6,7 +6,7 @@ interface Props { element: DesignElement; scale: number; }
 
 export function QRCodeElement({ element, scale }: Props) {
   const [src, setSrc] = useState('');
-  const size = Math.min(element.width, element.height) * scale;
+  const size = Math.max(element.width, element.height) * scale;
 
   useEffect(() => {
     QRCode.toDataURL(element.value || 'https://example.com', { width: size, margin: 1 })
@@ -15,7 +15,7 @@ export function QRCodeElement({ element, scale }: Props) {
   }, [element.value, size]);
 
   return (
-    <div style={{ width: element.width * scale, height: element.height * scale }}>
+    <div style={{ width: size, height: size }}>
       {src && <img src={src} alt="QR" style={{ width: size, height: size }} />}
     </div>
   );
