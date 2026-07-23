@@ -8,6 +8,8 @@ export function BarcodeElement({ element, scale }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const containerWidth = element.width * scale;
   const containerHeight = element.height * scale;
+  const textHeight = Math.max(12, containerHeight * 0.1);
+  const barsHeight = containerHeight - textHeight - 4;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -15,17 +17,15 @@ export function BarcodeElement({ element, scale }: Props) {
       JsBarcode(ref.current, element.value || '000000', {
         format: 'CODE128',
         width: 2,
-        height: containerHeight - 24,
-        displayValue: true,
-        fontSize: Math.max(10, containerHeight * 0.08),
+        height: barsHeight,
+        displayValue: false,
         margin: 0,
       });
-      // JsBarcode sets width/height attributes to its natural pixel size.
-      // Read those, set them as viewBox, remove the attributes so CSS controls size.
-      const w = parseFloat(ref.current.getAttribute('width') ?? '0');
-      const h = parseFloat(ref.current.getAttribute('height') ?? '0');
-      if (w > 0 && h > 0) {
-        ref.current.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      // Scale bars to fill container width, preserving bar height
+      const naturalW = parseFloat(ref.current.getAttribute('width') ?? '0');
+      const naturalH = parseFloat(ref.current.getAttribute('height') ?? '0');
+      if (naturalW > 0 && naturalH > 0) {
+        ref.current.setAttribute('viewBox', `0 0 ${naturalW} ${naturalH}`);
         ref.current.setAttribute('preserveAspectRatio', 'none');
         ref.current.removeAttribute('width');
         ref.current.removeAttribute('height');
@@ -33,11 +33,14 @@ export function BarcodeElement({ element, scale }: Props) {
     } catch (e) {
       // invalid barcode value
     }
-  }, [element.value, containerWidth, containerHeight]);
+  }, [element.value, containerWidth, barsHeight]);
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
-      <svg ref={ref} style={{ width: containerWidth, height: containerHeight }} />
+    <div style={{ width: containerWidth, height: containerHeight, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <svg ref={ref} style={{ width: containerWidth, height: barsHeight }} />
+      <span style={{ fontSize: textHeight, fontFamily: 'monospace', marginTop: 2, userSelect: 'none' }}>
+        {element.value || '000000'}
+      </span>
     </div>
   );
 }
