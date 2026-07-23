@@ -10,4 +10,5 @@ export interface DesignElement {
   value?: string;
   fontSize?: number;
   fontName?: string;
+  reversed?: boolean;
 }
