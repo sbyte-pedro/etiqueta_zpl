@@ -23,7 +23,8 @@ function renderElement(el: Element): string {
     }
     case 'rect': {
       const thickness = el.filled ? Math.min(el.width, el.height) : 8;
-      return `${fo}^GB${el.width},${el.height},${thickness}^FS`;
+      const fr = el.reversed ? '^FR' : '';
+      return `${fo}${fr}^GB${el.width},${el.height},${thickness}^FS`;
     }
     case 'line': {
       return `${fo}^GB${el.width},${el.height},3^FS`;
