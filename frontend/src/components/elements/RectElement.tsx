@@ -8,8 +8,9 @@ export function RectElement({ element, scale }: Props) {
   const reversed = element.reversed ?? false;
 
   if (filled && reversed) {
-    // ^FR inverts dot-level: white diff white = white (no-op on white bg);
-    // white diff black = white (shows white on black). Simulate with difference blend.
+    // ^FR XORs dots: white field on black = white, white field on white = black.
+    // CSS difference blend achieves this only when NOT in an isolation group
+    // (so it can see the white canvas background and turn white→black there).
     return (
       <div style={{
         width: element.width * scale,

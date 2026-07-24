@@ -177,8 +177,8 @@ export function Canvas() {
             overflow: 'hidden',
           }}
         >
-          {/* Elements layer — isolated so mix-blend-mode only interacts within */}
-          <div style={{ position: 'absolute', inset: 0, isolation: 'isolate' }}>
+          {/* Elements layer — no isolation so ^FR difference blend can see the white canvas bg */}
+          <div style={{ position: 'absolute', inset: 0 }}>
             {elements.filter(el => el.type !== 'comment').map(el => (
               <DraggableElement key={el.id} element={el} scale={zoom} />
             ))}
