@@ -1,4 +1,4 @@
-import { getToken } from './authClient';
+import { getToken, triggerOn401 } from './authClient';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 
@@ -42,6 +42,7 @@ export interface DesignPayload {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
+  if (res.status === 401) { triggerOn401(); throw new Error('Session expired. Please log in again.'); }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? 'Request failed');
   return data as T;
@@ -68,7 +69,7 @@ export async function apiGetDesign(id: number): Promise<DesignSummary> {
 
 export async function apiDeleteDesign(id: number): Promise<void> {
   const res = await fetch(`${API_BASE}/api/designs/${id}`, { method: 'DELETE', headers: authHeaders() });
-  if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? 'Delete failed'); }
+  await handleResponse<unknown>(res);
 }
 
 export async function apiCreateVersion(designId: number, payload: DesignPayload): Promise<VersionDetail> {

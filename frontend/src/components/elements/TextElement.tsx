@@ -11,6 +11,7 @@ export function TextElement({ element, scale }: Props) {
       style={{
         width: element.width * scale,
         height: element.height * scale,
+        fontFamily: '"Courier New", monospace',
         fontSize: Math.max(8, fontSize),
         fontWeight: 'bold',
         display: 'flex',

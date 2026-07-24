@@ -1,8 +1,9 @@
 import React from 'react';
 import { useDesignerStore } from '../store/useDesignerStore';
 
+
 export function PreviewPanel() {
-  const { previewUrl, previewLoading, previewError, closePreview } = useDesignerStore();
+  const { previewUrl, previewLoading, previewError, closePreview, labelWidth, zoom } = useDesignerStore();
 
   if (!previewUrl && !previewError && !previewLoading) return null;
 
@@ -32,8 +33,8 @@ export function PreviewPanel() {
         <img
           src={previewUrl}
           alt="Label preview"
-          className="max-w-full border border-gray-200 rounded shadow-sm"
-          style={{ imageRendering: 'pixelated' }}
+          className="border border-gray-200 rounded shadow-sm"
+          style={{ imageRendering: 'pixelated', width: labelWidth * zoom, display: 'block' }}
         />
       )}
     </div>

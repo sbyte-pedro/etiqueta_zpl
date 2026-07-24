@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getToken, saveToken, clearToken, apiLogin, apiRegister } from '../utils/authClient';
+import { getToken, saveToken, clearToken, isTokenExpired, registerOn401Handler, apiLogin, apiRegister } from '../utils/authClient';
 
 interface AuthStore {
   token: string | null;
@@ -8,24 +8,40 @@ interface AuthStore {
   logout(): void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  token: getToken(),
-
-  async login(username, password) {
-    const token = await apiLogin(username, password);
-    saveToken(token);
-    set({ token });
-  },
-
-  async register(username, password) {
-    await apiRegister(username, password);
-    const token = await apiLogin(username, password);
-    saveToken(token);
-    set({ token });
-  },
-
-  logout() {
+function loadInitialToken(): string | null {
+  const token = getToken();
+  if (!token || isTokenExpired(token)) {
     clearToken();
-    set({ token: null });
-  },
-}));
+    return null;
+  }
+  return token;
+}
+
+export const useAuthStore = create<AuthStore>((set, get) => {
+  const store = {
+    token: loadInitialToken(),
+
+    async login(username: string, password: string) {
+      const token = await apiLogin(username, password);
+      saveToken(token);
+      set({ token });
+    },
+
+    async register(username: string, password: string) {
+      await apiRegister(username, password);
+      const token = await apiLogin(username, password);
+      saveToken(token);
+      set({ token });
+    },
+
+    logout() {
+      clearToken();
+      set({ token: null });
+    },
+  };
+
+  // When any API call gets a 401, log the user out automatically
+  registerOn401Handler(() => get().logout());
+
+  return store;
+});

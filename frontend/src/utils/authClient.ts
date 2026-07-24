@@ -14,6 +14,31 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+// Decode JWT payload without verifying signature (client-side only)
+function decodePayload(token: string): { exp?: number } | null {
+  try {
+    const part = token.split('.')[1];
+    return JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch {
+    return null;
+  }
+}
+
+export function isTokenExpired(token: string): boolean {
+  const payload = decodePayload(token);
+  if (!payload?.exp) return true;
+  return Date.now() / 1000 >= payload.exp;
+}
+
+// Global 401 handler — set by useAuthStore so clients can trigger logout
+let on401: (() => void) | null = null;
+export function registerOn401Handler(handler: () => void) {
+  on401 = handler;
+}
+export function triggerOn401() {
+  on401?.();
+}
+
 export async function apiRegister(username: string, password: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
