@@ -40,7 +40,7 @@ export default function App() {
               : <CodeEditor />}
           </div>
         </div>
-        <PropertiesPanel />
+        {activeTab === 'design' && <PropertiesPanel />}
       </div>
       {showSaveModal && <SaveDesignModal />}
     </div>
