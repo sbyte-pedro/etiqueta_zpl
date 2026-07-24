@@ -11,7 +11,11 @@ const PALETTE: { type: ElementType; label: string; icon: string; img?: string }[
   { type: 'image-placeholder', label: 'Image', icon: '🖼' },
 ];
 
-export function Sidebar() {
+interface Props {
+  onNavigateToMyDesigns(): void;
+}
+
+export function Sidebar({ onNavigateToMyDesigns }: Props) {
   const { addElement } = useDesignerStore();
 
   return (
@@ -33,6 +37,14 @@ export function Sidebar() {
           <span>{label}</span>
         </button>
       ))}
+      <div className="flex-1" />
+      <button
+        onClick={onNavigateToMyDesigns}
+        className="flex items-center gap-2 px-3 py-2 rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-sm transition-colors text-left cursor-pointer mt-2"
+      >
+        <span className="text-base">📁</span>
+        <span>My Designs</span>
+      </button>
     </div>
   );
 }

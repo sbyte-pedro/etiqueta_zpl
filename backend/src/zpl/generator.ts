@@ -18,7 +18,7 @@ function renderElement(el: Element): string {
       return `${fo}^BY${moduleWidth}^BCN,${el.height},Y,N,N^FD${value}^FS`;
     }
     case 'qrcode': {
-      const mag = Math.max(1, Math.round(el.width / 80));
+      const mag = Math.max(1, Math.min(10, Math.floor(el.width / 33)));
       return `${fo}^BQN,2,${mag}^FDMA,${el.value ?? ''}^FS`;
     }
     case 'rect': {

@@ -56,3 +56,23 @@ export async function previewZpl(zpl: string, labelWidth: number, labelHeight: n
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
+
+export type ExportFormat = 'png' | 'pdf' | 'epl' | 'zpl';
+
+export async function exportZpl(
+  zpl: string,
+  labelWidth: number,
+  labelHeight: number,
+  format: ExportFormat,
+): Promise<Blob> {
+  const res = await fetch(`${API_BASE}/api/export`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ zpl, labelWidth, labelHeight, format }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Export failed' }));
+    throw new Error(err.error ?? `Export failed (${res.status})`);
+  }
+  return res.blob();
+}

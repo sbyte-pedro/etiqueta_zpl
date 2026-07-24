@@ -58,7 +58,6 @@ zplRouter.post('/preview', async (req: Request, res: Response) => {
     return;
   }
   const { zpl, labelWidth, labelHeight } = parsed.data;
-  // Convert dots to inches for Labelary (8 dots/mm = 203.2 dpi)
   const wIn = (labelWidth / 203.2).toFixed(2);
   const hIn = (labelHeight / 203.2).toFixed(2);
   const url = `http://api.labelary.com/v1/printers/8dpmm/labels/${wIn}x${hIn}/0/`;
@@ -74,6 +73,49 @@ zplRouter.post('/preview', async (req: Request, res: Response) => {
     }
     const buffer = await response.arrayBuffer();
     res.set('Content-Type', 'image/png');
+    res.send(Buffer.from(buffer));
+  } catch (e) {
+    res.status(502).json({ error: 'Could not reach Labelary API' });
+  }
+});
+
+const EXPORT_FORMATS = {
+  png:  { accept: 'image/png',        contentType: 'image/png',        ext: 'png'  },
+  pdf:  { accept: 'application/pdf',  contentType: 'application/pdf',  ext: 'pdf'  },
+  epl:  { accept: 'application/epl',  contentType: 'application/epl',  ext: 'epl'  },
+  zpl:  { accept: 'application/zpl',  contentType: 'application/zpl',  ext: 'zpl'  },
+} as const;
+
+zplRouter.post('/export', async (req: Request, res: Response) => {
+  const schema = z.object({
+    zpl: z.string(),
+    labelWidth: z.number().positive(),
+    labelHeight: z.number().positive(),
+    format: z.enum(['png', 'pdf', 'epl', 'zpl']),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+  const { zpl, labelWidth, labelHeight, format } = parsed.data;
+  const { accept, contentType, ext } = EXPORT_FORMATS[format];
+  const wIn = (labelWidth / 203.2).toFixed(2);
+  const hIn = (labelHeight / 203.2).toFixed(2);
+  const url = `http://api.labelary.com/v1/printers/8dpmm/labels/${wIn}x${hIn}/0/`;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': accept },
+      body: zpl,
+    });
+    if (!response.ok) {
+      res.status(502).json({ error: 'Labelary API error' });
+      return;
+    }
+    const buffer = await response.arrayBuffer();
+    res.set('Content-Type', contentType);
+    res.set('Content-Disposition', `attachment; filename="label.${ext}"`);
     res.send(Buffer.from(buffer));
   } catch (e) {
     res.status(502).json({ error: 'Could not reach Labelary API' });

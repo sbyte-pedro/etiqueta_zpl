@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useDesignsStore } from '../store/useDesignsStore';
+import { ExportModal } from './ExportModal';
 
 const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
 const DOTS_TO_MM = (dots: number) => Math.round(dots / 8.03);
@@ -14,6 +15,7 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
   const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, activeDesignName } = useDesignsStore();
+  const [showExport, setShowExport] = useState(false);
 
   return (
     <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-4">
@@ -59,6 +61,13 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           {previewLoading ? 'Loading…' : 'Preview'}
         </button>
         <button
+          onClick={() => setShowExport(true)}
+          className="text-xs px-3 py-1 rounded border border-green-300 text-green-700 hover:bg-green-50 transition-colors"
+          title="Export label to file"
+        >
+          Export
+        </button>
+        <button
           onClick={onNavigateToMyDesigns}
           className="text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
           title="Browse all my designs"
@@ -68,10 +77,11 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
       </div>
       <button
         onClick={logout}
-        className="ml-1 text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+        className="ml-1 text-xs px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
       >
         Logout
       </button>
+      {showExport && <ExportModal onClose={() => setShowExport(false)} />}
     </div>
   );
 }

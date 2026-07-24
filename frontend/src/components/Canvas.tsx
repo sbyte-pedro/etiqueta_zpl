@@ -174,7 +174,7 @@ export function Canvas() {
             background: 'white',
             margin: '0 auto',
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            overflow: 'visible',
+            overflow: 'hidden',
           }}
         >
           {/* Elements layer — isolated so mix-blend-mode only interacts within */}
