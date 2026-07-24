@@ -67,13 +67,6 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
         >
           Export
         </button>
-        <button
-          onClick={onNavigateToMyDesigns}
-          className="text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-          title="Browse all my designs"
-        >
-          My Designs
-        </button>
       </div>
       <button
         onClick={logout}
