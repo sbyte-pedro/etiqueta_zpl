@@ -139,18 +139,22 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    selected.forEach(el => {
-      let patch: Partial<DesignElement> = {};
-      switch (alignment) {
-        case 'left':     patch = { x: minX }; break;
-        case 'center-h': patch = { x: Math.round(centerX - el.width / 2) }; break;
-        case 'right':    patch = { x: maxX - el.width }; break;
-        case 'top':      patch = { y: minY }; break;
-        case 'center-v': patch = { y: Math.round(centerY - el.height / 2) }; break;
-        case 'bottom':   patch = { y: maxY - el.height }; break;
-      }
-      get().updateElement(el.id, patch);
-    });
+    const patches = new Map<string, Partial<DesignElement>>(
+      selected.map(el => {
+        switch (alignment) {
+          case 'left':     return [el.id, { x: minX }];
+          case 'center-h': return [el.id, { x: Math.round(centerX - el.width / 2) }];
+          case 'right':    return [el.id, { x: maxX - el.width }];
+          case 'top':      return [el.id, { y: minY }];
+          case 'center-v': return [el.id, { y: Math.round(centerY - el.height / 2) }];
+          case 'bottom':   return [el.id, { y: maxY - el.height }];
+        }
+      })
+    );
+
+    set(s => ({ elements: s.elements.map(e => patches.has(e.id) ? { ...e, ...patches.get(e.id)! } : e) }));
+    if (syncTimeout) clearTimeout(syncTimeout);
+    get().syncToCode();
   },
 
   setActiveTab(tab) {
