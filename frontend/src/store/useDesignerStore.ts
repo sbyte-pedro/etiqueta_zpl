@@ -26,6 +26,7 @@ interface DesignerStore {
   labelHeight: number;
   elements: DesignElement[];
   selectedId: string | null;
+  selectedIds: string[];
   activeTab: 'design' | 'code';
   zplCode: string;
   zplError: string;       // non-empty = parse error to show in editor
@@ -38,6 +39,9 @@ interface DesignerStore {
   updateElement(id: string, patch: Partial<DesignElement>): void;
   deleteElement(id: string): void;
   selectElement(id: string | null): void;
+  toggleSelectElement(id: string): void;
+  clearSelection(): void;
+  alignElements(alignment: 'left' | 'center-h' | 'right' | 'top' | 'center-v' | 'bottom'): void;
   setActiveTab(tab: 'design' | 'code'): void;
   setZoom(zoom: number): void;
   onCodeChange(code: string): void;
@@ -60,6 +64,7 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
   labelHeight: 1200,
   elements: [],
   selectedId: null,
+  selectedIds: [],
   activeTab: 'design',
   zplCode: '^XA\n^PW800\n^LL1200\n^XZ',
   zplError: '',
@@ -96,12 +101,56 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
     set(s => ({
       elements: s.elements.filter(e => e.id !== id),
       selectedId: s.selectedId === id ? null : s.selectedId,
+      selectedIds: s.selectedIds.filter(sid => sid !== id),
     }));
     get().syncToCode();
   },
 
   selectElement(id) {
-    set({ selectedId: id });
+    set({ selectedId: id, selectedIds: id ? [id] : [] });
+  },
+
+  toggleSelectElement(id) {
+    set(s => {
+      const already = s.selectedIds.includes(id);
+      const selectedIds = already
+        ? s.selectedIds.filter(sid => sid !== id)
+        : [...s.selectedIds, id];
+      const selectedId = already
+        ? (selectedIds.length > 0 ? selectedIds[selectedIds.length - 1] : null)
+        : id;
+      return { selectedIds, selectedId };
+    });
+  },
+
+  clearSelection() {
+    set({ selectedId: null, selectedIds: [] });
+  },
+
+  alignElements(alignment) {
+    const { elements, selectedIds } = get();
+    const selected = elements.filter(e => selectedIds.includes(e.id));
+    if (selected.length < 2) return;
+
+    const minX = Math.min(...selected.map(e => e.x));
+    const maxX = Math.max(...selected.map(e => e.x + e.width));
+    const minY = Math.min(...selected.map(e => e.y));
+    const maxY = Math.max(...selected.map(e => e.y + e.height));
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    selected.forEach(el => {
+      let patch: Partial<DesignElement> = {};
+      switch (alignment) {
+        case 'left':     patch = { x: minX }; break;
+        case 'center-h': patch = { x: Math.round(centerX - el.width / 2) }; break;
+        case 'right':    patch = { x: maxX - el.width }; break;
+        case 'top':      patch = { y: minY }; break;
+        case 'center-v': patch = { y: Math.round(centerY - el.height / 2) }; break;
+        case 'bottom':   patch = { y: maxY - el.height }; break;
+      }
+      get().updateElement(el.id, patch);
+    });
   },
 
   setActiveTab(tab) {
@@ -130,6 +179,7 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
             labelWidth: result.labelWidth || get().labelWidth,
             labelHeight: result.labelHeight || get().labelHeight,
             selectedId: null,
+            selectedIds: [],
             zplError: '',
           });
         } else {
