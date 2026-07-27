@@ -25,8 +25,9 @@ function ElementRenderer({ element, scale }: { element: DesignElement; scale: nu
 }
 
 function DraggableElement({ element, scale }: { element: DesignElement; scale: number }) {
-  const { selectedId, selectElement, updateElement, deleteElement } = useDesignerStore();
+  const { selectedId, selectedIds, selectElement, toggleSelectElement, updateElement, deleteElement } = useDesignerStore();
   const isSelected = selectedId === element.id;
+  const isInSelection = selectedIds.includes(element.id);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: element.id });
 
@@ -66,12 +67,23 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
     left: element.x * scale,
     top: element.y * scale,
     cursor: 'move',
-    outline: isSelected ? '2px solid #2563eb' : undefined,
+    outline: isSelected
+      ? '2px solid #2563eb'
+      : isInSelection
+        ? '2px solid #93c5fd'
+        : undefined,
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
   };
 
   const mergedPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button === 0) { e.stopPropagation(); selectElement(element.id); }
+    if (e.button === 0) {
+      e.stopPropagation();
+      if (e.shiftKey) {
+        toggleSelectElement(element.id);
+      } else {
+        selectElement(element.id);
+      }
+    }
     listeners?.onPointerDown?.(e);
   };
 
@@ -102,7 +114,7 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
 }
 
 export function Canvas() {
-  const { labelWidth, labelHeight, elements, selectElement, zoom } = useDesignerStore();
+  const { labelWidth, labelHeight, elements, clearSelection, zoom } = useDesignerStore();
   const { setNodeRef } = useDroppable({ id: 'canvas' });
   const wrapperRef = useRef<HTMLDivElement>(null);
   const panState = useRef({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
@@ -166,7 +178,7 @@ export function Canvas() {
       >
         <div
           ref={setNodeRef}
-          onClick={() => selectElement(null)}
+          onClick={() => clearSelection()}
           style={{
             position: 'relative',
             width: canvasWidth,
