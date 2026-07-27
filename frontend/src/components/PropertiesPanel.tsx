@@ -49,6 +49,14 @@ export function PropertiesPanel() {
         </>
       )}
       {(el.type === 'barcode128' || el.type === 'qrcode') && field('Value', el.value ?? '', 'value')}
+      {el.type === 'line' && (
+        <button
+          onClick={() => updateElement(el.id, { width: el.height, height: el.width })}
+          className="mb-2 w-full text-xs text-blue-600 border border-blue-200 rounded py-1 hover:bg-blue-50 transition-colors"
+        >
+          {el.width >= el.height ? '↔ Horizontal' : '↕ Vertical'}
+        </button>
+      )}
       <button
         onClick={() => deleteElement(el.id)}
         className="mt-3 w-full text-xs text-red-500 border border-red-200 rounded py-1 hover:bg-red-50"
