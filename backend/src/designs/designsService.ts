@@ -1,4 +1,4 @@
-import { eq, and, sql, count } from 'drizzle-orm';
+import { eq, and, sql, count, desc } from 'drizzle-orm';
 import { getDb } from '../db/database';
 import { designsTable, designVersionsTable } from '../db/schema';
 
@@ -93,7 +93,32 @@ export async function getDesign(userId: number, designId: number): Promise<Desig
   return { id: r.id, name: r.name, createdAt: toIso(r.createdAt), updatedAt: toIso(r.updatedAt), versionCount: Number(r.versionCount) };
 }
 
-export async function deleteDesign(userId: number, designId: number): Promise<boolean> {
+export interface DesignDetail extends DesignSummary {
+  version: VersionDetail;
+}
+
+export async function getDesignWithVersion(userId: number, designId: number, versionNumber?: number): Promise<DesignDetail | undefined> {
+  const summary = await getDesign(userId, designId);
+  if (!summary) return undefined;
+  const version = versionNumber !== undefined
+    ? await getVersion(userId, designId, versionNumber)
+    : await getLatestVersion(userId, designId);
+  if (!version) return undefined;
+  return { ...summary, version };
+}
+
+export async function getLatestVersion(userId: number, designId: number): Promise<VersionDetail | undefined> {
+  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
+  if (!design.length) return undefined;
+  const rows = await getDb().select().from(designVersionsTable)
+    .where(eq(designVersionsTable.designId, designId))
+    .orderBy(desc(designVersionsTable.versionNumber))
+    .limit(1);
+  return rows[0] ? toVersionDetail(rows[0]) : undefined;
+}
+
+
   const rows = await getDb()
     .delete(designsTable)
     .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)))

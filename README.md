@@ -281,14 +281,38 @@ See `frontend/.env.example` for reference.
 | `POST` | `/api/generate-zpl` | Generate ZPL from design. Returns `{ zpl: string }` |
 | `POST` | `/api/parse-zpl` | Parse ZPL to elements. Returns `{ elements, labelWidth, labelHeight, unknownCommands }` |
 | `POST` | `/api/preview` | Proxy to Labelary. Returns PNG binary |
-| `GET` | `/api/designs` | List current user's designs |
+| `POST` | `/api/export` | Export label. Body: `{ zpl, labelWidth, labelHeight, format }` where `format` is `png \| pdf \| epl \| zpl` |
+| `GET` | `/api/designs` | List current user's designs (summary — no ZPL) |
 | `POST` | `/api/designs` | Create new design + first version |
-| `GET` | `/api/designs/:id` | Get design summary |
+| `GET` | `/api/designs/:id` | Get design with ZPL — **latest version by default**. Add `?version=N` for a specific version. |
 | `DELETE` | `/api/designs/:id` | Delete design and all its versions |
-| `GET` | `/api/designs/:id/versions` | List versions for a design |
+| `GET` | `/api/designs/:id/versions` | List all versions for a design (summary — no ZPL) |
 | `POST` | `/api/designs/:id/versions` | Create a new version |
-| `GET` | `/api/designs/:id/versions/:vn` | Get a specific version |
+| `GET` | `/api/designs/:id/versions/:vn` | Get a specific version (full detail including ZPL) |
 | `PUT` | `/api/designs/:id/versions/:vn` | Overwrite a specific version |
+
+#### `GET /api/designs/:id` — response shape
+
+```json
+{
+  "id": 1,
+  "name": "Shipping Label",
+  "createdAt": "2026-07-27T10:00:00.000Z",
+  "updatedAt": "2026-07-27T12:00:00.000Z",
+  "versionCount": 3,
+  "version": {
+    "id": 7,
+    "versionNumber": 3,
+    "zpl": "^XA\n^PW800\n^LL1200\n...\n^XZ",
+    "elements": [],
+    "labelWidth": 800,
+    "labelHeight": 1200,
+    "createdAt": "2026-07-27T12:00:00.000Z"
+  }
+}
+```
+
+Use `?version=2` to retrieve version 2 instead of the latest.
 
 ---
 

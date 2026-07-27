@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import {
-  createDesign, listDesigns, getDesign, deleteDesign,
+  createDesign, listDesigns, getDesignWithVersion, deleteDesign,
   createVersion, listVersions, getVersion, updateVersion,
 } from '../designs/designsService';
 
@@ -46,7 +46,11 @@ designsRouter.get('/', async (req: Request, res: Response) => {
 designsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const design = await getDesign(req.user!.userId, id);
+    const versionParam = req.query.version !== undefined ? Number(req.query.version) : undefined;
+    if (versionParam !== undefined && isNaN(versionParam)) {
+      res.status(400).json({ error: 'Invalid version number' }); return;
+    }
+    const design = await getDesignWithVersion(req.user!.userId, id, versionParam);
     if (!design) { res.status(404).json({ error: 'Design not found' }); return; }
     res.json(design);
   } catch {
