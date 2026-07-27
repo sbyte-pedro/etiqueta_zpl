@@ -118,7 +118,7 @@ export async function getLatestVersion(userId: number, designId: number): Promis
   return rows[0] ? toVersionDetail(rows[0]) : undefined;
 }
 
-
+export async function deleteDesign(userId: number, designId: number): Promise<boolean> {
   const rows = await getDb()
     .delete(designsTable)
     .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)))
