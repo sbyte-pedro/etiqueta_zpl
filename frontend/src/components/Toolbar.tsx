@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function Toolbar({ onNavigateToMyDesigns }: Props) {
-  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading } = useDesignerStore();
+  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading, selectedIds, alignElements } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, activeDesignName } = useDesignsStore();
   const [showExport, setShowExport] = useState(false);
@@ -25,7 +25,22 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           — {activeDesignName}
         </span>
       )}
-      <div className="flex-1" />
+      <div className="flex-1 flex items-center justify-center gap-1">
+        {selectedIds.length >= 2 && (
+          <>
+            <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1">
+              <button onClick={() => alignElements('left')}     className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs" title="Align left edges">⊢</button>
+              <button onClick={() => alignElements('center-h')} className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs" title="Center horizontally">⣿</button>
+              <button onClick={() => alignElements('right')}    className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs" title="Align right edges">⊣</button>
+            </div>
+            <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1">
+              <button onClick={() => alignElements('top')}      className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs" title="Align top edges">⊤</button>
+              <button onClick={() => alignElements('center-v')} className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs" title="Center vertically">⊞</button>
+              <button onClick={() => alignElements('bottom')}   className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs" title="Align bottom edges">⊥</button>
+            </div>
+          </>
+        )}
+      </div>
       <label className="text-xs text-gray-500">Width (mm)</label>
       <input
         type="number"
