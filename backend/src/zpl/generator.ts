@@ -27,7 +27,8 @@ function renderElement(el: Element): string {
       return `${fo}${fr}^GB${el.width},${el.height},${thickness}^FS`;
     }
     case 'line': {
-      return `${fo}^GB${el.width},${el.height},3^FS`;
+      const t = Math.min(el.width, el.height);
+      return `${fo}^GB${el.width},${el.height},${t}^FS`;
     }
     case 'image-placeholder': {
       return `${fo}^GB${el.width},${el.height},3,B,5^FS`;
