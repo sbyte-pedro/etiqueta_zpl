@@ -12,4 +12,5 @@ export interface DesignElement {
   fontName?: string;
   reversed?: boolean;
   filled?: boolean;
+  thickness?: number;
 }

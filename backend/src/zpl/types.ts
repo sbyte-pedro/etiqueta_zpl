@@ -12,6 +12,7 @@ export interface Element {
   fontName?: string;
   reversed?: boolean;
   filled?: boolean;
+  thickness?: number;  // ZPL dots; applies to line and non-filled rect border
 }
 
 export interface LabelDimensions {
