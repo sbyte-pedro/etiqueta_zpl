@@ -25,7 +25,7 @@ export function PropertiesPanel() {
         value={value}
         onChange={e => {
           const v = type === 'number' ? Number(e.target.value) : e.target.value;
-          if (['x', 'y', 'width', 'height'].includes(key)) {
+          if (['x', 'y', 'width', 'height', 'thickness'].includes(key)) {
             updateElement(el.id, { [key]: MM_TO_DOTS(Number(v)) });
           } else {
             updateElement(el.id, { [key]: v });
@@ -42,6 +42,9 @@ export function PropertiesPanel() {
       {field('Y (mm)', DOTS_TO_MM(el.y), 'y', 'number')}
       {field('Width (mm)', DOTS_TO_MM(el.width), 'width', 'number')}
       {field('Height (mm)', DOTS_TO_MM(el.height), 'height', 'number')}
+      {(el.type === 'line' || (el.type === 'rect' && !el.filled)) && (
+        field('Thickness (mm)', DOTS_TO_MM(el.thickness ?? (el.type === 'line' ? Math.min(el.width, el.height) : 8)), 'thickness', 'number')
+      )}
       {el.type === 'text' && (
         <>
           {field('Value', el.value ?? '', 'value')}
