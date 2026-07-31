@@ -16,16 +16,19 @@ export function PropertiesPanel() {
     );
   }
 
-  const field = (label: string, value: string | number, key: string, type = 'text') => (
+  const field = (label: string, value: string | number, key: string, type = 'text', min?: number) => (
     <div key={key} className="mb-2">
       <label className="block text-xs text-gray-500 mb-0.5">{label}</label>
       <input
         type={type}
+        min={min}
         className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
         value={value}
         onChange={e => {
           const v = type === 'number' ? Number(e.target.value) : e.target.value;
-          if (['x', 'y', 'width', 'height', 'thickness'].includes(key)) {
+          if (key === 'thickness') {
+            updateElement(el.id, { thickness: Math.max(1, MM_TO_DOTS(Number(v))) });
+          } else if (['x', 'y', 'width', 'height'].includes(key)) {
             updateElement(el.id, { [key]: MM_TO_DOTS(Number(v)) });
           } else {
             updateElement(el.id, { [key]: v });
@@ -43,7 +46,7 @@ export function PropertiesPanel() {
       {field('Width (mm)', DOTS_TO_MM(el.width), 'width', 'number')}
       {field('Height (mm)', DOTS_TO_MM(el.height), 'height', 'number')}
       {(el.type === 'line' || (el.type === 'rect' && !el.filled)) && (
-        field('Thickness (mm)', DOTS_TO_MM(el.thickness ?? (el.type === 'line' ? Math.min(el.width, el.height) : 8)), 'thickness', 'number')
+        field('Thickness (mm)', DOTS_TO_MM(el.thickness ?? (el.type === 'line' ? Math.min(el.width, el.height) : 8)), 'thickness', 'number', 0.1)
       )}
       {el.type === 'text' && (
         <>
