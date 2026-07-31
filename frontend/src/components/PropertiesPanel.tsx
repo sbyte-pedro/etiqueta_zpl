@@ -28,7 +28,9 @@ export function PropertiesPanel() {
           const v = type === 'number' ? Number(e.target.value) : e.target.value;
           if (key === 'thickness') {
             updateElement(el.id, { thickness: Math.max(1, MM_TO_DOTS(Number(v))) });
-          } else if (['x', 'y', 'width', 'height'].includes(key)) {
+          } else if (['x', 'y'].includes(key)) {
+            updateElement(el.id, { [key]: Math.max(0, MM_TO_DOTS(Number(v))) });
+          } else if (['width', 'height'].includes(key)) {
             updateElement(el.id, { [key]: MM_TO_DOTS(Number(v)) });
           } else {
             updateElement(el.id, { [key]: v });
@@ -41,8 +43,8 @@ export function PropertiesPanel() {
   return (
     <div className="w-56 bg-white border-l border-gray-200 p-3 overflow-y-auto">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{el.type}</p>
-      {field('X (mm)', DOTS_TO_MM(el.x), 'x', 'number')}
-      {field('Y (mm)', DOTS_TO_MM(el.y), 'y', 'number')}
+      {field('X (mm)', DOTS_TO_MM(el.x), 'x', 'number', 0)}
+      {field('Y (mm)', DOTS_TO_MM(el.y), 'y', 'number', 0)}
       {field('Width (mm)', DOTS_TO_MM(el.width), 'width', 'number')}
       {field('Height (mm)', DOTS_TO_MM(el.height), 'height', 'number')}
       {(el.type === 'line' || (el.type === 'rect' && !el.filled)) && (
