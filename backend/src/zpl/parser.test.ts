@@ -45,6 +45,10 @@ test('round-trips a qrcode element', () => {
   const result = parseZpl(generateZpl(req));
   expect(result.elements[0].type).toBe('qrcode');
   expect(result.elements[0].value).toBe('https://example.com');
+  // Size must be stable after round-trip — generator uses floor(width/33), parser must use mag*33
+  expect(result.elements[0].width).toBe(result.elements[0].height);
+  const mag = Math.floor(100 / 33); // 3
+  expect(result.elements[0].width).toBe(mag * 33); // 99
 });
 
 test('round-trips a rect element', () => {
