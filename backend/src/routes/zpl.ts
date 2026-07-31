@@ -17,6 +17,7 @@ const ElementSchema = z.object({
   fontName: z.string().optional(),
   reversed: z.boolean().optional(),
   filled: z.boolean().optional(),
+  thickness: z.number().optional(),
 });
 
 const GenerateSchema = z.object({
