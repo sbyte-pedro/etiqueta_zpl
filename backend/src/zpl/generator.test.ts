@@ -86,3 +86,11 @@ it('uses element thickness for line when provided', () => {
   });
   expect(result).toContain('^GB200,4,4');
 });
+
+it('defaults line thickness to min(width, height) when not provided', () => {
+  const result = generateZpl({
+    labelWidth: 800, labelHeight: 1200,
+    elements: [{ id: '1', type: 'line', x: 10, y: 10, width: 200, height: 6 }],
+  });
+  expect(result).toContain('^GB200,6,6');
+});
