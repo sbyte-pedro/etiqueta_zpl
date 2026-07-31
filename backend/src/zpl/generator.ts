@@ -22,12 +22,12 @@ function renderElement(el: Element): string {
       return `${fo}^BQN,2,${mag}^FDMA,${el.value ?? ''}^FS`;
     }
     case 'rect': {
-      const thickness = el.filled ? Math.min(el.width, el.height) : 8;
+      const thickness = el.filled ? Math.min(el.width, el.height) : (el.thickness ?? 8);
       const fr = el.reversed ? '^FR' : '';
       return `${fo}${fr}^GB${el.width},${el.height},${thickness}^FS`;
     }
     case 'line': {
-      const t = Math.min(el.width, el.height);
+      const t = el.thickness ?? Math.min(el.width, el.height);
       return `${fo}^GB${el.width},${el.height},${t}^FS`;
     }
     case 'image-placeholder': {

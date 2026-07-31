@@ -62,3 +62,27 @@ test('generates image-placeholder element', () => {
   expect(zpl).toContain('^FO20,20');
   expect(zpl).toContain('^GB100,100,3,B,5^FS');
 });
+
+it('uses element thickness for rect border when provided', () => {
+  const result = generateZpl({
+    labelWidth: 800, labelHeight: 1200,
+    elements: [{ id: '1', type: 'rect', x: 10, y: 10, width: 200, height: 100, thickness: 4 }],
+  });
+  expect(result).toContain('^GB200,100,4');
+});
+
+it('defaults rect border thickness to 8 when not provided', () => {
+  const result = generateZpl({
+    labelWidth: 800, labelHeight: 1200,
+    elements: [{ id: '1', type: 'rect', x: 10, y: 10, width: 200, height: 100 }],
+  });
+  expect(result).toContain('^GB200,100,8');
+});
+
+it('uses element thickness for line when provided', () => {
+  const result = generateZpl({
+    labelWidth: 800, labelHeight: 1200,
+    elements: [{ id: '1', type: 'line', x: 10, y: 10, width: 200, height: 4, thickness: 4 }],
+  });
+  expect(result).toContain('^GB200,4,4');
+});

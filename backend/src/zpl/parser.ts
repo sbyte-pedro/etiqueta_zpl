@@ -200,7 +200,7 @@ export function parseZpl(zpl: string): ParseResult {
         const h = parseInt(p[1], 10) || 1;
         const t = parseInt(p[2], 10) || 1;
         const type = gbType(w, h, t);
-        const isFilled = t >= Math.min(w, h);
+        const isFilled = type === 'rect' && t >= Math.min(w, h);
         elements.push({
           id: nextId(),
           type,
@@ -208,7 +208,7 @@ export function parseZpl(zpl: string): ParseResult {
           y: fieldY,
           width: w,
           height: h,
-          ...(isFilled ? { filled: true } : {}),
+          ...(isFilled ? { filled: true } : { thickness: t }),
           ...(fieldReversed ? { reversed: true } : {}),
         });
         known.add(cmd);

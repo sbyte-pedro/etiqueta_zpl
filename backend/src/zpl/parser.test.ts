@@ -153,6 +153,27 @@ test('round-trip preserves ^FX comments in position', () => {
   expect(regenerated).toContain('^FDHello^FS');
 });
 
+it('preserves rect border thickness through parse', () => {
+  const result = parseZpl('^XA^PW800^LL1200^FO10,10^GB200,100,4^FS^XZ');
+  expect(result.elements).toHaveLength(1);
+  expect(result.elements[0].type).toBe('rect');
+  expect(result.elements[0].thickness).toBe(4);
+});
+
+it('preserves line thickness through parse', () => {
+  const result = parseZpl('^XA^PW800^LL1200^FO10,10^GB200,4,4^FS^XZ');
+  expect(result.elements).toHaveLength(1);
+  expect(result.elements[0].type).toBe('line');
+  expect(result.elements[0].thickness).toBe(4);
+});
+
+it('does not set thickness on filled rect', () => {
+  const result = parseZpl('^XA^PW800^LL1200^FO10,10^GB100,100,100^FS^XZ');
+  expect(result.elements[0].type).toBe('rect');
+  expect(result.elements[0].filled).toBe(true);
+  expect(result.elements[0].thickness).toBeUndefined();
+});
+
 test('parses the full labelary sample label', () => {
   const zpl = `^XA
 ^FX Top section.
