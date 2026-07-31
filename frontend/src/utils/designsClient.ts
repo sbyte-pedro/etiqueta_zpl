@@ -43,8 +43,14 @@ export interface DesignPayload {
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (res.status === 401) { triggerOn401(); throw new Error('Session expired. Please log in again.'); }
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? 'Request failed');
+  // 204 No Content (e.g. DELETE) has an empty body — don't attempt to parse JSON
+  if (res.status === 204) {
+    if (!res.ok) throw new Error('Request failed');
+    return undefined as T;
+  }
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.error ?? 'Request failed');
   return data as T;
 }
 
