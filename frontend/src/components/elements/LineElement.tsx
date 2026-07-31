@@ -6,8 +6,8 @@ interface Props { element: DesignElement; scale: number; }
 export function LineElement({ element, scale }: Props) {
   const w = element.width * scale;
   const h = element.height * scale;
-  // Horizontal if wider than tall, vertical otherwise
   const isHorizontal = w >= h;
+  const thickness = (element.thickness ?? Math.min(element.width, element.height)) * scale;
   return (
     <div style={{
       width: w,
@@ -17,8 +17,8 @@ export function LineElement({ element, scale }: Props) {
       justifyContent: 'center',
     }}>
       <div style={{
-        width: isHorizontal ? '100%' : 3,
-        height: isHorizontal ? 3 : '100%',
+        width: isHorizontal ? '100%' : thickness,
+        height: isHorizontal ? thickness : '100%',
         background: 'black',
       }} />
     </div>

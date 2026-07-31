@@ -28,7 +28,7 @@ export function RectElement({ element, scale }: Props) {
       width: element.width * scale,
       height: element.height * scale,
       background: filled ? 'black' : 'transparent',
-      border: filled ? 'none' : '2px solid black',
+      border: filled ? 'none' : `${(element.thickness ?? 8) * scale}px solid black`,
       boxSizing: 'border-box',
     }} />
   );
