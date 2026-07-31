@@ -16,7 +16,13 @@ interface Props {
 }
 
 export function Sidebar({ onNavigateToMyDesigns }: Props) {
-  const { addElement, activeTab } = useDesignerStore();
+  const { addElement, activeTab, elements, clearAll } = useDesignerStore();
+
+  const handleClearAll = () => {
+    if (window.confirm('Clear all elements from the canvas? This cannot be undone.')) {
+      clearAll();
+    }
+  };
 
   return (
     <div className="w-48 bg-white border-r border-gray-200 p-3 flex flex-col gap-2">
@@ -39,6 +45,19 @@ export function Sidebar({ onNavigateToMyDesigns }: Props) {
               <span>{label}</span>
             </button>
           ))}
+          {elements.length > 0 && (
+            <>
+              <div className="border-t border-gray-100 my-1" />
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-2 px-3 py-2 rounded border border-red-200 text-red-500 hover:bg-red-50 text-sm transition-colors text-left cursor-pointer"
+                title="Remove all elements from the canvas"
+              >
+                <span className="w-5 h-5 flex items-center justify-center shrink-0 text-base">🗑</span>
+                <span>Clear All</span>
+              </button>
+            </>
+          )}
         </>
       )}
       <div className="flex-1" />

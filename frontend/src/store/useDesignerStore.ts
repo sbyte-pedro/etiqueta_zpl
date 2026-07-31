@@ -38,6 +38,7 @@ interface DesignerStore {
   addElement(type: ElementType, x?: number, y?: number): void;
   updateElement(id: string, patch: Partial<DesignElement>): void;
   deleteElement(id: string): void;
+  clearAll(): void;
   selectElement(id: string | null): void;
   toggleSelectElement(id: string): void;
   clearSelection(): void;
@@ -106,6 +107,11 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
     get().syncToCode();
   },
 
+  clearAll() {
+    set({ elements: [], selectedId: null, selectedIds: [] });
+    get().syncToCode();
+  },
+
   selectElement(id) {
     set({ selectedId: id, selectedIds: id ? [id] : [] });
   },
@@ -148,6 +154,7 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
           case 'top':      return [el.id, { y: minY }];
           case 'center-v': return [el.id, { y: Math.round(centerY - el.height / 2) }];
           case 'bottom':   return [el.id, { y: maxY - el.height }];
+          default:         return [el.id, {}];
         }
       })
     );
