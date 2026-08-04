@@ -23,7 +23,7 @@ export function PreviewPanel() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto py-4">
         {previewLoading && (
           <div className="text-xs text-gray-400 py-2">Loading…</div>
         )}
