@@ -16,7 +16,7 @@ import { MyDesignsPage } from './pages/MyDesignsPage';
 type View = 'designer' | 'my-designs';
 
 export default function App() {
-  const { activeTab } = useDesignerStore();
+  const { activeTab, previewUrl, previewLoading, previewError } = useDesignerStore();
   const { token } = useAuthStore();
   const { showSaveModal } = useDesignsStore();
   const [currentView, setCurrentView] = useState<View>('designer');
@@ -27,6 +27,8 @@ export default function App() {
     return <MyDesignsPage onBack={() => setCurrentView('designer')} />;
   }
 
+  const previewActive = !!(previewUrl || previewLoading || previewError);
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
       <Toolbar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
@@ -34,13 +36,20 @@ export default function App() {
         <Sidebar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
         <div className="flex flex-col flex-1 overflow-hidden">
           <TabSwitcher />
-          <div className="flex-1 overflow-hidden">
-            {activeTab === 'design'
-              ? <div className="flex flex-col h-full overflow-auto"><Canvas /><PreviewPanel /></div>
-              : <CodeEditor />}
+          <div className="flex flex-1 overflow-hidden">
+            {activeTab === 'design' ? (
+              <>
+                <div className="flex-1 overflow-hidden">
+                  <Canvas />
+                </div>
+                <PreviewPanel />
+              </>
+            ) : (
+              <CodeEditor />
+            )}
           </div>
         </div>
-        {activeTab === 'design' && <PropertiesPanel />}
+        {activeTab === 'design' && !previewActive && <PropertiesPanel />}
       </div>
       {showSaveModal && <SaveDesignModal />}
     </div>
