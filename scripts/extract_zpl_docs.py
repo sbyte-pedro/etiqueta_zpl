@@ -242,6 +242,7 @@ _See index.md for commands in the same group._
 def write_command(cmd: str, md: str) -> None:
     group = classify(cmd)
     folder = OUT_DIR / group
+    folder.mkdir(parents=True, exist_ok=True)
     # Sanitize filename: replace ^ and ~ with nothing, e.g. ^FO -> FO.md
     safe_name = cmd.replace("^", "caret-").replace("~", "tilde-")
     filepath = folder / f"{safe_name}.md"
