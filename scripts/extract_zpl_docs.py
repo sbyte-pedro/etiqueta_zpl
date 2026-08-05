@@ -62,36 +62,97 @@ def extract_pages(pdf_path: str, start: int, end: int) -> list[str]:
     return pages
 
 
+PAGE_HEADERS = {
+    "ZPL Commands",
+    "ZPL C om m a nd s",
+    "ZPL Ne tw ork  C om m a nd s",
+}
+
+
+def _first_content_line(page_text: str) -> str:
+    """Return the first non-empty, non-page-header line of a page."""
+    for line in page_text.splitlines():
+        stripped = line.strip()
+        if stripped and stripped not in PAGE_HEADERS:
+            return stripped
+    return ""
+
+
 def split_into_commands(pages: list[str]) -> list[tuple[str, str]]:
     """
-    Returns list of (command_code, raw_text) tuples.
-    command_code is e.g. '^FO', raw_text is everything on that command's pages.
+    Returns list of (command_code, raw_text) tuples, one per unique command.
+
+    A command boundary is only recognised when the command code appears as the
+    FIRST content line of a page (i.e. immediately after the repeating page
+    header "ZPL C om m a nd s").  Command codes that appear mid-page are part
+    of example code blocks and are ignored as boundaries.
+
+    When the same command starts on multiple pages (e.g. ^XZ appears as page-
+    start on page 245 as a code-example continuation and again on page 374 as
+    the real docs), the fragment with the most content is kept.
     """
-    commands = []
-    current_cmd = None
-    current_lines = []
+    # Pass 1: collect all page-start command boundaries.
+    # We still accumulate across all pages for multi-page commands.
+    all_fragments: list[tuple[str, str]] = []
+    current_cmd: str | None = None
+    current_lines: list[str] = []
 
     for page_text in pages:
-        lines = page_text.splitlines()
-        for line in lines:
-            stripped = line.strip()
-            # Skip the section header that appears on every page
-            if stripped in ("ZPL Commands", "ZPL C om m a nd s"):
-                continue
-            m = CMD_HEADING.match(stripped)
-            if m:
-                if current_cmd:
-                    commands.append((current_cmd, "\n".join(current_lines)))
-                current_cmd = m.group(1)
-                current_lines = [stripped]
-            else:
-                if current_cmd:
+        first = _first_content_line(page_text)
+        m = CMD_HEADING.match(first) if first else None
+        if m:
+            # New command starts at this page
+            if current_cmd is not None:
+                all_fragments.append((current_cmd, "\n".join(current_lines)))
+            current_cmd = m.group(1)
+            # Collect all non-header lines of this page as the start of the content
+            current_lines = []
+            for line in page_text.splitlines():
+                stripped = line.strip()
+                if stripped in PAGE_HEADERS:
+                    continue
+                current_lines.append(line)
+        else:
+            # Continuation page: append all non-header lines
+            if current_cmd is not None:
+                for line in page_text.splitlines():
+                    stripped = line.strip()
+                    if stripped in PAGE_HEADERS:
+                        continue
                     current_lines.append(line)
 
-    if current_cmd:
-        commands.append((current_cmd, "\n".join(current_lines)))
+    if current_cmd is not None:
+        all_fragments.append((current_cmd, "\n".join(current_lines)))
 
-    return commands
+    # Deduplicate: prefer fragments where the Format section references this
+    # command (strongest signal), then any fragment with a Format section,
+    # then fall back to the longest fragment.
+    # This prevents large example code blocks from displacing real docs.
+    def _score(cmd: str, raw: str) -> tuple[int, int, int]:
+        lower = raw.lower()
+        cmd_lower = cmd.lower()
+        # Check for "Format : ^CMD" or "Fo r m a t : ^CMD" pattern
+        has_own_format = int(
+            f"fo r m a t  : {cmd_lower}" in lower
+            or f"fo r m a t : {cmd_lower}" in lower
+            or f"format : {cmd_lower}" in lower
+            or f"format: {cmd_lower}" in lower
+        )
+        has_format = int("fo r m a t" in lower or "format" in lower)
+        return (has_own_format, has_format, len(raw))
+
+    best: dict[str, str] = {}
+    for cmd, raw in all_fragments:
+        if cmd not in best or _score(cmd, raw) > _score(cmd, best[cmd]):
+            best[cmd] = raw
+
+    # Return in first-seen order
+    seen: list[str] = []
+    for cmd, _ in all_fragments:
+        if cmd not in seen:
+            seen.append(cmd)
+
+    return [(cmd, best[cmd]) for cmd in seen]
 
 
 def build_markdown(cmd: str, raw: str) -> tuple[str, str]:
