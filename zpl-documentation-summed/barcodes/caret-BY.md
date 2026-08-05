@@ -59,4 +59,7 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^B3` — ^BY must precede the barcode command to set bar width
+- `^BC` — ^BY sets width/ratio for ^BC (Code 128)
+- `^B8` — ^BY sets width/ratio for ^B8 (EAN-8)
+- `^FO` — ^FO positions the barcode field

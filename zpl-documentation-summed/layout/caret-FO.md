@@ -45,4 +45,8 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^XA` — label format must be open
+- `^FD` — provides the data for the field positioned by ^FO
+- `^FS` — closes the field opened after ^FO
+- `^LH` — ^FO coordinates are relative to ^LH home position
+- `^A` — set font before ^FO for text fields

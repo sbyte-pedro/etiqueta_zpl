@@ -70,4 +70,6 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FO` — ^FO positions the serial number field
+- `^FS` — closes the ^SN field
+- `^PQ` — use ^PQ to print multiple labels with incrementing serial numbers

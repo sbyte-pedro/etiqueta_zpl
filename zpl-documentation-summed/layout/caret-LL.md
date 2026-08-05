@@ -48,4 +48,5 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^XA` — ^LL is set inside a label format to define label length
+- `^PW` — ^PW sets label width; ^LL sets label length

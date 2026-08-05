@@ -24,4 +24,6 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^XZ` — closes the label format opened by ^XA
+- `^FO` — first command inside a format to position a field
+- `^PQ` — placed before ^XZ to set print quantity

@@ -35,4 +35,7 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FO` — must precede ^FD to set field position
+- `^FS` — closes the ^FD field
+- `^A` — set font before the field for text
+- `^B3` — replace ^FD data with barcode command + ^FD for barcodes

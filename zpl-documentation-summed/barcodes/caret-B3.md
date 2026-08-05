@@ -136,4 +136,7 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^BY` — set bar width and ratio before ^B3
+- `^FO` — positions the barcode
+- `^FD` — provides the barcode data
+- `^FS` — closes the barcode field

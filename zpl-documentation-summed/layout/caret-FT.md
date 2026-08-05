@@ -78,4 +78,4 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FO` — ^FO and ^FT are alternative field-origin commands; ^FT uses absolute coordinates

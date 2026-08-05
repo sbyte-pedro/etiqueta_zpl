@@ -75,4 +75,5 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^XA` — ^PR is set inside a label format
+- `^PQ` — combine with ^PQ to control print speed and quantity

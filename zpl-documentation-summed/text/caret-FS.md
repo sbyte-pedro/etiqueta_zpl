@@ -22,4 +22,5 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FD` — ^FS closes the field data opened by ^FD
+- `^FO` — ^FO + ^FD + ^FS is the canonical field triplet

@@ -41,4 +41,5 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FO` — all ^FO coordinates are relative to ^LH
+- `^XA` — ^LH is set inside a label format

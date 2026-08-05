@@ -52,4 +52,6 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FO` — ^FO sets the origin of the graphic box
+- `^FS` — closes the ^GB field
+- `^LR` — ^LR Y inverts the graphic box fill

@@ -24,4 +24,5 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^XA` — opens the label format that ^XZ closes
+- `^PQ` — set quantity before ^XZ

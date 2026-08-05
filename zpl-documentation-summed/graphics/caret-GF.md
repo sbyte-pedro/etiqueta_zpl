@@ -64,4 +64,6 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^FO` — positions the graphic field
+- `^FS` — closes the ^GF field
+- `tilde-DG` — ~DG downloads a graphic; ^GF recalls it

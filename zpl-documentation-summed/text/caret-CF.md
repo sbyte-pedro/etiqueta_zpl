@@ -44,4 +44,4 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^A` — ^A overrides ^CF for a single field

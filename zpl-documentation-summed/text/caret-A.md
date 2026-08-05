@@ -117,4 +117,6 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^CF` — ^CF sets the default font; ^A overrides it for one field
+- `^FD` — ^A must appear before the ^FD it applies to
+- `^FO` — ^FO positions the field ^A will render into

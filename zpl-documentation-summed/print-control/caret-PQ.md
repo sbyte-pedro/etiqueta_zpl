@@ -58,4 +58,5 @@ _No example extracted. See ZPL II Programming Guide._
 
 ## Related Commands
 
-_See index.md for commands in the same group._
+- `^XA` — ^PQ is placed before ^XZ
+- `^XZ` — ^PQ before ^XZ triggers the print quantity
