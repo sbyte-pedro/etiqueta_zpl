@@ -15,7 +15,7 @@ pe r s is te nt.
 ## Format
 
 ```
-^JM
+^JMn
 ```
 
 ## Parameters

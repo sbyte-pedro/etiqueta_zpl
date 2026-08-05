@@ -14,6 +14,7 @@ a m ou nt of RA M  a nd  m a x im u m  a m ou nt of RA M  d oe s  not ch a ng e 
 ## Format
 
 ```
+~HM
 E x a m p le : Th is  e x a m ple  s h ow s  w h e n th e  ~HM is  s e nt to th e  printe r, a  line  of d a ta  conta ining  th re e  nu m b e r s
 a re  s e nt b a ck  to th e  h os t. E a ch  s e t of nu m b e r s  is  id e ntiﬁ e d  a nd  e x pla ine d  in th e  ta b le  th a t follow s :
 1024,0780,0780

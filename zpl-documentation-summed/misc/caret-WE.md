@@ -17,6 +17,9 @@ s lots  a nd  ca n pre v e nt th e  printe r  from  joining  th e  w ire le s s 
 ## Format
 
 ```
+^WEa,b,c,d,e,f,g,h
+^WLa,b,c
+~WL
 Fig u r e  17/uni00A0/uni00A0/uni00A0/uni00A0 Ne tw ork  C onﬁ g u ra tion La b e l
 ```
 

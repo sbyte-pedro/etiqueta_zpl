@@ -11,7 +11,7 @@ Th e  ^PH com m a nd  fe e d s  one  b la nk  la b e l a fte r  th e  cu rre nt 
 ## Format
 
 ```
-^PH
+^PH or ~PH
 ```
 
 ## Parameters

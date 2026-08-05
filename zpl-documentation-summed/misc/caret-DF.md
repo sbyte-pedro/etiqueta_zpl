@@ -17,7 +17,8 @@ th e  s e cond  g ra ph ic.
 ## Format
 
 ```
-^DF
+^DFd:o.x
+~DGd:o.x,t,w,data
 ```
 
 ## Parameters

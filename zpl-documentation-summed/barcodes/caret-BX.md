@@ -9,7 +9,7 @@ Da t a  Ma t r ix  Ba r c o d e
 ## Format
 
 ```
-^BX
+^BXo,h,s,c,r,f,g,a
 ```
 
 ## Parameters

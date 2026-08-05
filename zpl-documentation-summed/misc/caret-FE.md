@@ -11,7 +11,7 @@ th a t ^FD.
 ## Format
 
 ```
-^FE
+^FEa
 ```
 
 ## Parameters

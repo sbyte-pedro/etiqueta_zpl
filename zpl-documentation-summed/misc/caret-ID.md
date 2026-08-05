@@ -12,7 +12,7 @@ e a s ily  d e le te  a  s e le cte d  g rou ps  of ob je cts .
 ## Format
 
 ```
-^ID
+^IDd:o.x
 ```
 
 ## Parameters

@@ -26,7 +26,7 @@ If th e  proce d u re  a b ov e  is  u s e d , th e  e nd  of th e  la b e l for
 ## Format
 
 ```
-^SP
+^SPa
 ```
 
 ## Parameters

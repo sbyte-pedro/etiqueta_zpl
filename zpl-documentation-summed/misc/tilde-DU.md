@@ -21,7 +21,8 @@ See ^ID on pa g e  245.
 ## Format
 
 ```
-~DU
+~DUd:o.x,s,data
+~ D Vd :f,b ,x ,t,w ,d a ta
 ```
 
 ## Parameters

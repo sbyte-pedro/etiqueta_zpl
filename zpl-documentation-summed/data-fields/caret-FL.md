@@ -30,7 +30,7 @@ SWISS721.TTF font.
 ## Format
 
 ```
-^FL
+^FL<ext>,<base>,<link>
 ```
 
 ## Parameters

@@ -12,7 +12,7 @@ S u p p o r t e d  De v ic e s :
 ## Format
 
 ```
-^PN
+^PNa
 ```
 
 ## Parameters

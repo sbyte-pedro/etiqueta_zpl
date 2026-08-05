@@ -10,6 +10,7 @@ b a ck g rou nd  of th e  ne x t la b e l printe d .
 ## Format
 
 ```
+^MCa
 IMPORTA NT: To prod u ce  a  la b e l te m pla te , ^MC m u s t b e  u s e d  w ith  ^FV.
 ```
 

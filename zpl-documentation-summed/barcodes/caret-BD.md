@@ -23,6 +23,8 @@ th e  h e x a d e cim a l v a lu e  follow ing  th e  u nd e r s core  ch a ra c
 ## Format
 
 ```
+^B D m ,n,t
+^FD <hpm><lpm>
 Tr a c k in g  Nu m b e r * <tra ck ing  nu m b e r >
 S CA C*G S <S C A C >
 U PS  S h ip p e r  Nu m b e r /uni00A0 G S <s h ippe r  nu m b e r >

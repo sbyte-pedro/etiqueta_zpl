@@ -25,7 +25,7 @@ Ta b le  12/uni00A0/uni00A0/uni00A0/uni00A0 Re s u lts  of C h e ck  for  W ire 
 ## Format
 
 ```
-^NB
+^NBa
 ```
 
 ## Parameters

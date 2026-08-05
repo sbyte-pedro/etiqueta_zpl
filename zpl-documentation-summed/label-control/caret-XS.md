@@ -10,7 +10,7 @@ S e t  Dy n a m ic  Me d ia  Ca lib r a t io n
 ## Format
 
 ```
-^XS
+^XSlength,threshold
 ```
 
 ## Parameters

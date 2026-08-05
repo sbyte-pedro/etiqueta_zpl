@@ -9,7 +9,7 @@ Th is  com m a nd  is  a v a ila b le  only  for  printe r s  w ith  ﬁ rm w a 
 ## Format
 
 ```
-^PA
+^PAa,b,c,d
 ```
 
 ## Parameters

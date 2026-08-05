@@ -10,6 +10,7 @@ a d d re s s  (12 3.45.67 .89).
 ## Format
 
 ```
+^SXa,b,c,d,e,f
 NOTE : Th e  v a lu e s  in th is  ta b le  a pply  to ﬁ rm w a re  v e r s ion V48.12 .4 or  la te r.
 ```
 

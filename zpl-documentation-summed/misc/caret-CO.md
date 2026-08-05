@@ -36,7 +36,7 @@ NOTE : If y ou  h a v e  ﬁ rm w a re  x .12  or  g re a te r  th is  com m a n
 ## Format
 
 ```
-^CO
+^COa,b,c
 ```
 
 ## Parameters

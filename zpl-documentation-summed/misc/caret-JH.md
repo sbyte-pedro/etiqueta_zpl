@@ -14,7 +14,7 @@ E a r ly  W a r n in g  S e t t in g s
 ## Format
 
 ```
-^JH
+^JHa,b,c,d,e,f,g,h,i,j
 ```
 
 ## Parameters

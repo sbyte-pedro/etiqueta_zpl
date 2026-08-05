@@ -14,7 +14,7 @@ fu r th e r  inform a tion on th e  M od  43 ch e ck  d ig it, g o toM od  10  C
 ## Format
 
 ```
-^BL
+^BLo,h,g
 ```
 
 ## Parameters

@@ -9,7 +9,7 @@ Set SMTP
 ## Format
 
 ```
-^NT
+^NTa ,b
 ```
 
 ## Parameters

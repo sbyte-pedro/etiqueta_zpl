@@ -10,7 +10,7 @@ com m a nd s  w ith in th e  ^FX s ta te m e nt.
 ## Format
 
 ```
-^FX
+^FXc
 ```
 
 ## Parameters

@@ -12,7 +12,7 @@ g e t incre m e nte d , th e  m a s k  ch a ra cte r  %  ne e d s  to b e  a d d
 ## Format
 
 ```
-^SF
+^SFa,b
 ```
 
 ## Parameters

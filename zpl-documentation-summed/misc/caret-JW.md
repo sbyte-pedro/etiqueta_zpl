@@ -8,7 +8,7 @@ S e t  Rib b o n  Te n s io n
 ## Format
 
 ```
-^JW
+^JWt
 ```
 
 ## Parameters

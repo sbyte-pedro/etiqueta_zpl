@@ -10,7 +10,7 @@ Z a nd  0  to 9, ca n a ls o b e  s e le cte d  w ith  ^CW.
 ## Format
 
 ```
-^CF
+^CFf,h,w
 ```
 
 ## Parameters

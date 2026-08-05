@@ -11,7 +11,7 @@ com m a nd  is  e ncou nte re d .
 ## Format
 
 ```
-^BY
+^BYw,r,h
 ```
 
 ## Parameters

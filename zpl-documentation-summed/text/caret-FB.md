@@ -36,7 +36,7 @@ Th e  ^FB com m a nd  d oe s  not s u ppor t com ple x  te x t. For  com ple x  
 ## Format
 
 ```
-^FB
+^FBa,b,c,d,e
 ```
 
 ## Parameters

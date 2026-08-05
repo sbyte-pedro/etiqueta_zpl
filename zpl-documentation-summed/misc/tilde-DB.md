@@ -11,7 +11,7 @@ s e g m e nt th a t d e ﬁ ne s  e a ch  ch a ra cte r  of th e  font.
 ## Format
 
 ```
-~DB
+~DBd:o.x,a,h,w,base,space,#char,©,data
 ```
 
 ## Parameters

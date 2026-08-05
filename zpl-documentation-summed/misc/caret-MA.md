@@ -18,7 +18,7 @@ Th e  inte nt of th is  com m a nd  is  to ca u s e  a  la b e l to print w h e 
 ## Format
 
 ```
-^MA
+^MAtype,print,printlabel_threshold,frequency,units
 ```
 
 ## Parameters

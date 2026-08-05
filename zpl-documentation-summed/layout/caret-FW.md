@@ -16,7 +16,7 @@ a  s pe ciﬁ c ju s tiﬁ ca tion pa ra m e te r, th a t v a lu e  is  u s e d 
 ## Format
 
 ```
-^FW
+^FWr,z
 ```
 
 ## Parameters

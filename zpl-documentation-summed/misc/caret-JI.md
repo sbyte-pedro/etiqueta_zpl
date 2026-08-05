@@ -22,7 +22,7 @@ ZPL a t th e  ZB I prom pt
 ## Format
 
 ```
-^JI
+^JId:o.x,b,c,d
 ```
 
 ## Parameters

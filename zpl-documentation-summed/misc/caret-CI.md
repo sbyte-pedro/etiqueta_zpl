@@ -15,7 +15,7 @@ In x .14 v e r s ion of ﬁ rm w a re  a nd  la te r, th is  com m a nd  a llow 
 ## Format
 
 ```
-^CI
+^CIa,s1,d1,s2,d2,...
 ```
 
 ## Parameters

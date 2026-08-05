@@ -10,7 +10,7 @@ d e te rm ine  w h a t m od e  to u s e  b a s e d  on th e  nu m b e r  of ch a
 ## Format
 
 ```
-^BT
+^BTo,w1,r1,h1,w2,h2
 ```
 
 ## Parameters

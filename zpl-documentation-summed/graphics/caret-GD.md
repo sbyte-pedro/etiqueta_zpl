@@ -9,7 +9,7 @@ Gr a p h ic  Dia g o n a l Lin e
 ## Format
 
 ```
-^GD
+^GDw,h,t,c,o
 ```
 
 ## Parameters

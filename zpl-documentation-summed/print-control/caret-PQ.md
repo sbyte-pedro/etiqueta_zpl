@@ -10,7 +10,7 @@ Pr in t  Q u a n t it y
 ## Format
 
 ```
-^PQ
+^PQq,p,r,o,e
 ```
 
 ## Parameters

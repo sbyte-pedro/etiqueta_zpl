@@ -8,7 +8,7 @@ Set SNMP
 ## Format
 
 ```
-^NN
+^NNa ,b ,c,d ,e ,f
 ```
 
 ## Parameters

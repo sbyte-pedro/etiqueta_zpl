@@ -9,7 +9,7 @@ Gr a p h ic  Cir c le
 ## Format
 
 ```
-^GC
+^GCd,t,c
 ```
 
 ## Parameters

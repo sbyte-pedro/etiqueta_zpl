@@ -11,7 +11,7 @@ s oftw a re  re s e ts .
 ## Format
 
 ```
-^SC
+^SCa,b,c,d,e,f
 ```
 
 ## Parameters

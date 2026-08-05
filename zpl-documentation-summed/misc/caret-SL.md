@@ -16,7 +16,7 @@ For  m ore  d e ta ils  on s e t m od e  a nd  la ng u a g e  w ith  th e  Re a 
 ## Format
 
 ```
-^SL
+^SLa,b
 ```
 
 ## Parameters

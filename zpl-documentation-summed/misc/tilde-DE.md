@@ -30,7 +30,7 @@ D a ta  m u s t h a v e  0 0 41, 0 0 42 , 0 0 43, a nd  0 0 44 in ord e r. M u l
 ## Format
 
 ```
-~DE
+~DEd:o.x,s,data
 ```
 
 ## Parameters

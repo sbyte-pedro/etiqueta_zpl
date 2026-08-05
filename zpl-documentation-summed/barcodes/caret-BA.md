@@ -168,7 +168,7 @@ O
 ## Format
 
 ```
-^BA
+^BAo,h,f,g,e
 ```
 
 ## Parameters

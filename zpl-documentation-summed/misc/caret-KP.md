@@ -15,7 +15,7 @@ De ﬁ n e  Pa s s w o r d
 ## Format
 
 ```
-^KP
+^KPa,b
 ```
 
 ## Parameters

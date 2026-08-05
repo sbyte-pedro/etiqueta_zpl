@@ -14,7 +14,7 @@ re m a ins  in e ffe ct u ntil a  ne w  com m a nd  is  is s u e d  or  th e  pr
 ## Format
 
 ```
-^CW
+^CWa,d:o.x
 ```
 
 ## Parameters

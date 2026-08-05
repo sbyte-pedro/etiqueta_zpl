@@ -10,7 +10,7 @@ Gr a p h ic  Bo x
 ## Format
 
 ```
-^GB
+^GBw,h,t,c,r
 ```
 
 ## Parameters

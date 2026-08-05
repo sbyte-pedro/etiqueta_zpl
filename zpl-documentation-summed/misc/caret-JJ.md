@@ -8,7 +8,7 @@ S e t  A u x ilia r y  Po r t
 ## Format
 
 ```
-^JJ
+^JJa,b,c,d,e,f
 ```
 
 ## Parameters

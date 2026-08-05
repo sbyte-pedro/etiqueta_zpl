@@ -11,7 +11,7 @@ NOTE : Th e  ^FT com m a nd  is  ca pa b le  of th e  conca te na tion of ﬁ e 
 ## Format
 
 ```
-^FT
+^FTx,y,z
 ```
 
 ## Parameters

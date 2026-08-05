@@ -12,7 +12,7 @@ th e  th rou g h pu t of th e  la b e l form a t.
 ## Format
 
 ```
-^IL
+^ILd:o.x
 ```
 
 ## Parameters

@@ -226,7 +226,7 @@ RELEASE VERSION:             15.01
 ## Format
 
 ```
-~HQ
+~HQquery-type
 ```
 
 ## Parameters

@@ -17,7 +17,7 @@ u s e d  a s  a  line  b re a k  pos ition.
 ## Format
 
 ```
-^TB
+^TBa,b,c
 ```
 
 ## Parameters

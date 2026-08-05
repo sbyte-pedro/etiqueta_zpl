@@ -10,7 +10,7 @@ Ho s t  V e r iﬁ c a t io n
 ## Format
 
 ```
-^HV
+^HV#,n,h,t,a
 ```
 
 ## Parameters

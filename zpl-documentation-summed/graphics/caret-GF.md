@@ -10,7 +10,7 @@ Gr a p h ic  Fie ld
 ## Format
 
 ```
-^GF
+^GFa,b,c,d,data
 ```
 
 ## Parameters

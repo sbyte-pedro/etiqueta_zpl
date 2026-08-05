@@ -10,7 +10,8 @@ Dis p la y  De s c r ip t io n  In f o r m a t io n
 ## Format
 
 ```
-^HZ
+^HZb
+^HZO,d:o.x,l
 ```
 
 ## Parameters

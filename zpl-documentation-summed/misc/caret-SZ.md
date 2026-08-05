@@ -15,6 +15,8 @@ Te a r - o f f  A d ju s t  Po s it io n
 ## Format
 
 ```
+^SZa
+~TA###
 IMPORTA NT: Th e s e  a re  s om e  im por ta nt fa cts  a b ou t th is  com m a nd :
 • For  60 0  d pi printe r s , th e  s te p s iz e  d ou b le s .
 • If th e  nu m b e r  of ch a ra cte r s  is  le s s  t h a n  3, th e  com m a nd  is  ig nore d .

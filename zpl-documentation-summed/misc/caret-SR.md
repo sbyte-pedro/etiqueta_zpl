@@ -20,7 +20,9 @@ S e t  Da t e  a n d  Tim e  (f o r  Re a l- Tim e  Clo c k )
 ## Format
 
 ```
-^SR
+^SR####
+^SSw,m,r,l,m2,r2,a,b,c
+^STa,b,c,d,e,f,g
 ```
 
 ## Parameters

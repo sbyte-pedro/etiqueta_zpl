@@ -18,7 +18,7 @@ Fie ld  d a ta  (^FD) a nd  ﬁ e ld  h e x a d e cim a l (^FH) a re  lim ite d 
 ## Format
 
 ```
-^BF
+^BFo,h,m
 ```
 
 ## Parameters
@@ -39,6 +39,7 @@ De f a u lt : 0 (s e e  Ta b le  5/uni00A0/uni00A0/uni00A0/uni00A0M icroPD F417 
 ## Example
 
 ```zpl
+Th is  is  a n e x a m ple  of a  M icroPD F417  b a rcod e :
 To e ncod e  d a ta  into a  M icroPD F417  b a rcod e , com ple te  th e s e  s te ps :
 1. D e te rm ine  th e  ty pe  of d a ta  to b e  e ncod e d  (for  e x a m ple , A S C II ch a ra cte r s , nu m b e r s , 8-b it d a ta , or  a
 com b ina tion).

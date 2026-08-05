@@ -25,6 +25,8 @@ Th e  HC 10 0 ™  printe r  d oe s  not pe r form  a  ca lib ra tion, b u t d o
 ## Format
 
 ```
+~JFp
+~JG
 S e nd ing  th e  ~JG com m a nd  to a  printe r  conﬁ g u re d  for  th e rm a l tra ns fe r  prod u ce s  a  s e rie s  of la b e ls
 re s e m b ling  th is  im a g e :
 ```

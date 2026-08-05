@@ -12,7 +12,7 @@ b ou nd a r y .
 ## Format
 
 ```
-^IM
+^IMd:o.x
 ```
 
 ## Parameters

@@ -10,7 +10,7 @@ Th e  com m a nd s  ~NC, ^NI, ~NR, and ~NT a re  u s e d  only  w ith  RS -485 p
 ## Format
 
 ```
-^NI
+^NI###
 ```
 
 ## Parameters

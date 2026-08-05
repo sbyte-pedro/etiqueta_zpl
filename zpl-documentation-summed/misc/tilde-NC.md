@@ -12,7 +12,7 @@ Th e  com m a nd s  ^MW, ~ NC, ^NI, ~NR, and ~NT a re  u s e d  only  w ith  RS 
 ## Format
 
 ```
-~NC
+~NC###
 ```
 
 ## Parameters

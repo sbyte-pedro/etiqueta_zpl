@@ -8,7 +8,7 @@ Co n ﬁ g u r a t io n  U p d a t e
 ## Format
 
 ```
-^JU
+^JUa
 ```
 
 ## Parameters

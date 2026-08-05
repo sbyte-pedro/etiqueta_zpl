@@ -10,7 +10,7 @@ com m a nd  is  a lw a y s  e ncod e d  in th e  ZB 64 form a t.
 ## Format
 
 ```
-^HY
+^HYd:o.x
 ```
 
 ## Parameters

@@ -13,7 +13,7 @@ If th e  pa ra m e te r  is  m is s ing  or  incorre ct, th e  com m a nd  is  i
 ## Format
 
 ```
-^JZ
+^JZa
 ```
 
 ## Parameters

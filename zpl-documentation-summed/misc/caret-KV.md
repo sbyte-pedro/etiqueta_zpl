@@ -11,7 +11,7 @@ S u p p o r t e d  De v ic e s :
 ## Format
 
 ```
-^KV
+^KVa,b,c,d,e
 ```
 
 ## Parameters

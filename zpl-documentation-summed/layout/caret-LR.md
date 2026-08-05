@@ -12,7 +12,7 @@ O nly  ﬁ e ld s  follow ing  th is  com m a nd  a re  a ffe cte d .
 ## Format
 
 ```
-^LR
+^LRa
 ```
 
 ## Parameters

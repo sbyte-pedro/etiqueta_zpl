@@ -23,7 +23,7 @@ Th e  ^FN1"Name" w ou ld  re s u lt in "Name" b e ing  u s e d  a s  th e  prom 
 ## Format
 
 ```
-^FN
+^FN#"a"
 ```
 
 ## Parameters

@@ -10,7 +10,7 @@ NOTE : Th e  A z te c b a rcod e  w ork s  w ith  ﬁ rm w a re  v e r s ion V60
 ## Format
 
 ```
-^BO
+^BOa,b,c,d,e,f,g
 ```
 
 ## Parameters

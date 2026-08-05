@@ -33,7 +33,7 @@ ta k e s  pla ce  b e fore  th e  ne x t la b e l is  printe d .
 ## Format
 
 ```
-~JS
+~JSb
 ```
 
 ## Parameters

@@ -9,7 +9,7 @@ Re s e t  A d v a n c e d  Co u n t e r s
 ## Format
 
 ```
-~RO
+~ROc
 ```
 
 ## Parameters

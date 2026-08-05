@@ -8,6 +8,7 @@ S e n s o r  S e le c t
 ## Format
 
 ```
+^JSa
 NOTE : Th is  com m a nd  is  only  for  u s e  w ith  th e  S 4M  a nd  s om e  Z S e rie s  printe r s . Th is  com m a nd  is
 ig nore d  on Ze b ra  ZM 40 0 /ZM 60 0  a nd  RZ40 0 /RZ60 0  printe r s .
 ```

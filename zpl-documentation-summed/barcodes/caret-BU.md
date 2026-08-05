@@ -16,7 +16,7 @@ inform a tion on M od  10 , s e e  M od  10  C h e ck  D ig it on pa g e  1591 .
 ## Format
 
 ```
-^BU
+^BUo,h,f,g,e
 ```
 
 ## Parameters

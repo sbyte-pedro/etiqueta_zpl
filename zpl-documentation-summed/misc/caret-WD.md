@@ -11,7 +11,7 @@ ob je ct, e x te ns ion, s iz e , a nd  option ﬂ a g s . A ll lis ts  a re  e 
 ## Format
 
 ```
-^WD
+^WDd:o.x
 ```
 
 ## Parameters

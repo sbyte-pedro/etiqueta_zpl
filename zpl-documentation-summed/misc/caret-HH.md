@@ -8,6 +8,7 @@ Co n ﬁ g u r a t io n  La b e l Re t u r n
 ## Format
 
 ```
+^HH
 E x a m p le : Th is  is  a n e x a m ple  of w h a t is  re tu rne d  to th e  h os t w h e n ^XA^HH^XZ is  s e nt to th e  printe r:
 ```
 

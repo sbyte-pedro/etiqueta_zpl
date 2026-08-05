@@ -10,6 +10,7 @@ Ho s t  Id e n t iﬁ c a t io n
 ## Format
 
 ```
+~HI
 W h e n th e  printe r  re ce iv e s  th is  com m a nd , it re tu rns :
 XXXXXX,V1.0.0,dpm,000KB,X
 X X X X X X  = m od e l of Ze b ra  printe r

@@ -13,6 +13,7 @@ S u p p o r t e d  De v ic e s :
 ## Format
 
 ```
+^CNa
 Pa ra m e te r s D e ta ils
 a = C u t M od e  O v e rrid e V a lu e s :
 0 = Us e  th e  “k ios k  cu t a m ou nt” s e tting  from  ^KV

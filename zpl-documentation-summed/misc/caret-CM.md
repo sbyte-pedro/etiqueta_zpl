@@ -23,7 +23,7 @@ s e nt to or  re a d  from  th e  E : m e m or y  loca tion.
 ## Format
 
 ```
-^CM
+^CMa,b,c,d
 ```
 
 ## Parameters

@@ -176,12 +176,21 @@ def build_markdown(cmd: str, raw: str) -> tuple[str, str]:
         low = l.lower()
         if low.startswith("fo r m a t") or low.startswith("format"):
             section = "format"
+            after_colon = l.split(":", 1)[1].strip() if ":" in l else ""
+            if after_colon:
+                format_lines.append(after_colon)
             continue
         if low.startswith("pa r a m e t e r") or low.startswith("parameter"):
             section = "params"
+            after_colon = l.split(":", 1)[1].strip() if ":" in l else ""
+            if after_colon:
+                param_lines.append(after_colon)
             continue
         if low.startswith("e x a m ple") or low.startswith("example"):
             section = "example"
+            after_colon = l.split(":", 1)[1].strip() if ":" in l else ""
+            if after_colon:
+                example_lines.append(after_colon)
             continue
         if low.startswith("co m m e n t") or low.startswith("comment"):
             section = "description"  # comments fold back into description

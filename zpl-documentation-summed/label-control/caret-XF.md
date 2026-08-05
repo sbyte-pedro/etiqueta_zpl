@@ -13,7 +13,7 @@ b e ing  re ca lle d  is  s a v e d  a s  te x t s tring s  th a t ne e d  to b 
 ## Format
 
 ```
-^XF
+^XFd:o.x
 ```
 
 ## Parameters

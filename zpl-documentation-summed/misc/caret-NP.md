@@ -15,7 +15,7 @@ for  th e  w ire d  print s e r v e r  a nd  th e  Prim a r y  D e v ice  is  s 
 ## Format
 
 ```
-^NP
+^NPa
 ```
 
 ## Parameters

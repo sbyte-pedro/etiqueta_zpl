@@ -60,12 +60,15 @@ m a nu a ls .
 ## Format
 
 ```
+^WXa,[zero or more supporting parameters]
+^WX01
 E x a m p le : Th is  e x a m ple  tu rns  off a ll w ire le s s  s e cu ritie s  controlle d  u nd e r  th is  com m a nd , b u t it d oe s  not re s e t
 th e  printe r’s  w ire le s s  s e tting s  to th e ir  d e fa u lts .
 ^XA
 ^WX01
 ^JUS^XZ
 S e c u r it y  Ty p e  02: W E P 40- Bit
+^W X 0 2 ,b ,c,d ,e ,f,g ,h
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W E P 40 -b it e ncr y ption u s ing  ind e x  k e y /uni00A01, ope n
 a u th e ntica tion, a nd  a  h e x a d e cim a l W E P k e y  w ith  a  v a lu e  of “A1B2C3D4F5.”
 ^XA
@@ -74,6 +77,7 @@ a u th e ntica tion, a nd  a  h e x a d e cim a l W E P k e y  w ith  a  v a lu 
 ^XZ
 NOTE : Th is  is  no long e r  v a lid  for  Link  O S  6 printe r s .
 S e c u r it y  Ty p e  03: W E P 128- Bit
+^W X 0 3,b ,c,d ,e ,f,g ,h
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W E P 12 8-b it e ncr y ption u s ing  ind e x  k e y /uni00A02 , ope n
 a u th e ntica tion, a nd  fou r  h e x a d e cim a l W E P k e y s .
 ^XA
@@ -81,6 +85,7 @@ a u th e ntica tion, a nd  fou r  h e x a d e cim a l W E P k e y s .
 ^XZ
 NOTE : Th is  com m a nd  is  not v a lid  for  printe r s  ru nning  Link  O S  6 or  la te r  v e r s ions .
 S e c u r it y  Ty p e  04: E A P- TLS
+^W X 0 4,k
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  E A P-TLS  a u th e ntica tion w ith  a n optiona l priv a te  k e y
 pa s s w ord  w ith  a  v a lu e  of “private.”
 ^XA
@@ -88,6 +93,7 @@ pa s s w ord  w ith  a  v a lu e  of “private.”
 ^JUS
 ^XZ
 S e c u r it y  Ty p e  05 : E A P- TTLS
+^W X 0 5,i,j
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  E A P-TTLS  a u th e ntica tion, inclu d ing  a  u s e r  ID  of “user”
 a nd  a  pa s s w ord  of “password.”
 ^XA
@@ -95,6 +101,7 @@ a nd  a  pa s s w ord  of “password.”
 ^JUS
 ^XZ
 S e c u r it y  Ty p e  06 : E A P- FA S T
+^W X 0 6,i,j,k
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  E A P-FA S T a u th e ntica tion, inclu d ing  a  u s e r  ID  of “user,” a
 pa s s w ord  of “password,” a nd  a n optiona l priv a te  k e y  of “private.”
 ^XA
@@ -102,6 +109,7 @@ pa s s w ord  of “password,” a nd  a n optiona l priv a te  k e y  of “pri
 ^JUS
 ^XZ
 S e c u r it y  Ty p e  07: PE A P
+^W X 0 7 ,i,j
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  PE A P a u th e ntica tion, inclu d ing  a  u s e r  ID  w ith  a  v a lu e  of
 “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “password.”
 ^XA
@@ -109,6 +117,7 @@ E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  PE A P 
 ^JUS
 ^XZ
 S e c u r it y  Ty p e  08: LE A P
+^W X 0 8,i,j
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  LE A P a u th e ntica tion, inclu d ing  a  u s e r  ID  w ith  a  v a lu e  of
 “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “password.”
 ^XA
@@ -118,6 +127,7 @@ E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  LE A P 
 S e c u r it y  Ty p e  09: W PA  PS K
 NOTE : C onﬁ g u ring  th e  printe r  for  W PA  a ls o a llow s  th e  printe r  to b e  u s e d  in W PA 2  e nv ironm e nts
 (R6x 15.x , R53.15.x , ZS Px , a nd  la te r.)
+^W X 0 9,n
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  PS K a u th e ntica tion w ith  a  PS K v a lu e  of a ll z e roe s
 (64 h e x a d e cim a l d ig its ).
 ^XA
@@ -126,6 +136,7 @@ E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  P
 S e c u r it y  Ty p e  10: W PA  E A P- TLS
 NOTE : C onﬁ g u ring  th e  printe r  for  W PA  a ls o a llow s  th e  printe r  to b e  u s e d  in W PA 2
 e nv ironm e nts .
+^W X 10 ,k
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  E A P-TLS  a u th e ntica tion w ith  a n optiona l priv a te
 k e y  pa s s w ord  w ith  a  v a lu e  of “private.”
 ^XA
@@ -135,6 +146,7 @@ k e y  pa s s w ord  w ith  a  v a lu e  of “private.”
 S e c u r it y  Ty p e  11: W PA  E A P- TTLS
 NOTE : C onﬁ g u ring  th e  printe r  for  W PA  a ls o a llow s  th e  printe r  to b e  u s e d  in W PA 2
 e nv ironm e nts .
+^W X 11,i,j
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  E A P-TTLS  a u th e ntica tion, inclu d ing  a  u s e r  ID  w ith
 a  v a lu e  of “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “password.”
 ^XA
@@ -144,6 +156,7 @@ a  v a lu e  of “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “pass
 S e c u r it y  Ty p e  12: W PA  E A P- FA S T
 NOTE : C onﬁ g u ring  th e  printe r  for  W PA  a ls o a llow s  th e  printe r  to b e  u s e d  in W PA 2
 e nv ironm e nts .
+^W X 12 ,i,j,k
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  E A P-FA S T a u th e ntica tion, inclu d ing  a  u s e r  ID  of
 “user,” a  pa s s w ord  of “password,” a nd  a n optiona l priv a te  k e y  of “private.”
 ^XA
@@ -153,6 +166,7 @@ E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  E
 S e c u r it y  Ty p e  13: W PA  PE A P
 NOTE : C onﬁ g u ring  th e  printe r  for  W PA  a ls o a llow s  th e  printe r  to b e  u s e d  in W PA 2
 e nv ironm e nts .
+^W X 13,i,j
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  PE A P a u th e ntica tion, inclu d ing  a  u s e r  ID  w ith  a
 v a lu e  of “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “password.”
 ^XA
@@ -162,6 +176,7 @@ v a lu e  of “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “passwor
 S e c u r it y  Ty p e  14: W PA  LE A P
 NOTE : C onﬁ g u ring  th e  printe r  for  W PA  a ls o a llow s  th e  printe r  to b e  u s e d  in W PA 2
 e nv ironm e nts .
+^W X 14,i,j
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  W PA  LE A P a u th e ntica tion, inclu d ing  a  u s e r  ID  w ith  a
 v a lu e  of “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “password.”
 ^XA
@@ -169,6 +184,7 @@ v a lu e  of “user” a nd  a  pa s s w ord  w ith  a  v a lu e  of “passwor
 ^JUS
 ^XZ
 S e c u r it y  Ty p e  15 : K e r b e r o s
+^W X 15,i,j,l,m
 E x a m p le : Th is  e x a m ple  conﬁ g u re s  th e  printe r  for  Ke rb e ros  e ncr y ption, inclu d ing  a  Ke rb e ros  u s e r  ID  w ith
 a  v a lu e  of “user,” a  Ke rb e ros  pa s s w ord  w ith  a  v a lu e  of “password,” a  re a lm  of “zebra,” a nd  a  KD C  of
 “krbtgt.”
@@ -194,6 +210,7 @@ d a ta  log . Th e  RFID  h os t log s  ca n b e  e na b le d  or  d is a b le d
 (s e e  r ﬁ d .log .e na b le d  on pa g e  1562 ).
 • In ﬁ rm w a re  X .2 0 .15Z a nd  e a rlie r, log g ing  is  e na b le d  b y  d e fa u lt. B oth  com m a nd s  cle a r  th e  cu rre nt d a ta
 log  a nd  re s ta r t d a ta  re cord ing .
+^HL or ~HL
 In th e  log , RFID  d a ta  d is pla y s  in th is  form a t:
 [date&time][RFID operation],[program position],[antenna element],
 [read or write power], [RFID status],[data]
@@ -229,10 +246,19 @@ PPOS =/uni00A0prog ra m  pos ition
 FFFFFFFF (or  lim ite d  to le ng th  FFFF for  s om e  printe r s ) = ind ica te s  th a t th e  log  ﬁ le  w a s  re s e t
 • [d a ta ]
 th e  d a ta  re a d  or  w ritte n
+^HRa,b,c,d,e,f,g,h,i
+^RBn,p0,p1,p2, ..., p15
+^RFo,f,b,n,m
+^RLP
 ^RLB –  Pe r m a n e n t ly  Lo c k  S p e c iﬁ e d  Me m o r y  S e c t io n s
 Th e  ^RLB com m a nd  pe rm a ne ntly  lock s  (pe rm a lock s ) one  or  m ore  s e ctions  (ind iv id u a l  sub‑portions)  in
 a  ta g ’s  u s e r  m e m or y . Th e  s e ction s iz e s  for  e a ch  ta g  is  d e ﬁ ne d  b y  th e  ta g  m a nu fa ctu re r.
+^RLB,s,n
+^RLM,k,a,e,u
 ZPL RFID  C om m a nd s
+^RSt,p,v,n,e,a,c,s
+^RUa,b
+^RW r,w ,a
 ```
 
 ## Parameters

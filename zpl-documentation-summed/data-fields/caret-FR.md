@@ -10,6 +10,7 @@ Fie ld  Re v e r s e  Pr in t
 ## Format
 
 ```
+^FR
 E x a m p le : In th is  e x a m ple , th e  ^GB com m a nd  cre a te s  a re a s  of b la ck , a llow ing  th e  printing  to a ppe a r  w h ite :
 ```
 

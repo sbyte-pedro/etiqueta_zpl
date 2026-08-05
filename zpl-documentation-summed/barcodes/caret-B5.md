@@ -9,7 +9,7 @@ Pla n e t  Co d e  Ba r c o d e
 ## Format
 
 ```
-^B5
+^B5o,h,f,g
 ```
 
 ## Parameters

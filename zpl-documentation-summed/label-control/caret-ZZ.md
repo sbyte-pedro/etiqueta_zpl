@@ -14,7 +14,8 @@ S e t  Clie n t  Id e n t iﬁ e r  (Op t io n  6 1)
 ## Format
 
 ```
-^ZZ
+^ZZt,b
+^KCa,b,c,d
 ```
 
 ## Parameters

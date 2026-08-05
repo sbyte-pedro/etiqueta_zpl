@@ -11,7 +11,8 @@ S e t  W e b  A u t h e n t ic a t io n  Tim e o u t  V a lu e
 ## Format
 
 ```
-^NW
+^NWa
+^W A a ,b
 ```
 
 ## Parameters

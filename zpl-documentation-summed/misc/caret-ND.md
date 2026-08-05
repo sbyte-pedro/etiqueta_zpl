@@ -10,7 +10,7 @@ w ire le s s  print s e r v e r  s e tting s , th e  ^ND com m a nd  is  th e  s
 ## Format
 
 ```
-^ND
+^NDa,b,c,d,e,f,g,h,i,j
 ```
 
 ## Parameters

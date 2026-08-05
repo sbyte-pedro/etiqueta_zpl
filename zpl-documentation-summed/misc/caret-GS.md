@@ -9,7 +9,7 @@ Gr a p h ic  S y m b o l
 ## Format
 
 ```
-^GS
+^GSo,h,w
 ```
 
 ## Parameters

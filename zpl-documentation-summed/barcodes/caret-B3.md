@@ -96,7 +96,7 @@ Ta b le  1/uni00A0/uni00A0/uni00A0/uni00A0 C od e  39 /uni00A0A S C II S e t/uni
 ## Format
 
 ```
-^B3
+^B3o,e,h,f,g
 ```
 
 ## Parameters

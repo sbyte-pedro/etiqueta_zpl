@@ -16,7 +16,7 @@ th e  printe r  or  s e nd  a  ne w  ^LH com m a nd  to th e  printe r.
 ## Format
 
 ```
-^LH
+^LHx,y
 ```
 
 ## Parameters

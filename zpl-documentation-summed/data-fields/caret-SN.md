@@ -44,7 +44,7 @@ cons e cu tiv e  s e q u e nce  of d ig its , inclu d ing  a ny  le a d ing  s p
 ## Format
 
 ```
-^SN
+^SNv,n,z
 ```
 
 ## Parameters

@@ -8,7 +8,7 @@ Me d ia  Da r k n e s s
 ## Format
 
 ```
-^MD
+^MDa
 ```
 
 ## Parameters

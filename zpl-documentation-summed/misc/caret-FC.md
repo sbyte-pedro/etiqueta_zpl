@@ -12,7 +12,7 @@ For  m ore  d e ta ils  on th e  Re a l Tim e  C lock , s e e  Re a l Tim e  C l
 ## Format
 
 ```
-^FC
+^FCa,b,c
 ```
 
 ## Parameters

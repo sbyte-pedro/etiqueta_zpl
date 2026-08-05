@@ -9,7 +9,7 @@ Mo d if y  He a d  Co ld  W a r n in g
 ## Format
 
 ```
-^MW
+^MWa
 ```
 
 ## Parameters

@@ -8,7 +8,7 @@ De c o m m is s io n in g  Mo d e
 ## Format
 
 ```
-~PM
+~ PM a ,b
 ```
 
 ## Parameters

@@ -17,7 +17,7 @@ Va lid  h e x a d e cim a l ch a ra cte r s  a re :
 ## Format
 
 ```
-^FH
+^FHa
 ```
 
 ## Parameters

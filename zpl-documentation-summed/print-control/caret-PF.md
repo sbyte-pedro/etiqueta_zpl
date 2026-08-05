@@ -10,7 +10,7 @@ S le w  Giv e n  Nu m b e r  o f  Do t  Ro w s
 ## Format
 
 ```
-^PF
+^PF#
 ```
 
 ## Parameters

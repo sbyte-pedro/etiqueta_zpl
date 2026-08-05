@@ -15,7 +15,7 @@ rig h t ju s tiﬁ ca tion option.
 ## Format
 
 ```
-^FO
+^FOx,y,z
 ```
 
 ## Parameters

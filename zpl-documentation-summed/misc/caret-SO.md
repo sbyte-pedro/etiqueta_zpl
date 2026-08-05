@@ -11,7 +11,7 @@ NOTE : For  e a ch  la b e l only  one  ^SO2 com m a nd  ca n b e  u s e d . If 
 ## Format
 
 ```
-^SO
+^SOa,b,c,d,e,f,g
 ```
 
 ## Parameters

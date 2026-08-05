@@ -13,7 +13,7 @@ IMPORTA NT: If a d d itiona l inform a tion a b ou t th is  b a r  cod e  is  re
 ## Format
 
 ```
-^BP
+^BPo,e,h,f,g
 ```
 
 ## Parameters

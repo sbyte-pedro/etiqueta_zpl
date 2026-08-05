@@ -19,7 +19,7 @@ cou nt is  s e t to 0  (z e ro).
 ## Format
 
 ```
-^JT
+^JT####,a,b,c
 ```
 
 ## Parameters

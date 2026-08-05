@@ -48,7 +48,8 @@ Pr in t  Co n ﬁ g u r a t io n  La b e l
 ## Format
 
 ```
-^TO
+^TOs:o.x,d:o.x
+~WC
 ```
 
 ## Parameters

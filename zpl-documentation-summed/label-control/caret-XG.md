@@ -12,7 +12,7 @@ m ig h t b e  a d d e d  to th e  form a t.
 ## Format
 
 ```
-^XG
+^XGd:o.x,mx,my
 ```
 
 ## Parameters

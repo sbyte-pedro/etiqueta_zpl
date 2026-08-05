@@ -15,7 +15,7 @@ For  inform a tion on u s ing  s oft h y ph e ns , s e e  ^FB  on pa g e  186.
 ## Format
 
 ```
-^FD
+^FDa
 ```
 
 ## Parameters

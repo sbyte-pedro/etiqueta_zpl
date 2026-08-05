@@ -9,7 +9,7 @@ S e t  Da r k n e s s
 ## Format
 
 ```
-~SD
+~SD##
 ```
 
 ## Parameters

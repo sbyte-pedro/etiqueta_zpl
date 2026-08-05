@@ -10,7 +10,7 @@ Ch a n g e  De lim it e r
 ## Format
 
 ```
-^CD
+^CDa or ~CDa
 ```
 
 ## Parameters

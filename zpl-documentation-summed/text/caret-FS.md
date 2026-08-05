@@ -9,6 +9,7 @@ Fie ld  S e p a r a t o r
 ## Format
 
 ```
+^FS
 NOTE : It is  re com m e nd e d  to pla ce  a n ^FS a fte r  e v e r y  com m a nd  th a t cre a te s  a  printa b le  line .
 ```
 

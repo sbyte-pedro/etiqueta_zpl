@@ -10,7 +10,7 @@ For  th e  X i4, RX I4, ZM 40 0 /ZM 60 0 , a nd  RZ40 0 /RZ60 0  printe r s , Ze
 ## Format
 
 ```
-^NS
+^NSa,b,c,d,e,f,g,h,i
 ```
 
 ## Parameters

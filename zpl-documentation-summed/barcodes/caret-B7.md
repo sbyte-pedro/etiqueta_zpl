@@ -45,7 +45,7 @@ See Ze b ra  C od e  Pa g e  850  —  La tin C h a ra cte r  S e t on pa g e  1
 ## Format
 
 ```
-^B7
+^B7o,h,s,c,r,t
 ```
 
 ## Parameters

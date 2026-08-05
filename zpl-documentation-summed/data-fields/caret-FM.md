@@ -21,7 +21,7 @@ d e s ig na te d , no s y m b ols  print.
 ## Format
 
 ```
-^FM
+^FMx1,y1,x2,y2,...
 ```
 
 ## Parameters

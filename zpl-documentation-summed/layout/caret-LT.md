@@ -17,7 +17,7 @@ Th e  ^LT com m a nd  d oe s  not ch a ng e  th e  m e d ia  re s t pos ition.
 ## Format
 
 ```
-^LT
+^LTx
 ```
 
 ## Parameters

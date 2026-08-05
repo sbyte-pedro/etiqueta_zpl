@@ -8,7 +8,7 @@ Gr a p h ic  E llip s e
 ## Format
 
 ```
-^GE
+^GEw,h,t,c
 ```
 
 ## Parameters

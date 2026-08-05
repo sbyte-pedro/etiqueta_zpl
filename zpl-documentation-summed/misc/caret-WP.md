@@ -20,7 +20,9 @@ pa ne l u ntil th e  w ire le s s  pa s s w ord  is  e nte re d :
 ## Format
 
 ```
-^WP
+^W Pa ,b
+^W Ra ,b ,c,d ,e
+~WR
 ```
 
 ## Parameters

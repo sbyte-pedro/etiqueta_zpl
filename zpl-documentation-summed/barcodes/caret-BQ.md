@@ -19,7 +19,7 @@ IMPORTA NT: If a d d itiona l inform a tion a b ou t th is  b a rcod e  is  re q
 ## Format
 
 ```
-^BQ
+^BQa,b,c,d,e
 ```
 
 ## Parameters

@@ -8,7 +8,7 @@ Ha lt  Z e b r a Ne t  A le r t
 ## Format
 
 ```
-^SQ
+^SQa,b,c
 ```
 
 ## Parameters

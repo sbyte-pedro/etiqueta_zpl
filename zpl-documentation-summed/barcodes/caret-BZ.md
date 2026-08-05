@@ -15,7 +15,8 @@ rib b s .u s ps .g ov /O ne C od e S olu tion.
 ## Format
 
 ```
-^BZ
+^BZo,h,f,g,t
+^CCx or ~CCx
 ```
 
 ## Parameters

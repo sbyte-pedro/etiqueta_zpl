@@ -19,7 +19,8 @@ U s e  Fo n t  Na m e  t o  Ca ll Fo n t
 ## Format
 
 ```
-^A
+^A fo,h ,w
+^A @ o,h ,w ,d :f.x
 ```
 
 ## Parameters

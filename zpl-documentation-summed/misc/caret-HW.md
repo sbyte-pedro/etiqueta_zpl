@@ -29,7 +29,7 @@ Th is  com m a nd , lik e  a ll ^ (ca re t) com m a nd s , is  proce s s e d  in
 ## Format
 
 ```
-^HW
+^HWd:o.x
 ```
 
 ## Parameters

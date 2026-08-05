@@ -23,7 +23,8 @@ d ow nloa d ing  Inte llifont inform a tion, s e e  ~DS  on pa g e  178.
 ## Format
 
 ```
-~DS
+~DSd:o.x,s,data
+~DTd:o.x,s,data
 ```
 
 ## Parameters

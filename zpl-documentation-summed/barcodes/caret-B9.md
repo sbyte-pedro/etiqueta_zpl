@@ -21,7 +21,7 @@ IMPORTA NT: If a d d itiona l inform a tion a b ou t th is  b a rcod e  is  re q
 ## Format
 
 ```
-^B9
+^B9,h,f,g,e
 ```
 
 ## Parameters

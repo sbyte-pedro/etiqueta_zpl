@@ -10,6 +10,7 @@ De ﬁ n e  Pr in t e r  Na m e
 ## Format
 
 ```
+^KNa,b
 NOTE : If y ou  is s u e  th e  com m a nd  ^KN, (w ith ou t th e  a  a nd  b  pa ra m e te r s ) y ou  a re  s e tting  th e
 printe r  na m e  a nd  d e s cription to a  b la nk  s tring .
 To ca u s e  th e  printe r  na m e  a nd  printe r  d e s cription s e tting s  controlle d  b y  th e  ^KN com m a nd  to b e  s a v e d ,

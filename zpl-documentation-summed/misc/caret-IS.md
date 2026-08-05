@@ -13,7 +13,8 @@ IMPORTA NT: See ^IL.
 ## Format
 
 ```
-^IS
+^ISd:o.x,p
+~JA
 ```
 
 ## Parameters

@@ -10,7 +10,7 @@ com m a nd  re m a ins  a ctiv e  u ntil ^PMN is  re ce iv e d  or  th e  printe
 ## Format
 
 ```
-^PM
+^PMa
 ```
 
 ## Parameters

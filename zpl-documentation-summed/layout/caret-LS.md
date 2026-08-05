@@ -18,6 +18,7 @@ th e  printe r  or  s e nd  a  ne w  ^LS com m a nd  to th e  printe r.
 ## Format
 
 ```
+^LSa
 IMPORTA NT: Th e  a b ility  to s a v e  th e  ^LS com m a nd  d e pe nd s  on th e  v e r s ion of ﬁ rm w a re .
 ```
 

@@ -29,7 +29,7 @@ A  w ire le s s  option b oa rd  m u s t h a v e  a n a ctiv e  ra d io th a t c
 ## Format
 
 ```
-^NC
+^NCa
 ```
 
 ## Parameters

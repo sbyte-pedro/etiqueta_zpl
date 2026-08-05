@@ -13,11 +13,13 @@ in Pa u s e  M od e  ﬁ r s t.
 ## Format
 
 ```
+~JP
 ~ JQ
 Th e  ~JQ com m a nd  is  u s e d  w h e n Ze b ra  B A S IC  Inte rpre te r  is  a ctiv e . S e nd ing  ~JQ to th e  printe r
 te rm ina te s  th e  ZB I s e s s ion.
 Te r m in a t e  Z e b r a  BA S IC In t e r p r e t e r
 Id e ntiﬁ e s  fe a tu re s  th a t a re  a v a ila b le  in printe r s  w ith  ﬁ rm w a re  v e r s ion V60 .16.2 Z, V53.16.2 Z, or  la te r.
+~JQ
 C om m e nts
 E nte ring  ZPL a t th e  com m a nd  prom pt a ls o te rm ina te s  a  ZB I s e s s ion.
 ```

@@ -8,7 +8,7 @@ In it ia liz e  Fla s h  Me m o r y
 ## Format
 
 ```
-^JB
+^JBa
 ```
 
 ## Parameters

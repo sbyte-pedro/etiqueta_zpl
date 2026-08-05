@@ -11,7 +11,7 @@ printh e a d  w a s  ope ne d . Us e  th e  ^JU com m a nd  to s a v e  ch a ng 
 ## Format
 
 ```
-^MF
+^MFp,h
 ```
 
 ## Parameters

@@ -15,7 +15,7 @@ IMPORTA NT: If a d d itiona l inform a tion a b ou t th is  b a r  cod e  is  re
 ## Format
 
 ```
-^B2
+^B2o,h,f,g,e,j
 ```
 
 ## Parameters

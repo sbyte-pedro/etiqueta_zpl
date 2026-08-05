@@ -12,7 +12,7 @@ form a t. To tu rn th e  conv e r s ion off, e nte r  m a tch ing  v a lu e s  f
 ## Format
 
 ```
-^MU
+^MUa,b,c
 ```
 
 ## Parameters

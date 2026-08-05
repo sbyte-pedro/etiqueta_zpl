@@ -11,6 +11,7 @@ S u p p r e s s  Ba c k f e e d
 ## Format
 
 ```
+^XB
 ^X B in  Te a r - o f f  Mo d e
 Norm a l O pe ra tion: b a ck fe e d , print, a nd  fe e d  to re s t
 ^XB O pe ra tion: print (Re w ind  M od e )

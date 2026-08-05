@@ -9,6 +9,7 @@ He a d  Dia g n o s t ic
 ## Format
 
 ```
+~HD
 E x a m p le : Th is  is  a n e x a m ple  of th e  ~HD com m a nd :
 Head Temp = 29
 Ambient Temp = 00

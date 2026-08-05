@@ -8,7 +8,7 @@ S e t  W ir e le s s  Ra d io  Ca r d  V a lu e s
 ## Format
 
 ```
-^WS
+^WSe,o,p,h,i,j,k
 ```
 
 ## Parameters

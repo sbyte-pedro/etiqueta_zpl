@@ -9,7 +9,7 @@ GS 1 Da t a b a r  (f o r m e r ly  Re d u c e d  S p a c e  S y m b o lo g y )
 ## Format
 
 ```
-^BR
+^BRa,b,c,d,e,f
 ```
 
 ## Parameters

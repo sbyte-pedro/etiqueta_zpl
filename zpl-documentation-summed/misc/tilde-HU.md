@@ -8,6 +8,7 @@ Re t u r n  Z e b r a Ne t  A le r t  Co n ﬁ g u r a t io n
 ## Format
 
 ```
+~HU
 E x a m p le : If the ~HU com m a nd  is  s e nt to th e  printe r  w ith  e x is ting  A le r t m e s s a g e s  s e t to g o to e -m a il a nd
 S NM P tra ps , th e  d a ta  re tu rne d  w ou ld  look  s om e th ing  lik e  th e  inform a tion b e low . S e e  ^SX  on pa g e
 352 .

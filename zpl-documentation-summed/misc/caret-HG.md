@@ -9,7 +9,7 @@ Ho s t  Gr a p h ic
 ## Format
 
 ```
-^HG
+^HG d :o.x
 ```
 
 ## Parameters

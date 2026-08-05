@@ -11,7 +11,7 @@ Th is  com m a nd  is  ig nore d  on th e  HC 10 0 ™  printe r
 ## Format
 
 ```
-^ML
+^MLa
 ```
 
 ## Parameters

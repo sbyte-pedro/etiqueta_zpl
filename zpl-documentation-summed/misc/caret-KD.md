@@ -16,7 +16,7 @@ For  m ore  d e ta ils  on s e le ct d a te  a nd  tim e  form a t for  th e  Re
 ## Format
 
 ```
-^KD
+^KDa
 ```
 
 ## Parameters

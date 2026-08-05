@@ -8,7 +8,7 @@ Ho s t  Fo r m a t
 ## Format
 
 ```
-^HF
+^HFd,o,x
 ```
 
 ## Parameters

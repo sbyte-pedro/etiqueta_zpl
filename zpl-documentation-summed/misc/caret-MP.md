@@ -12,7 +12,7 @@ com m a nd .
 ## Format
 
 ```
-^MP
+^MPa
 ```
 
 ## Parameters

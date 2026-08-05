@@ -13,7 +13,7 @@ pa u s e d  u ntil PA U S E  is  pre s s e d  or  a  ~PS (Print S ta r t) com m 
 ## Format
 
 ```
-^PP
+^PP or ~PP
 ```
 
 ## Parameters

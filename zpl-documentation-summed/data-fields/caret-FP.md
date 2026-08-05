@@ -9,7 +9,7 @@ Fie ld  Pa r a m e t e r
 ## Format
 
 ```
-^FP
+^FPd,g
 ```
 
 ## Parameters
