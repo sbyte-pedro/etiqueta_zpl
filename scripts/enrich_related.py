@@ -92,7 +92,7 @@ RELATED = {
     "caret-GF": [
         ("^FO", "positions the graphic field"),
         ("^FS", "closes the ^GF field"),
-        ("tilde-DG", "~DG downloads a graphic; ^GF recalls it"),
+        ("~DG", "~DG downloads a graphic; ^GF recalls it"),
     ],
 }
 
