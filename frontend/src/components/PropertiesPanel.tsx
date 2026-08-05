@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDesignerStore } from '../store/useDesignerStore';
+import { ZPL_FONTS } from '../utils/zplFonts';
 
 const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
 const DOTS_TO_MM = (dots: number) => parseFloat((dots / 8.03).toFixed(1));
@@ -54,6 +55,18 @@ export function PropertiesPanel() {
         <>
           {field('Value', el.value ?? '', 'value')}
           {field('Font Size', el.fontSize ?? 30, 'fontSize', 'number')}
+          <div className="mb-2">
+            <label className="block text-xs text-gray-500 mb-0.5">Font</label>
+            <select
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+              value={el.fontName ?? '0'}
+              onChange={e => updateElement(el.id, { fontName: e.target.value })}
+            >
+              {ZPL_FONTS.map(f => (
+                <option key={f.name} value={f.name}>{f.label}</option>
+              ))}
+            </select>
+          </div>
         </>
       )}
       {(el.type === 'barcode128' || el.type === 'qrcode') && field('Value', el.value ?? '', 'value')}

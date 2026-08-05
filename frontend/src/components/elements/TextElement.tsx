@@ -1,5 +1,6 @@
 import React from 'react';
 import { DesignElement } from '../../types';
+import { cssFontFamily } from '../../utils/zplFonts';
 
 interface Props { element: DesignElement; scale: number; }
 
@@ -11,7 +12,7 @@ export function TextElement({ element, scale }: Props) {
       style={{
         width: element.width * scale,
         height: element.height * scale,
-        fontFamily: '"Courier New", monospace',
+        fontFamily: cssFontFamily(element.fontName),
         fontSize: Math.max(8, fontSize),
         fontWeight: 'bold',
         display: 'flex',

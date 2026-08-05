@@ -249,12 +249,14 @@ export function parseZpl(zpl: string): ParseResult {
           const fontName = fieldHasFont ? fieldFontName : defaultFontName;
           const fontSize = fieldHasFont ? fieldFontHeight : defaultFontHeight;
           const fontWidth = fieldHasFont ? fieldFontWidth : defaultFontWidth;
+          const PROPORTIONAL_FONTS = new Set(['0', 'A', 'B', 'D', 'G', 'P']);
+          const charWidth = PROPORTIONAL_FONTS.has(fontName) ? 0.75 : 0.65;
           elements.push({
             id: nextId(),
             type: 'text',
             x: fieldX,
             y: fieldY,
-            width: Math.max(200, Math.round(fontSize * 0.65 * fieldData.length)),
+            width: Math.max(200, Math.round(fontSize * charWidth * fieldData.length)),
             height: fontSize + 10,
             value: fieldData,
             fontSize,
