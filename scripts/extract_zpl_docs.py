@@ -1,5 +1,4 @@
 import re
-import os
 import pypdf
 from pathlib import Path
 
@@ -100,14 +99,13 @@ def build_markdown(cmd: str, raw: str) -> tuple[str, str]:
     Returns (one_line_description, markdown_content).
     Parses raw text into Description / Format / Parameters / Example / Related Commands sections.
     """
-    lines = raw.splitlines()
+    lines = clean(raw).splitlines()
 
     # First non-empty, non-heading line is used as description seed
     desc_lines = []
     format_lines = []
     param_lines = []
     example_lines = []
-    related = []
 
     section = "description"
     for line in lines[1:]:  # skip the heading line (cmd code itself)
@@ -147,15 +145,11 @@ def build_markdown(cmd: str, raw: str) -> tuple[str, str]:
     params_block = "\n".join(param_lines) if param_lines else "See ZPL II Programming Guide."
     example_block = "\n".join(example_lines) if example_lines else ""
 
-    example_section = ""
-    if example_block:
-        example_section = f"""
-## Example
-
-```zpl
-{example_block}
-```
-"""
+    example_body = (
+        f"```zpl\n{example_block}\n```"
+        if example_block
+        else "_No example extracted. See ZPL II Programming Guide._"
+    )
 
     md = f"""# {cmd}
 
@@ -174,7 +168,8 @@ def build_markdown(cmd: str, raw: str) -> tuple[str, str]:
 {params_block}
 
 ## Example
-{example_section if example_block else "_No example extracted. See ZPL II Programming Guide._"}
+
+{example_body}
 
 ## Related Commands
 
