@@ -1,5 +1,8 @@
 import { Element, ParseResult } from './types';
 
+// A field whose entire data is {{name}} is a dynamic placeholder.
+const DYNAMIC_RE = /^\{\{([A-Za-z0-9_]+)\}\}$/;
+
 let counter = 0;
 function nextId(): string {
   counter += 1;
@@ -226,6 +229,8 @@ export function parseZpl(zpl: string): ParseResult {
 
       // ── Field separator — emit the pending text or barcode element ───────
       case 'FS': {
+        const dynMatch = fieldData.match(DYNAMIC_RE);
+        const dyn = dynMatch ? { dynamic: true, variableName: dynMatch[1] } : {};
         if (pendingBarcode) {
           if (pendingBarcode.kind === 'bc128') {
             elements.push({
@@ -236,6 +241,7 @@ export function parseZpl(zpl: string): ParseResult {
               width: byModuleWidth * (11 * (fieldData.length || 8) + 35),
               height: pendingBarcode.height,
               value: fieldData,
+              ...dyn,
               ...(fieldReversed ? { reversed: true } : {}),
             });
           } else {
@@ -249,6 +255,7 @@ export function parseZpl(zpl: string): ParseResult {
               width: size,
               height: size,
               value: fieldData,
+              ...dyn,
               ...(fieldReversed ? { reversed: true } : {}),
             });
           }
@@ -270,6 +277,7 @@ export function parseZpl(zpl: string): ParseResult {
             fontSize,
             fontName,
             fontSource: fieldHasFont ? 'a' : 'cf',
+            ...dyn,
             ...(fieldReversed ? { reversed: true } : {}),
           });
         }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DesignElement } from '../../types';
+import { DesignElement, displayValue } from '../../types';
 import { getZplFont } from '../../utils/zplFonts';
 
 interface Props { element: DesignElement; scale: number; }
@@ -26,7 +26,7 @@ export function TextElement({ element, scale }: Props) {
         color: reversed ? 'white' : 'black',
       }}
     >
-      {element.value || 'Text'}
+      {displayValue(element) || 'Text'}
     </div>
   );
 }

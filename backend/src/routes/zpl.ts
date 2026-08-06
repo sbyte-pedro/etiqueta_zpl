@@ -19,6 +19,8 @@ const ElementSchema = z.object({
   reversed: z.boolean().optional(),
   filled: z.boolean().optional(),
   thickness: z.number().optional(),
+  dynamic: z.boolean().optional(),
+  variableName: z.string().optional(),
 });
 
 const GenerateSchema = z.object({

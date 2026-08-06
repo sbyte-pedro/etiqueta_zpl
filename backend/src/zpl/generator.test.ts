@@ -86,3 +86,28 @@ it('defaults line thickness to min(width, height) when not provided', () => {
   });
   expect(result).toContain('^GB200,6,6');
 });
+
+test('dynamic text emits {{variableName}} placeholder', () => {
+  const zpl = generateZpl({
+    ...base,
+    elements: [{ id: '1', type: 'text', x: 80, y: 80, width: 200, height: 40, value: 'ignored', fontSize: 34, fontName: '0', dynamic: true, variableName: 'company' }],
+  });
+  expect(zpl).toContain('^FD{{company}}^FS');
+  expect(zpl).not.toContain('ignored');
+});
+
+test('dynamic barcode128 emits {{variableName}} placeholder', () => {
+  const zpl = generateZpl({
+    ...base,
+    elements: [{ id: '2', type: 'barcode128', x: 100, y: 100, width: 300, height: 100, dynamic: true, variableName: 'sku' }],
+  });
+  expect(zpl).toContain('^FD{{sku}}^FS');
+});
+
+test('dynamic qrcode emits {{variableName}} placeholder', () => {
+  const zpl = generateZpl({
+    ...base,
+    elements: [{ id: '3', type: 'qrcode', x: 50, y: 50, width: 100, height: 100, dynamic: true, variableName: 'url' }],
+  });
+  expect(zpl).toContain('^FDMA,{{url}}^FS');
+});

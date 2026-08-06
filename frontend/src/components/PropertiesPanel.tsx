@@ -41,6 +41,36 @@ export function PropertiesPanel() {
     </div>
   );
 
+  const dynamicControls = (
+    <>
+      <label className="flex items-center gap-2 mb-2 text-xs text-gray-600">
+        <input
+          type="checkbox"
+          checked={el.dynamic ?? false}
+          onChange={e => updateElement(el.id, { dynamic: e.target.checked })}
+        />
+        Dynamic (variable)
+      </label>
+      {el.dynamic && (
+        <div className="mb-2">
+          <label className="block text-xs text-gray-500 mb-0.5">Variable name</label>
+          <input
+            type="text"
+            className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            value={el.variableName ?? ''}
+            placeholder="e.g. company"
+            onChange={e =>
+              updateElement(el.id, { variableName: e.target.value.replace(/[^A-Za-z0-9_]/g, '') })
+            }
+          />
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Emits {`{{${el.variableName || 'name'}}}`} in ZPL
+          </p>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="w-56 bg-white border-l border-gray-200 p-3 overflow-y-auto">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{el.type}</p>
@@ -53,7 +83,7 @@ export function PropertiesPanel() {
       )}
       {el.type === 'text' && (
         <>
-          {field('Value', el.value ?? '', 'value')}
+          {!el.dynamic && field('Value', el.value ?? '', 'value')}
           {field('Font Size', el.fontSize ?? 30, 'fontSize', 'number')}
           <div className="mb-2">
             <label className="block text-xs text-gray-500 mb-0.5">Font</label>
@@ -67,9 +97,15 @@ export function PropertiesPanel() {
               ))}
             </select>
           </div>
+          {dynamicControls}
         </>
       )}
-      {(el.type === 'barcode128' || el.type === 'qrcode') && field('Value', el.value ?? '', 'value')}
+      {(el.type === 'barcode128' || el.type === 'qrcode') && (
+        <>
+          {!el.dynamic && field('Value', el.value ?? '', 'value')}
+          {dynamicControls}
+        </>
+      )}
       {el.type === 'line' && (
         <button
           onClick={() => updateElement(el.id, { width: el.height, height: el.width })}

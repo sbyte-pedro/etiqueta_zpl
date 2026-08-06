@@ -14,6 +14,8 @@ export interface Element {
   reversed?: boolean;
   filled?: boolean;
   thickness?: number;  // ZPL dots; applies to line and non-filled rect border
+  dynamic?: boolean;
+  variableName?: string;
 }
 
 export interface LabelDimensions {

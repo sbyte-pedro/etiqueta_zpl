@@ -10,9 +10,10 @@ export function BarcodeElement({ element, scale }: Props) {
   const containerHeight = element.height * scale;
   const textHeight = Math.max(12, containerHeight * 0.1);
   const barsHeight = containerHeight - textHeight - 4;
+  const isDynamic = element.dynamic && element.variableName;
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (isDynamic || !ref.current) return;
     try {
       JsBarcode(ref.current, element.value || '000000', {
         format: 'CODE128',
@@ -33,7 +34,31 @@ export function BarcodeElement({ element, scale }: Props) {
     } catch (e) {
       // invalid barcode value
     }
-  }, [element.value, containerWidth, barsHeight]);
+  }, [element.value, containerWidth, barsHeight, isDynamic]);
+
+  if (isDynamic) {
+    return (
+      <div
+        style={{
+          width: containerWidth,
+          height: containerHeight,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '2px dashed #9ca3af',
+          background: '#f9fafb',
+          userSelect: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        <span style={{ fontSize: Math.max(10, textHeight), fontFamily: 'monospace', color: '#374151' }}>
+          {`{{${element.variableName}}}`}
+        </span>
+        <span style={{ fontSize: Math.max(9, textHeight * 0.8), color: '#9ca3af' }}>barcode</span>
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: containerWidth, height: containerHeight, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

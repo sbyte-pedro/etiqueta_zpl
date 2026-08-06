@@ -223,3 +223,44 @@ test('parses the full labelary sample label', () => {
   // At least one line (the separator rules)
   expect(types).toContain('line');
 });
+
+// ── Dynamic placeholder parsing ────────────────────────────────────────────────
+
+test('parses {{name}} text field as a dynamic element', () => {
+  const zpl = '^XA\n^CF0,30\n^FO50,50^FD{{company}}^FS\n^XZ';
+  const el = parseZpl(zpl).elements[0];
+  expect(el.type).toBe('text');
+  expect(el.dynamic).toBe(true);
+  expect(el.variableName).toBe('company');
+});
+
+test('parses {{name}} barcode field as dynamic', () => {
+  const zpl = '^XA\n^FO100,550^BC^FD{{sku}}^FS\n^XZ';
+  const el = parseZpl(zpl).elements[0];
+  expect(el.type).toBe('barcode128');
+  expect(el.dynamic).toBe(true);
+  expect(el.variableName).toBe('sku');
+});
+
+test('parses {{name}} qrcode field as dynamic', () => {
+  const zpl = '^XA\n^FO50,50^BQN,2,3^FDMA,{{url}}^FS\n^XZ';
+  const el = parseZpl(zpl).elements[0];
+  expect(el.type).toBe('qrcode');
+  expect(el.dynamic).toBe(true);
+  expect(el.variableName).toBe('url');
+});
+
+test('does not mark a normal field as dynamic', () => {
+  const el = parseZpl('^XA\n^CF0,30\n^FO50,50^FDHello^FS\n^XZ').elements[0];
+  expect(el.dynamic).toBeUndefined();
+});
+
+test('round-trips a dynamic text element', () => {
+  const req: GenerateRequest = {
+    labelWidth: 800, labelHeight: 1200,
+    elements: [{ id: 'a', type: 'text', x: 80, y: 80, width: 200, height: 40, fontSize: 34, fontName: '0', dynamic: true, variableName: 'company' }],
+  };
+  const el = parseZpl(generateZpl(req)).elements[0];
+  expect(el.dynamic).toBe(true);
+  expect(el.variableName).toBe('company');
+});
