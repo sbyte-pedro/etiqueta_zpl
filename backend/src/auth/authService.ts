@@ -29,6 +29,6 @@ export async function loginUser(username: string, password: string): Promise<str
   return jwt.sign(
     { userId: row.id, username: row.username } satisfies JwtPayload,
     SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '60m' }
   );
 }
