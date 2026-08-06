@@ -88,8 +88,16 @@ export function parseZpl(zpl: string): ParseResult {
     // ZPL commands are 1–2 uppercase letters; stop there so data (e.g. "Hello", "N,100") stays in tail
     const cmdMatch = token.match(/^\^([A-Z]{1,2})([\s\S]*)/);
     if (!cmdMatch) continue;
-    const cmd = cmdMatch[1];
-    const tail = cmdMatch[2].replace(/^\s*,?/, '');  // strip leading comma/space
+    let cmd = cmdMatch[1];
+    let tail = cmdMatch[2].replace(/^\s*,?/, '');  // strip leading comma/space
+
+    // ^A is special: the font letter is the FIRST character of the parameter, not part of
+    // the command name. The tokenizer grabs 2 letters, so ^ABN,34,34 becomes cmd="AB"
+    // tail="N,34,34" instead of cmd="A" tail="BN,34,34". Re-normalise here.
+    if (cmd.length === 2 && cmd[0] === 'A' && /[0-9A-Z]/.test(cmd[1])) {
+      tail = cmd[1] + tail;
+      cmd = 'A';
+    }
 
     switch (cmd) {
       // ── Structural ──────────────────────────────────────────────────────────
