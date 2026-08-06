@@ -1,0 +1,31 @@
+meta {
+  name: Create Version
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/designs/{{designId}}/versions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "zpl": "^XA\n^PW800\n^LL1200\n^FO50,50^A0N,40,40^FDv2^FS\n^XZ",
+    "elements": [
+      { "id": "1", "type": "text", "x": 50, "y": 50, "width": 200, "height": 40, "value": "v2", "fontSize": 40, "fontName": "0" }
+    ],
+    "labelWidth": 800,
+    "labelHeight": 1200
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.versionNumber: isNumber
+}

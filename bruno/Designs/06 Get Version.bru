@@ -1,0 +1,21 @@
+meta {
+  name: Get Version
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/designs/{{designId}}/versions/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.versionNumber: eq 1
+  res.body.zpl: isString
+}

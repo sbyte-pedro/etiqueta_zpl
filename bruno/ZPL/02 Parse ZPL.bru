@@ -1,0 +1,35 @@
+meta {
+  name: Parse ZPL
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/parse-zpl
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "zpl": "^XA\n^PW800\n^LL1200\n^CF0,60\n^FO50,50^FDIntershipping, Inc.^FS\n^FO50,150^FD{{company}}^FS\n^FO50,300^BCN,100,Y,N,N^FD{{sku}}^FS\n^XZ"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.labelWidth: eq 800
+  res.body.labelHeight: eq 1200
+}
+
+script:post-response {
+  const els = res.body.elements || [];
+  const dyn = els.find(e => e.variableName === "company");
+  if (!dyn || dyn.dynamic !== true) {
+    throw new Error("Expected {{company}} to parse as a dynamic element");
+  }
+}

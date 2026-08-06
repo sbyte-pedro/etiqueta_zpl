@@ -1,0 +1,39 @@
+meta {
+  name: Export (PDF)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/export
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "zpl": "^XA\n^PW800\n^LL1200\n^CF0,60\n^FO50,50^FDExport Test^FS\n^XZ",
+    "labelWidth": 800,
+    "labelHeight": 1200,
+    "format": "pdf"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const ct = res.headers["content-type"] || "";
+  if (!ct.includes("application/pdf")) {
+    throw new Error("Expected application/pdf, got: " + ct);
+  }
+}
+
+docs {
+  `format` accepts: png | pdf | epl | zpl
+}

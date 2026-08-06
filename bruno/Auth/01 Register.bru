@@ -1,0 +1,29 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{username}}",
+    "password": "{{password}}"
+  }
+}
+
+assert {
+  res.status: isNumber
+}
+
+script:post-response {
+  // 201 = created, 409 = already exists. Both are fine for re-runnable tests.
+  if (![201, 409].includes(res.status)) {
+    throw new Error("Unexpected register status: " + res.status);
+  }
+}

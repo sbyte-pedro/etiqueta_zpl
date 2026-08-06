@@ -1,0 +1,30 @@
+meta {
+  name: Get Design (latest)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/designs/{{designId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  ~version: 1
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: isNumber
+  res.body.version.zpl: isString
+}
+
+docs {
+  Returns the latest version by default. Toggle the `version` query param
+  (disabled by default) to fetch a specific version number.
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Delete Design
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/designs/{{designId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Deletes the design created earlier and cascades to all its versions.
+  Run this last, or comment it out to keep the test design around.
+}

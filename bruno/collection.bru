@@ -1,0 +1,20 @@
+auth {
+  mode: none
+}
+
+docs {
+  # Etiqueta ZPL API
+
+  Bruno collection for the Zebra Label Designer backend.
+
+  ## Setup
+  1. Start the backend: `npm run dev:backend` (listens on `http://localhost:3001`).
+  2. Select the **Local** environment (top-right in Bruno).
+  3. Run **Auth / Register** once (safe to re-run — 409 if the user exists), then
+     **Auth / Login**. Login saves the JWT into the `token` collection variable,
+     which every protected request reads via `Authorization: Bearer {{token}}`.
+  4. Run **Designs / Create Design** to populate the `designId` variable for the
+     other design requests.
+
+  The JWT expires after 60 minutes — re-run Login if requests start returning 401.
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Unauthorized (no token)
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/designs
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+  res.body.error: eq Missing or invalid Authorization header
+}
+
+docs {
+  Protected route without an Authorization header must be rejected.
+}
