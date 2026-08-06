@@ -11,7 +11,6 @@ const DEFAULT_SIZES: Record<ElementType, { width: number; height: number }> = {
   qrcode: { width: 100, height: 100 },
   rect: { width: 200, height: 100 },
   line: { width: 200, height: 8 },
-  'image-placeholder': { width: 150, height: 150 },
   comment: { width: 0, height: 0 },
 };
 

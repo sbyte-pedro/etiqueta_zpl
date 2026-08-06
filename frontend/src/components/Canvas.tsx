@@ -8,7 +8,6 @@ import { BarcodeElement } from './elements/BarcodeElement';
 import { QRCodeElement } from './elements/QRCodeElement';
 import { RectElement } from './elements/RectElement';
 import { LineElement } from './elements/LineElement';
-import { ImagePlaceholder } from './elements/ImagePlaceholder';
 
 const SCALE = 2; // base scale — actual scale comes from the store zoom
 
@@ -19,7 +18,6 @@ function ElementRenderer({ element, scale }: { element: DesignElement; scale: nu
     case 'qrcode': return <QRCodeElement element={element} scale={scale} />;
     case 'rect': return <RectElement element={element} scale={scale} />;
     case 'line': return <LineElement element={element} scale={scale} />;
-    case 'image-placeholder': return <ImagePlaceholder element={element} scale={scale} />;
     case 'comment': return null;
   }
 }

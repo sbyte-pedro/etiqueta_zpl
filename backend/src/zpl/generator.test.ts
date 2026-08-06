@@ -54,14 +54,6 @@ test('generates rect element', () => {
   expect(zpl).toContain('^GB200,150,8^FS');
 });
 
-test('generates image-placeholder element', () => {
-  const zpl = generateZpl({
-    ...base,
-    elements: [{ id: '5', type: 'image-placeholder', x: 20, y: 20, width: 100, height: 100 }],
-  });
-  expect(zpl).toContain('^FO20,20');
-  expect(zpl).toContain('^GB100,100,3,B,5^FS');
-});
 
 it('uses element thickness for rect border when provided', () => {
   const result = generateZpl({

@@ -8,7 +8,6 @@ const PALETTE: { type: ElementType; label: string; icon: string; img?: string }[
   { type: 'qrcode', label: 'QR Code', icon: '', img: '/qr_code.png' },
   { type: 'rect', label: 'Box', icon: '▭' },
   { type: 'line', label: 'Line', icon: '—' },
-  { type: 'image-placeholder', label: 'Image', icon: '🖼' },
 ];
 
 interface Props {

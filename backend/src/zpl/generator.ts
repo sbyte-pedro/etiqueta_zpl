@@ -57,10 +57,6 @@ export function generateZpl(req: GenerateRequest): string {
         lines.push(`${fo}^GB${el.width},${el.height},${t}^FS`);
         break;
       }
-      case 'image-placeholder': {
-        lines.push(`${fo}^GB${el.width},${el.height},3,B,5^FS`);
-        break;
-      }
       case 'comment': {
         lines.push(`^FX ${el.value ?? ''}`);
         break;
