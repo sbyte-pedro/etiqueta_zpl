@@ -8,9 +8,10 @@ interface Props {
 }
 
 export function SampleValuesModal({ variables, confirmLabel, onConfirm, onClose }: Props) {
-  // Pre-fill each field with the variable name so nothing is ever blank.
+  // Start empty; substituteVariables falls back to the variable name for any
+  // field the user leaves blank, so nothing needs to be pre-filled here.
   const [values, setValues] = useState<Record<string, string>>(
-    () => Object.fromEntries(variables.map(v => [v, v]))
+    () => Object.fromEntries(variables.map(v => [v, '']))
   );
 
   const setValue = (name: string, value: string) =>
@@ -35,6 +36,7 @@ export function SampleValuesModal({ variables, confirmLabel, onConfirm, onClose 
                 type="text"
                 className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
                 value={values[name] ?? ''}
+                placeholder={name}
                 onChange={e => setValue(name, e.target.value)}
               />
             </div>
