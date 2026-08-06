@@ -47,7 +47,7 @@ interface DesignerStore {
   onCodeChange(code: string): void;
   syncToCode(): Promise<void>;
   setPreviewUrl(url: string | null): void;
-  fetchPreview(): Promise<void>;
+  fetchPreview(zplOverride?: string): Promise<void>;
   closePreview(): void;
 }
 
@@ -216,12 +216,13 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
     set({ previewUrl: url });
   },
 
-  async fetchPreview() {
+  async fetchPreview(zplOverride?: string) {
     const { zplCode, labelWidth, labelHeight, previewUrl } = get();
+    const zpl = zplOverride ?? zplCode;
     set({ previewLoading: true, previewError: '' });
     try {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
-      const url = await previewZpl(zplCode, labelWidth, labelHeight);
+      const url = await previewZpl(zpl, labelWidth, labelHeight);
       set({ previewUrl: url, previewLoading: false });
     } catch (e) {
       set({

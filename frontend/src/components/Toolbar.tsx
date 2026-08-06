@@ -3,6 +3,8 @@ import { useDesignerStore } from '../store/useDesignerStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useDesignsStore } from '../store/useDesignsStore';
 import { ExportModal } from './ExportModal';
+import { SampleValuesModal } from './SampleValuesModal';
+import { extractVariables, substituteVariables } from '../utils/variables';
 
 const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
 const DOTS_TO_MM = (dots: number) => Math.round(dots / 8.03);
@@ -12,10 +14,41 @@ interface Props {
 }
 
 export function Toolbar({ onNavigateToMyDesigns }: Props) {
-  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading, selectedIds, alignElements } = useDesignerStore();
+  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading, selectedIds, alignElements, zplCode } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, activeDesignName } = useDesignsStore();
   const [showExport, setShowExport] = useState(false);
+  const [exportZplOverride, setExportZplOverride] = useState<string | undefined>(undefined);
+  const [samplesFor, setSamplesFor] = useState<null | 'preview' | 'export'>(null);
+
+  const handlePreview = () => {
+    if (extractVariables(zplCode).length > 0) {
+      setSamplesFor('preview');
+    } else {
+      fetchPreview();
+    }
+  };
+
+  const handleExport = () => {
+    if (extractVariables(zplCode).length > 0) {
+      setSamplesFor('export');
+    } else {
+      setExportZplOverride(undefined);
+      setShowExport(true);
+    }
+  };
+
+  const handleSamplesConfirm = (values: Record<string, string>) => {
+    const finalZpl = substituteVariables(zplCode, values);
+    const action = samplesFor;
+    setSamplesFor(null);
+    if (action === 'preview') {
+      fetchPreview(finalZpl);
+    } else if (action === 'export') {
+      setExportZplOverride(finalZpl);
+      setShowExport(true);
+    }
+  };
 
   return (
     <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-4">
@@ -68,7 +101,7 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           Save
         </button>
         <button
-          onClick={() => fetchPreview()}
+          onClick={handlePreview}
           disabled={previewLoading}
           className="text-xs px-3 py-1 rounded border border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
           title="Render label preview via Labelary"
@@ -76,7 +109,7 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           {previewLoading ? 'Loading…' : 'Preview'}
         </button>
         <button
-          onClick={() => setShowExport(true)}
+          onClick={handleExport}
           className="text-xs px-3 py-1 rounded border border-green-300 text-green-700 hover:bg-green-50 transition-colors"
           title="Export label to file"
         >
@@ -89,7 +122,15 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
       >
         Logout
       </button>
-      {showExport && <ExportModal onClose={() => setShowExport(false)} />}
+      {showExport && <ExportModal zplOverride={exportZplOverride} onClose={() => setShowExport(false)} />}
+      {samplesFor && (
+        <SampleValuesModal
+          variables={extractVariables(zplCode)}
+          confirmLabel={samplesFor === 'preview' ? 'Preview' : 'Continue'}
+          onConfirm={handleSamplesConfirm}
+          onClose={() => setSamplesFor(null)}
+        />
+      )}
     </div>
   );
 }

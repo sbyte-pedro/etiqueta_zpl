@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { exportZpl, ExportFormat } from '../utils/zplClient';
 
-interface Props { onClose(): void; }
+interface Props { onClose(): void; zplOverride?: string; }
 
 const FORMATS: { value: ExportFormat; label: string; description: string }[] = [
   { value: 'png', label: 'PNG',  description: 'Image — preview, sharing' },
@@ -11,7 +11,7 @@ const FORMATS: { value: ExportFormat; label: string; description: string }[] = [
   { value: 'zpl', label: 'ZPL',  description: 'Transformed ZPL output' },
 ];
 
-export function ExportModal({ onClose }: Props) {
+export function ExportModal({ onClose, zplOverride }: Props) {
   const { zplCode, labelWidth, labelHeight } = useDesignerStore();
   const [format, setFormat] = useState<ExportFormat>('png');
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export function ExportModal({ onClose }: Props) {
     setLoading(true);
     setError('');
     try {
-      const blob = await exportZpl(zplCode, labelWidth, labelHeight, format);
+      const blob = await exportZpl(zplOverride ?? zplCode, labelWidth, labelHeight, format);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
