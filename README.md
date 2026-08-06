@@ -54,12 +54,20 @@ Open [http://localhost:5173](http://localhost:5173), register an account, and st
 
 ### Canvas Designer
 
-- **Drag elements from the sidebar** onto the canvas: Text, Barcode 128, QR Code, Box (rectangle), Line, Image Placeholder
+- **Drag elements from the sidebar** onto the canvas: Text, Barcode 128, QR Code, Box (rectangle), Line
 - **Select and move** elements by dragging them
 - **Resize** any element with 8 directional handles (n, s, e, w, ne, nw, se, sw)
 - **Delete** a selected element with the `Delete` key or the button in the Properties Panel
 - **Dot-grid background** that scales with zoom to help with alignment
 - **Click canvas background** to deselect the current element
+
+### Dynamic Variables
+
+Text, Barcode 128, and QR Code elements can be marked **dynamic** in the Properties Panel. A dynamic element stores a **variable name** (restricted to `[A-Za-z0-9_]`) instead of a fixed value and emits a `{{variableName}}` placeholder into the ZPL `^FD` field. Whoever consumes the ZPL downstream is responsible for substituting real values.
+
+- The canvas shows the literal `{{variableName}}`; dynamic barcodes/QR codes render a dashed placeholder box (their braces can't be encoded into a real code).
+- Parsing ZPL that contains a `{{name}}` field marks the element dynamic on the way back in — full round-trip.
+- When **Preview** or **Export** runs on a label that has variables, a **Sample values** dialog first collects an example value per variable and substitutes them into the ZPL sent to Labelary, so you see a realistic render. Labels with no variables preview/export unchanged.
 
 ### ZPL Code Editor
 
@@ -82,9 +90,9 @@ Zoom range: 25% – 300%. The displayed percentage uses 2× as the baseline (zoo
 
 Set label **width** and **height** in mm via the toolbar. Internally converted to ZPL dots at 8.03 dots/mm (standard 203 DPI). Changing dimensions immediately regenerates the ZPL.
 
-### Labelary Preview
+### Labelary Preview & Export
 
-`POST /api/preview` proxies the label to the [Labelary public API](http://labelary.com/service.html) and returns a PNG render. The client utility (`zplClient.ts`) is wired up; connect it to a UI button to display a render preview.
+`POST /api/preview` proxies the label to the [Labelary public API](http://labelary.com/service.html) and returns a PNG render, shown in the preview panel. `POST /api/export` proxies to Labelary for downloadable output in PNG, PDF, EPL, or ZPL. When the label contains dynamic `{{variables}}`, both actions first prompt for sample values and substitute them before sending to Labelary.
 
 ---
 
@@ -144,25 +152,31 @@ All positions and sizes are stored in **ZPL dots** (203 DPI → 8.03 dots/mm). T
 
 | Type | Default size (dots) | ZPL command |
 |---|---|---|
-| `text` | 200 × 40 | `^FO{x},{y}^A{font}N,{size},{size}^FD{value}^FS` |
-| `barcode128` | 300 × 100 | `^FO{x},{y}^BCN,{height},Y,N,N^FD{value}^FS` |
+| `text` | 200 × 40 | `^FO{x},{y}^A{font}N,{size},{size}^FD{value}^FS` (or `^CF{font},{size}` + `^FO..^FD{value}^FS` for `^CF`-sourced fonts) |
+| `barcode128` | 300 × 100 | `^FO{x},{y}^BY{module}^BCN,{height},Y,N,N^FD{value}^FS` |
 | `qrcode` | 100 × 100 | `^FO{x},{y}^BQN,2,{mag}^FDMA,{value}^FS` |
 | `rect` | 200 × 100 | `^FO{x},{y}^GB{w},{h},8^FS` |
 | `line` | 200 × 8 | `^FO{x},{y}^GB{w},{h},3^FS` |
-| `image-placeholder` | 150 × 150 | `^FO{x},{y}^GB{w},{h},3,B,5^FS` |
+
+For **dynamic** text/barcode/qr elements, `{value}` is replaced by the `{{variableName}}` placeholder.
+
+**Fonts** — text elements support Zebra built-in fonts `0`, `A`, `B`, `D`, `F`, `G`, `P` via a selector in the Properties Panel. Font `0`/`P` are proportional (rendered with Arial on the canvas); `A`/`B`/`D`/`F`/`G` are fixed-pitch (rendered with Courier New); font `B` is bold and uppercase-only. A field with no inline `^A` inherits the active `^CF` default font, and this distinction is preserved through a code→design→code round-trip.
 
 **Line orientation** is determined at render time: if width ≥ height, it is horizontal; otherwise vertical. This is reflected in both the canvas visual and the ZPL output.
 
 **QR magnification** is computed automatically: `max(1, round(width / 40))`.
+
+**Barcode module width** is computed from the element width and the data length (`floor(width / (11×chars + 35))`). Because Code 128 width scales with data length, a barcode's rendered width naturally changes with its value — matching real Zebra printer behavior.
 
 ### Properties per element type
 
 | Type | Editable fields |
 |---|---|
 | All | X, Y, Width, Height (mm) |
-| `text` | Value, Font Size |
-| `barcode128`, `qrcode` | Value |
-| `rect`, `line`, `image-placeholder` | — |
+| `text` | Value, Font Size, Font, Dynamic (+ variable name) |
+| `barcode128`, `qrcode` | Value, Dynamic (+ variable name) |
+| `rect` | — (Thickness when not filled) |
+| `line` | Thickness, orientation toggle |
 
 ---
 
@@ -226,8 +240,9 @@ When a design is loaded, its name appears in the toolbar next to the app title. 
 
 - Register with username (min 3 chars) and password (min 6 chars)
 - Registering automatically logs you in (no separate step)
-- Session is a JWT stored in `localStorage` under the key `zpl_token`, valid for 7 days
-- Refreshing the page preserves the session
+- Session is a JWT stored in `localStorage` under the key `zpl_token`, valid for **60 minutes**
+- Refreshing the page preserves the session (until the token expires)
+- After the token expires, the next API call returns 401 and the app logs you out automatically; the token expiry is also checked on page load
 
 ### Logout
 
@@ -379,8 +394,8 @@ Each test suite truncates the database tables in the correct foreign-key order (
 
 ### What is tested
 
-- **`zpl/generator.test.ts`** — unit tests for each element type's ZPL output, no database
-- **`zpl/parser.test.ts`** — round-trip tests: `elements → ZPL → elements` must reproduce original state; unknown commands do not crash
+- **`zpl/generator.test.ts`** — unit tests for each element type's ZPL output, including dynamic `{{variable}}` placeholders, no database
+- **`zpl/parser.test.ts`** — round-trip tests: `elements → ZPL → elements` must reproduce original state; `{{name}}` fields parse back as dynamic; unknown commands do not crash
 - **`auth/authService.test.ts`** — register, duplicate username, login, invalid credentials
 - **`designs/designsService.test.ts`** — create, list, get, delete designs; create/list/get versions; ownership isolation between users
 
@@ -403,21 +418,25 @@ etiqueta_zpl/
 │   │   ├── components/
 │   │   │   ├── Canvas.tsx            # DnD canvas, element renderer
 │   │   │   ├── Sidebar.tsx           # element palette
-│   │   │   ├── Toolbar.tsx           # label size, save/load, logout
-│   │   │   ├── PropertiesPanel.tsx   # selected element properties
+│   │   │   ├── Toolbar.tsx           # label size, save/preview/export, logout
+│   │   │   ├── PropertiesPanel.tsx   # selected element properties (incl. font, dynamic)
 │   │   │   ├── CodeEditor.tsx        # Monaco ZPL editor
 │   │   │   ├── TabSwitcher.tsx       # Design/Code toggle + zoom controls
 │   │   │   ├── SaveDesignModal.tsx   # save (new/version/overwrite)
-│   │   │   ├── LoadDesignModal.tsx   # load from design/version list
+│   │   │   ├── ExportModal.tsx       # export format picker (png/pdf/epl/zpl)
+│   │   │   ├── PreviewPanel.tsx      # Labelary PNG render panel
+│   │   │   ├── SampleValuesModal.tsx # sample values for dynamic variables
 │   │   │   ├── ResizeHandle.tsx      # 8-handle resize UI
 │   │   │   └── elements/             # per-type visual renderers
 │   │   ├── pages/
 │   │   │   ├── LoginPage.tsx         # register / login form
 │   │   │   └── MyDesignsPage.tsx     # full-page design card grid
 │   │   └── utils/
-│   │       ├── zplClient.ts          # /api/generate-zpl, parse-zpl, preview
+│   │       ├── zplClient.ts          # /api/generate-zpl, parse-zpl, preview, export
 │   │       ├── authClient.ts         # /api/auth/*
-│   │       └── designsClient.ts      # /api/designs/*
+│   │       ├── designsClient.ts      # /api/designs/*
+│   │       ├── zplFonts.ts           # Zebra font → CSS family/weight/transform map
+│   │       └── variables.ts          # {{var}} extraction + substitution
 └── backend/
     ├── drizzle/                  # generated migration SQL files
     ├── drizzle.config.ts         # drizzle-kit config
