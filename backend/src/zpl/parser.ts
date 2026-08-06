@@ -261,6 +261,7 @@ export function parseZpl(zpl: string): ParseResult {
             value: fieldData,
             fontSize,
             fontName,
+            fontSource: fieldHasFont ? 'a' : 'cf',
             ...(fieldReversed ? { reversed: true } : {}),
           });
         }

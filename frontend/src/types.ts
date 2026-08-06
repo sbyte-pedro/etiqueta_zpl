@@ -10,6 +10,7 @@ export interface DesignElement {
   value?: string;
   fontSize?: number;
   fontName?: string;
+  fontSource?: 'cf' | 'a';
   reversed?: boolean;
   filled?: boolean;
   thickness?: number;

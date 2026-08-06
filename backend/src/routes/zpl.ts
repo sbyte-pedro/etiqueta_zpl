@@ -15,6 +15,7 @@ const ElementSchema = z.object({
   value: z.string().optional(),
   fontSize: z.number().optional(),
   fontName: z.string().optional(),
+  fontSource: z.enum(['cf', 'a']).optional(),
   reversed: z.boolean().optional(),
   filled: z.boolean().optional(),
   thickness: z.number().optional(),

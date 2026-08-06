@@ -10,6 +10,7 @@ export interface Element {
   value?: string;
   fontSize?: number;
   fontName?: string;
+  fontSource?: 'cf' | 'a';
   reversed?: boolean;
   filled?: boolean;
   thickness?: number;  // ZPL dots; applies to line and non-filled rect border
