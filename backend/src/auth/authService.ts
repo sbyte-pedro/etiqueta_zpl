@@ -3,13 +3,12 @@ import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../db/database';
 import { usersTable } from '../db/schema';
+import { JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRES_IN } from '../config';
 
 export interface JwtPayload {
   userId: number;
   username: string;
 }
-
-const SECRET = process.env.JWT_SECRET ?? 'dev-secret';
 
 export async function registerUser(username: string, password: string): Promise<void> {
   const hash = await bcrypt.hash(password, 10);
@@ -28,7 +27,7 @@ export async function loginUser(username: string, password: string): Promise<str
   if (!match) throw new Error('INVALID_CREDENTIALS');
   return jwt.sign(
     { userId: row.id, username: row.username } satisfies JwtPayload,
-    SECRET,
-    { expiresIn: '60m' }
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN, algorithm: JWT_ALGORITHM }
   );
 }

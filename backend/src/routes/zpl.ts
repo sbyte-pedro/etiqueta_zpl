@@ -2,8 +2,15 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { generateZpl } from '../zpl/generator';
 import { parseZpl } from '../zpl/parser';
+import { LABELARY_BASE_URL, LABELARY_TIMEOUT_MS, MAX_ZPL_LENGTH } from '../config';
 
 export const zplRouter = Router();
+
+/** A ZPL string field, capped to prevent oversized relays to Labelary. */
+const zplField = z.string().max(MAX_ZPL_LENGTH);
+
+/** Label dimensions in dots, positive and upper-bounded to sane physical sizes. */
+const dimension = z.number().positive().max(10_000);
 
 const ElementSchema = z.object({
   id: z.string(),
@@ -24,8 +31,8 @@ const ElementSchema = z.object({
 });
 
 const GenerateSchema = z.object({
-  labelWidth: z.number().positive(),
-  labelHeight: z.number().positive(),
+  labelWidth: dimension,
+  labelHeight: dimension,
   elements: z.array(ElementSchema),
 });
 
@@ -40,7 +47,7 @@ zplRouter.post('/generate-zpl', (req: Request, res: Response) => {
 });
 
 zplRouter.post('/parse-zpl', (req: Request, res: Response) => {
-  const schema = z.object({ zpl: z.string() });
+  const schema = z.object({ zpl: zplField });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -50,11 +57,47 @@ zplRouter.post('/parse-zpl', (req: Request, res: Response) => {
   res.json(result);
 });
 
+/**
+ * Relay a label to the Labelary rendering API over HTTPS, with a timeout so a
+ * hung upstream connection can't tie up the request indefinitely. Returns the
+ * raw response buffer and content type, or null on any error (caller maps to 502).
+ */
+async function renderViaLabelary(
+  zpl: string,
+  labelWidth: number,
+  labelHeight: number,
+  accept: string,
+): Promise<{ buffer: Buffer } | { error: 'upstream' | 'network' }> {
+  const wIn = (labelWidth / 203.2).toFixed(2);
+  const hIn = (labelHeight / 203.2).toFixed(2);
+  const url = `${LABELARY_BASE_URL}/${wIn}x${hIn}/0/`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), LABELARY_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': accept },
+      body: zpl,
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      return { error: 'upstream' };
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return { buffer };
+  } catch {
+    return { error: 'network' };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 zplRouter.post('/preview', async (req: Request, res: Response) => {
   const schema = z.object({
-    zpl: z.string(),
-    labelWidth: z.number().positive(),
-    labelHeight: z.number().positive(),
+    zpl: zplField,
+    labelWidth: dimension,
+    labelHeight: dimension,
   });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
@@ -62,25 +105,15 @@ zplRouter.post('/preview', async (req: Request, res: Response) => {
     return;
   }
   const { zpl, labelWidth, labelHeight } = parsed.data;
-  const wIn = (labelWidth / 203.2).toFixed(2);
-  const hIn = (labelHeight / 203.2).toFixed(2);
-  const url = `http://api.labelary.com/v1/printers/8dpmm/labels/${wIn}x${hIn}/0/`;
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'image/png' },
-      body: zpl,
+  const result = await renderViaLabelary(zpl, labelWidth, labelHeight, 'image/png');
+  if ('error' in result) {
+    res.status(502).json({
+      error: result.error === 'upstream' ? 'Labelary API error' : 'Could not reach Labelary API',
     });
-    if (!response.ok) {
-      res.status(502).json({ error: 'Labelary API error' });
-      return;
-    }
-    const buffer = await response.arrayBuffer();
-    res.set('Content-Type', 'image/png');
-    res.send(Buffer.from(buffer));
-  } catch (e) {
-    res.status(502).json({ error: 'Could not reach Labelary API' });
+    return;
   }
+  res.set('Content-Type', 'image/png');
+  res.send(result.buffer);
 });
 
 const EXPORT_FORMATS = {
@@ -92,9 +125,9 @@ const EXPORT_FORMATS = {
 
 zplRouter.post('/export', async (req: Request, res: Response) => {
   const schema = z.object({
-    zpl: z.string(),
-    labelWidth: z.number().positive(),
-    labelHeight: z.number().positive(),
+    zpl: zplField,
+    labelWidth: dimension,
+    labelHeight: dimension,
     format: z.enum(['png', 'pdf', 'epl', 'zpl']),
   });
   const parsed = schema.safeParse(req.body);
@@ -104,24 +137,14 @@ zplRouter.post('/export', async (req: Request, res: Response) => {
   }
   const { zpl, labelWidth, labelHeight, format } = parsed.data;
   const { accept, contentType, ext } = EXPORT_FORMATS[format];
-  const wIn = (labelWidth / 203.2).toFixed(2);
-  const hIn = (labelHeight / 203.2).toFixed(2);
-  const url = `http://api.labelary.com/v1/printers/8dpmm/labels/${wIn}x${hIn}/0/`;
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': accept },
-      body: zpl,
+  const result = await renderViaLabelary(zpl, labelWidth, labelHeight, accept);
+  if ('error' in result) {
+    res.status(502).json({
+      error: result.error === 'upstream' ? 'Labelary API error' : 'Could not reach Labelary API',
     });
-    if (!response.ok) {
-      res.status(502).json({ error: 'Labelary API error' });
-      return;
-    }
-    const buffer = await response.arrayBuffer();
-    res.set('Content-Type', contentType);
-    res.set('Content-Disposition', `attachment; filename="label.${ext}"`);
-    res.send(Buffer.from(buffer));
-  } catch (e) {
-    res.status(502).json({ error: 'Could not reach Labelary API' });
+    return;
   }
+  res.set('Content-Type', contentType);
+  res.set('Content-Disposition', `attachment; filename="label.${ext}"`);
+  res.send(result.buffer);
 });

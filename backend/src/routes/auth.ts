@@ -6,7 +6,7 @@ export const authRouter = Router();
 
 const CredentialsSchema = z.object({
   username: z.string().min(3).max(50),
-  password: z.string().min(6),
+  password: z.string().min(6).max(72), // bcrypt silently truncates beyond 72 bytes
 });
 
 authRouter.post('/register', async (req: Request, res: Response) => {
