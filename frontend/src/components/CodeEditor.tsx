@@ -1,6 +1,7 @@
 import React from 'react';
 import Editor from '@monaco-editor/react';
 import { useDesignerStore } from '../store/useDesignerStore';
+import { registerZplLanguage, ZPL_LANGUAGE_ID } from '../utils/zplLanguage';
 
 export function CodeEditor() {
   const { zplCode, zplError, onCodeChange } = useDesignerStore();
@@ -22,7 +23,8 @@ export function CodeEditor() {
       <div className="flex-1 overflow-hidden">
         <Editor
           height="100%"
-          defaultLanguage="plaintext"
+          defaultLanguage={ZPL_LANGUAGE_ID}
+          beforeMount={registerZplLanguage}
           theme="vs-dark"
           value={zplCode}
           onChange={v => onCodeChange(v ?? '')}
