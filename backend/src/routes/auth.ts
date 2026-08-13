@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { registerUser, loginUser } from '../auth/authService';
 
@@ -9,7 +9,7 @@ const CredentialsSchema = z.object({
   password: z.string().min(6).max(72), // bcrypt silently truncates beyond 72 bytes
 });
 
-authRouter.post('/register', async (req: Request, res: Response) => {
+authRouter.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   const parsed = CredentialsSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -22,12 +22,12 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     if (e instanceof Error && e.message === 'USERNAME_TAKEN') {
       res.status(409).json({ error: 'Username already taken' });
     } else {
-      res.status(500).json({ error: 'Internal server error' });
+      next(e);
     }
   }
 });
 
-authRouter.post('/login', async (req: Request, res: Response) => {
+authRouter.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   const parsed = CredentialsSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -36,7 +36,11 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   try {
     const token = await loginUser(parsed.data.username, parsed.data.password);
     res.json({ token });
-  } catch {
-    res.status(401).json({ error: 'Invalid username or password' });
+  } catch (e) {
+    if (e instanceof Error && e.message === 'INVALID_CREDENTIALS') {
+      res.status(401).json({ error: 'Invalid username or password' });
+    } else {
+      next(e);
+    }
   }
 });

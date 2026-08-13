@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import {
   createDesign, listDesigns, getDesignWithVersion, deleteDesign,
@@ -6,6 +6,9 @@ import {
 } from '../designs/designsService';
 
 export const designsRouter = Router();
+
+/** Coerces and validates a route param that must be a positive integer. */
+const IdParam = z.coerce.number().int().positive();
 
 const VersionPayloadSchema = z.object({
   zpl: z.string().min(1),
@@ -18,7 +21,7 @@ const CreateDesignSchema = VersionPayloadSchema.extend({
   name: z.string().min(1).max(100),
 });
 
-designsRouter.post('/', async (req: Request, res: Response) => {
+designsRouter.post('/', async (req: Request, res: Response, next: NextFunction) => {
   const parsed = CreateDesignSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   const userId = req.user!.userId;
@@ -30,91 +33,109 @@ designsRouter.post('/', async (req: Request, res: Response) => {
     if (e instanceof Error && e.message === 'DESIGN_NAME_TAKEN') {
       res.status(409).json({ error: 'Design name already taken' });
     } else {
-      res.status(500).json({ error: 'Internal server error' });
+      next(e);
     }
   }
 });
 
-designsRouter.get('/', async (req: Request, res: Response) => {
+designsRouter.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(await listDesigns(req.user!.userId));
-  } catch {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (e) {
+    next(e);
   }
 });
 
-designsRouter.get('/:id', async (req: Request, res: Response) => {
+designsRouter.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
+
+  const versionParam = req.query.version !== undefined
+    ? IdParam.safeParse(req.query.version)
+    : null;
+  if (versionParam && !versionParam.success) {
+    res.status(400).json({ error: 'Invalid version number' }); return;
+  }
+
   try {
-    const id = Number(req.params.id);
-    const versionParam = req.query.version !== undefined ? Number(req.query.version) : undefined;
-    if (versionParam !== undefined && isNaN(versionParam)) {
-      res.status(400).json({ error: 'Invalid version number' }); return;
-    }
-    const design = await getDesignWithVersion(req.user!.userId, id, versionParam);
+    const design = await getDesignWithVersion(
+      req.user!.userId,
+      idResult.data,
+      versionParam?.data,
+    );
     if (!design) { res.status(404).json({ error: 'Design not found' }); return; }
     res.json(design);
-  } catch {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (e) {
+    next(e);
   }
 });
 
-designsRouter.delete('/:id', async (req: Request, res: Response) => {
+designsRouter.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
   try {
-    const deleted = await deleteDesign(req.user!.userId, Number(req.params.id));
+    const deleted = await deleteDesign(req.user!.userId, idResult.data);
     if (!deleted) { res.status(404).json({ error: 'Design not found' }); return; }
     res.status(204).end();
-  } catch {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (e) {
+    next(e);
   }
 });
 
-designsRouter.post('/:id/versions', async (req: Request, res: Response) => {
+designsRouter.post('/:id/versions', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
   const parsed = VersionPayloadSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   try {
-    const version = await createVersion(req.user!.userId, Number(req.params.id), parsed.data);
+    const version = await createVersion(req.user!.userId, idResult.data, parsed.data);
     res.status(201).json(version);
   } catch (e) {
     if (e instanceof Error && e.message === 'DESIGN_NOT_FOUND') {
       res.status(404).json({ error: 'Design not found' });
     } else {
-      res.status(500).json({ error: 'Internal server error' });
+      next(e);
     }
   }
 });
 
-designsRouter.get('/:id/versions', async (req: Request, res: Response) => {
+designsRouter.get('/:id/versions', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
   try {
-    const versions = await listVersions(req.user!.userId, Number(req.params.id));
+    const versions = await listVersions(req.user!.userId, idResult.data);
     res.json(versions);
-  } catch {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (e) {
+    next(e);
   }
 });
 
-designsRouter.get('/:id/versions/:vn', async (req: Request, res: Response) => {
+designsRouter.get('/:id/versions/:vn', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  const vnResult = IdParam.safeParse(req.params.vn);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
+  if (!vnResult.success) { res.status(400).json({ error: 'Invalid version number' }); return; }
   try {
-    const version = await getVersion(req.user!.userId, Number(req.params.id), Number(req.params.vn));
+    const version = await getVersion(req.user!.userId, idResult.data, vnResult.data);
     if (!version) { res.status(404).json({ error: 'Version not found' }); return; }
     res.json(version);
-  } catch {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (e) {
+    next(e);
   }
 });
 
-designsRouter.put('/:id/versions/:vn', async (req: Request, res: Response) => {
+designsRouter.put('/:id/versions/:vn', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  const vnResult = IdParam.safeParse(req.params.vn);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
+  if (!vnResult.success) { res.status(400).json({ error: 'Invalid version number' }); return; }
   const parsed = VersionPayloadSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   try {
-    const result = await updateVersion(
-      req.user!.userId,
-      Number(req.params.id),
-      Number(req.params.vn),
-      parsed.data
-    );
+    const result = await updateVersion(req.user!.userId, idResult.data, vnResult.data, parsed.data);
     if (!result) { res.status(404).json({ error: 'Version not found' }); return; }
     res.json(result);
-  } catch {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (e) {
+    next(e);
   }
 });

@@ -14,8 +14,10 @@ export async function registerUser(username: string, password: string): Promise<
   const hash = await bcrypt.hash(password, 10);
   try {
     await getDb().insert(usersTable).values({ username, passwordHash: hash });
-  } catch {
-    throw new Error('USERNAME_TAKEN');
+  } catch (e) {
+    // PG unique_violation — only the username constraint can fire here
+    if ((e as { code?: string }).code === '23505') throw new Error('USERNAME_TAKEN');
+    throw e;
   }
 }
 

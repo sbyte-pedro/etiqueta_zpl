@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { generateZpl } from '../zpl/generator';
 import { parseZpl } from '../zpl/parser';
@@ -36,25 +36,33 @@ const GenerateSchema = z.object({
   elements: z.array(ElementSchema),
 });
 
-zplRouter.post('/generate-zpl', (req: Request, res: Response) => {
+zplRouter.post('/generate-zpl', (req: Request, res: Response, next: NextFunction) => {
   const parsed = GenerateSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
   }
-  const zpl = generateZpl(parsed.data);
-  res.json({ zpl });
+  try {
+    const zpl = generateZpl(parsed.data);
+    res.json({ zpl });
+  } catch (e) {
+    next(e);
+  }
 });
 
-zplRouter.post('/parse-zpl', (req: Request, res: Response) => {
+zplRouter.post('/parse-zpl', (req: Request, res: Response, next: NextFunction) => {
   const schema = z.object({ zpl: zplField });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
   }
-  const result = parseZpl(parsed.data.zpl);
-  res.json(result);
+  try {
+    const result = parseZpl(parsed.data.zpl);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
 });
 
 /**

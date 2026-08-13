@@ -43,8 +43,10 @@ export async function createDesign(userId: number, name: string, payload: Design
   try {
     const rows = await db.insert(designsTable).values({ userId, name }).returning({ id: designsTable.id });
     designId = rows[0].id;
-  } catch {
-    throw new Error('DESIGN_NAME_TAKEN');
+  } catch (e) {
+    // PG unique_violation — only the (user_id, name) constraint can fire here
+    if ((e as { code?: string }).code === '23505') throw new Error('DESIGN_NAME_TAKEN');
+    throw e;
   }
   const versionId = await insertVersion(designId, payload);
   return { designId, versionId };

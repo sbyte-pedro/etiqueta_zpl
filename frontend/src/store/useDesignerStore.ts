@@ -208,7 +208,7 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
       lastCanvasZpl = zpl;
       set({ zplCode: zpl, zplError: '' });
     } catch (e) {
-      console.error('ZPL sync failed', e);
+      set({ zplError: `Canvas sync failed: ${e instanceof Error ? e.message : 'unknown error'}` });
     }
   },
 
