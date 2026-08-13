@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
+import React, { useCallback, useState } from 'react';
+import { DndContext, DragEndEvent, DragMoveEvent, DragStartEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { DesignElement } from '../types';
@@ -23,7 +23,7 @@ function ElementRenderer({ element, scale }: { element: DesignElement; scale: nu
   }
 }
 
-function DraggableElement({ element, scale }: { element: DesignElement; scale: number }) {
+function DraggableElement({ element, scale, groupOffset }: { element: DesignElement; scale: number; groupOffset: { x: number; y: number } | null }) {
   const { selectedId, selectedIds, selectElement, toggleSelectElement, updateElement, deleteElement } =
     useDesignerStore(useShallow(s => ({
       selectedId: s.selectedId,
@@ -45,12 +45,21 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
       e.stopPropagation();
       if (e.shiftKey) {
         toggleSelectElement(element.id);
-      } else {
+      } else if (!selectedIds.includes(element.id)) {
+        // Preserve an existing multi-selection when starting a drag on one of its members.
         selectElement(element.id);
       }
     }
     listeners?.onPointerDown?.(e);
-  }, [element.id, selectElement, toggleSelectElement, listeners]);
+  }, [element.id, selectElement, toggleSelectElement, listeners, selectedIds]);
+
+  // dnd-kit only applies `transform` to the actively dragged node. For the other
+  // members of a multi-selection we mirror the drag via `groupOffset` (px).
+  const activeTransform = transform
+    ? { x: transform.x, y: transform.y }
+    : groupOffset && isInSelection
+      ? groupOffset
+      : null;
 
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -62,7 +71,7 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
       : isInSelection
         ? '2px solid #93c5fd'
         : undefined,
-    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+    transform: activeTransform ? `translate(${activeTransform.x}px, ${activeTransform.y}px)` : undefined,
   };
 
   return (
@@ -107,24 +116,48 @@ export function Canvas() {
   const canvasWidth = labelWidth * zoom;
   const canvasHeight = labelHeight * zoom;
 
+  // Live pixel offset while a multi-selection drag is in progress, so the
+  // non-active members follow the pointer too.
+  const [groupOffset, setGroupOffset] = useState<{ x: number; y: number } | null>(null);
+
+  const handleDragStart = useCallback((_event: DragStartEvent) => {
+    setGroupOffset({ x: 0, y: 0 });
+  }, []);
+
+  const handleDragMove = useCallback((event: DragMoveEvent) => {
+    setGroupOffset({ x: event.delta.x, y: event.delta.y });
+  }, []);
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, delta } = event;
-    const { elements, updateElement, snapToGrid, gridSize } = useDesignerStore.getState();
-    const el = elements.find(e => e.id === active.id);
-    if (!el) return;
+    setGroupOffset(null);
+    const { elements, updateElement, selectedIds, snapToGrid, gridSize } = useDesignerStore.getState();
+    const dragged = elements.find(e => e.id === active.id);
+    if (!dragged) return;
+
+    // Move every selected element by the same delta; fall back to the dragged one.
+    const movingIds = selectedIds.includes(String(active.id)) && selectedIds.length > 0
+      ? selectedIds
+      : [String(active.id)];
+
     const dotDx = Math.round(delta.x / zoom);
     const dotDy = Math.round(delta.y / zoom);
-    let x = Math.max(0, el.x + dotDx);
-    let y = Math.max(0, el.y + dotDy);
-    if (snapToGrid) {
-      x = Math.round(x / gridSize) * gridSize;
-      y = Math.round(y / gridSize) * gridSize;
+
+    for (const id of movingIds) {
+      const el = elements.find(e => e.id === id);
+      if (!el) continue;
+      let x = Math.max(0, el.x + dotDx);
+      let y = Math.max(0, el.y + dotDy);
+      if (snapToGrid) {
+        x = Math.round(x / gridSize) * gridSize;
+        y = Math.round(y / gridSize) * gridSize;
+      }
+      updateElement(id, { x, y });
     }
-    updateElement(el.id, { x, y });
   }, [zoom]);
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
       <div
         ref={wrapperRef}
         className="h-full overflow-auto bg-gray-100 p-4"
@@ -148,7 +181,7 @@ export function Canvas() {
           {/* Elements layer — no isolation so ^FR difference blend can see the white canvas bg */}
           <div style={{ position: 'absolute', inset: 0 }}>
             {elements.filter(el => el.type !== 'comment').map(el => (
-              <DraggableElement key={el.id} element={el} scale={zoom} />
+              <DraggableElement key={el.id} element={el} scale={zoom} groupOffset={groupOffset} />
             ))}
           </div>
           {/* Dot grid rendered after elements via multiply — visible on white, invisible on black */}
