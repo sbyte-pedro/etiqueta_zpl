@@ -15,6 +15,15 @@ export const designsTable = pgTable('designs', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (t) => [unique().on(t.userId, t.name)]);
 
+export const refreshTokensTable = pgTable('refresh_tokens', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  // SHA-256 hex of the opaque refresh token — never store the raw token.
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 export const designVersionsTable = pgTable('design_versions', {
   id: serial('id').primaryKey(),
   designId: integer('design_id').notNull().references(() => designsTable.id, { onDelete: 'cascade' }),

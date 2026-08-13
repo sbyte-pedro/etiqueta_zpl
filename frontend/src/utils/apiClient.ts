@@ -1,4 +1,4 @@
-import { API_BASE, getToken, triggerOn401 } from './authClient';
+import { API_BASE, getToken, triggerOn401, refreshAccessToken } from './authClient';
 
 export function authHeaders(): Record<string, string> {
   const token = getToken();
@@ -10,14 +10,18 @@ export function authHeaders(): Record<string, string> {
 
 /**
  * Fetch JSON from an API endpoint, with JWT auth attached.
- * Handles 401 → auto-logout, 204 no-content, and JSON error extraction.
+ * On 401 it attempts a single silent token refresh and retries once; if that
+ * fails it triggers auto-logout. Also handles 204 no-content and JSON errors.
  */
-export async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
+export async function apiFetch<T>(path: string, opts?: RequestInit, _retry = false): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers: { ...authHeaders(), ...(opts?.headers ?? {}) },
   });
   if (res.status === 401) {
+    if (!_retry && (await refreshAccessToken())) {
+      return apiFetch<T>(path, opts, true);
+    }
     triggerOn401();
     throw new Error('Session expired. Please log in again.');
   }
@@ -33,14 +37,18 @@ export async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> 
 
 /**
  * Fetch a binary response (image, PDF, etc.), with JWT auth attached.
- * Handles 401 → auto-logout and JSON error extraction on failure.
+ * On 401 it attempts a single silent token refresh and retries once, then
+ * falls back to auto-logout.
  */
-export async function apiFetchBlob(path: string, opts?: RequestInit): Promise<Blob> {
+export async function apiFetchBlob(path: string, opts?: RequestInit, _retry = false): Promise<Blob> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers: { ...authHeaders(), ...(opts?.headers ?? {}) },
   });
   if (res.status === 401) {
+    if (!_retry && (await refreshAccessToken())) {
+      return apiFetchBlob(path, opts, true);
+    }
     triggerOn401();
     throw new Error('Session expired. Please log in again.');
   }

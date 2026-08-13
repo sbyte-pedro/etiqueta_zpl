@@ -30,8 +30,27 @@ export const JWT_SECRET: string = (() => {
 /** JWTs are signed and verified with HS256 only (pin the algorithm). */
 export const JWT_ALGORITHM = 'HS256' as const;
 
-/** Access-token lifetime. */
+/** Access-token lifetime. Short-lived; renewed silently via the refresh token. */
 export const JWT_EXPIRES_IN = '60m' as const;
+
+/** Refresh-token lifetime (ms). Long-lived, opaque, stored hashed in the DB. */
+export const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+/** Name of the httpOnly cookie carrying the opaque refresh token. */
+export const REFRESH_COOKIE_NAME = 'zpl_refresh';
+
+/**
+ * Cookie options for the refresh token. httpOnly keeps it out of JS (XSS-safe),
+ * sameSite=lax blocks cross-site CSRF while allowing same-site XHR, and the path
+ * scopes it so it's only ever sent to the auth endpoints that need it.
+ */
+export const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'lax',
+  path: '/api/auth',
+  maxAge: REFRESH_TOKEN_TTL_MS,
+} as const;
 
 /** Allowed CORS origin for the frontend. */
 export const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';

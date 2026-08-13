@@ -20,6 +20,19 @@ export const authLimiter = rateLimit({
 });
 
 /**
+ * Limiter for the silent token-refresh endpoint. More generous than the login
+ * limiter (refreshes are legitimate and frequent) but still bounded. 60 / 15 min / IP.
+ */
+export const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many refresh attempts, please try again later' },
+  skip: () => isTest,
+});
+
+/**
  * Limiter for the Labelary proxy endpoints, which relay arbitrary bodies to a
  * third party. 60 requests / min / IP keeps the relay from being abused as an
  * amplification vector while staying generous for interactive preview.

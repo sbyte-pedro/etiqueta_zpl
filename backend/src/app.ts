@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
 import { authRouter } from './routes/auth';
 import { authenticate } from './middleware/authenticate';
-import { authLimiter, proxyLimiter } from './middleware/rateLimit';
+import { proxyLimiter } from './middleware/rateLimit';
 import { errorHandler } from './middleware/errorHandler';
 import { zplRouter } from './routes/zpl';
 import { designsRouter } from './routes/designs';
@@ -32,12 +33,14 @@ app.use(cors({
       cb(new Error('Not allowed by CORS'));
     }
   },
+  credentials: true, // allow the refresh-token cookie to be sent cross-origin (dev: 5173→3001)
 }));
 
 app.use(express.json({ limit: MAX_BODY_SIZE }));
+app.use(cookieParser());
 
 app.use('/health', healthRouter);
-app.use('/api/auth', authLimiter, authRouter);            // public, rate-limited
+app.use('/api/auth', authRouter);                         // public; limiters applied per-route
 app.use('/api/designs', authenticate, designsRouter);     // protected
 app.use('/api', authenticate, proxyLimiter, zplRouter);   // protected, rate-limited
 
