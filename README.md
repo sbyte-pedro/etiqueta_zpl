@@ -304,7 +304,7 @@ See `frontend/.env.example` for reference.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/health` | Health check. Returns `{ ok: true }` |
+| `GET` | `/health` | Health check with DB ping. `{ ok: true, db: "up" }`, or 503 `{ ok: false, db: "down" }` |
 | `POST` | `/api/auth/register` | Register. Body: `{ username, password }`. Returns 201 or 409 |
 | `POST` | `/api/auth/login` | Login. Body: `{ username, password }`. Returns `{ token }` or 401 |
 
