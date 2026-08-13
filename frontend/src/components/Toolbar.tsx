@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function Toolbar({ onNavigateToMyDesigns }: Props) {
-  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading, selectedIds, alignElements, zplCode } = useDesignerStore();
+  const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading, selectedIds, alignElements, zplCode, snapToGrid, toggleSnapToGrid } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, activeDesignName } = useDesignsStore();
   const { undo, redo, canUndo, canRedo } = useHistory();
@@ -63,6 +63,13 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
           <button onClick={undo} disabled={!canUndo} className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs disabled:opacity-30 disabled:hover:bg-transparent" title="Undo (Ctrl+Z)">↶</button>
           <button onClick={redo} disabled={!canRedo} className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs disabled:opacity-30 disabled:hover:bg-transparent" title="Redo (Ctrl+Shift+Z)">↷</button>
         </div>
+        <button
+          onClick={toggleSnapToGrid}
+          className={`p-1 border rounded text-xs transition-colors ${snapToGrid ? 'border-blue-400 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-500 hover:bg-gray-100'}`}
+          title={snapToGrid ? 'Snap to grid: on' : 'Snap to grid: off'}
+        >
+          ▦
+        </button>
         {selectedIds.length >= 2 && (
           <>
             <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1">

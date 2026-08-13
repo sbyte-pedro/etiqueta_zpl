@@ -34,6 +34,8 @@ interface DesignerStore {
   previewLoading: boolean;
   previewError: string;
   zoom: number;
+  snapToGrid: boolean;
+  gridSize: number;
   setLabelSize(width: number, height: number): void;
   addElement(type: ElementType, x?: number, y?: number): void;
   updateElement(id: string, patch: Partial<DesignElement>): void;
@@ -46,6 +48,7 @@ interface DesignerStore {
   alignElements(alignment: 'left' | 'center-h' | 'right' | 'top' | 'center-v' | 'bottom'): void;
   setActiveTab(tab: 'design' | 'code'): void;
   setZoom(zoom: number): void;
+  toggleSnapToGrid(): void;
   onCodeChange(code: string): void;
   syncToCode(): Promise<void>;
   setPreviewUrl(url: string | null): void;
@@ -76,6 +79,8 @@ export const useDesignerStore = create<DesignerStore>()(
   previewLoading: false,
   previewError: '',
   zoom: 2,
+  snapToGrid: false,
+  gridSize: 8,
 
   setLabelSize(width, height) {
     set({ labelWidth: width, labelHeight: height });
@@ -185,6 +190,10 @@ export const useDesignerStore = create<DesignerStore>()(
 
   setZoom(zoom) {
     set({ zoom: Math.min(6, Math.max(0.5, zoom)) });
+  },
+
+  toggleSnapToGrid() {
+    set(s => ({ snapToGrid: !s.snapToGrid }));
   },
 
   onCodeChange(code: string) {

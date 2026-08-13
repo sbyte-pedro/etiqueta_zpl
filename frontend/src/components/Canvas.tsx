@@ -109,14 +109,18 @@ export function Canvas() {
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, delta } = event;
-    const el = useDesignerStore.getState().elements.find(e => e.id === active.id);
+    const { elements, updateElement, snapToGrid, gridSize } = useDesignerStore.getState();
+    const el = elements.find(e => e.id === active.id);
     if (!el) return;
     const dotDx = Math.round(delta.x / zoom);
     const dotDy = Math.round(delta.y / zoom);
-    useDesignerStore.getState().updateElement(el.id, {
-      x: Math.max(0, el.x + dotDx),
-      y: Math.max(0, el.y + dotDy),
-    });
+    let x = Math.max(0, el.x + dotDx);
+    let y = Math.max(0, el.y + dotDy);
+    if (snapToGrid) {
+      x = Math.round(x / gridSize) * gridSize;
+      y = Math.round(y / gridSize) * gridSize;
+    }
+    updateElement(el.id, { x, y });
   }, [zoom]);
 
   return (
