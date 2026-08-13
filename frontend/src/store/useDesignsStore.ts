@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useDesignerStore } from './useDesignerStore';
+import { toast } from './useToastStore';
 import {
   apiCreateDesign, apiListDesigns, apiDeleteDesign,
   apiCreateVersion, apiListVersions, apiGetVersion, apiUpdateVersion,
@@ -66,6 +67,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     const result = await apiCreateDesign(name, { zpl, elements, labelWidth, labelHeight });
     set({ activeDesignId: result.designId, activeDesignName: name, activeVersionNumber: 1, showSaveModal: false });
     await get().fetchDesigns();
+    toast.success(`Design "${name}" saved`);
   },
 
   async saveVersion() {
@@ -76,6 +78,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     set({ activeVersionNumber: version.versionNumber });
     await get().fetchDesigns();
     await get().fetchVersions(activeDesignId);
+    toast.success(`Version ${version.versionNumber} saved`);
   },
 
   async overwriteVersion() {
@@ -87,6 +90,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     });
     await get().fetchDesigns();
     set({ showSaveModal: false });
+    toast.success(`Version ${activeVersionNumber} updated`);
   },
 
   async loadVersion(designId: number, versionNumber: number) {
@@ -103,9 +107,16 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
   },
 
   async deleteDesign(id: number) {
-    await apiDeleteDesign(id);
+    const name = get().designs.find(d => d.id === id)?.name ?? 'Design';
+    try {
+      await apiDeleteDesign(id);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete design');
+      return;
+    }
     if (get().activeDesignId === id) set({ activeDesignId: null, activeDesignName: '', activeVersionNumber: null, versions: [] });
     await get().fetchDesigns();
+    toast.success(`"${name}" deleted`);
   },
 
   async fetchVersions(designId: number) {

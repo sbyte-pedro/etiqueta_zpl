@@ -8,6 +8,7 @@ import { CodeEditor } from './components/CodeEditor';
 import { SaveDesignModal } from './components/SaveDesignModal';
 import { PreviewPanel } from './components/PreviewPanel';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts';
+import { Toasts } from './components/Toasts';
 import { useDesignerStore } from './store/useDesignerStore';
 import { useAuthStore } from './store/useAuthStore';
 import { useDesignsStore } from './store/useDesignsStore';
@@ -22,38 +23,46 @@ export default function App() {
   const { showSaveModal } = useDesignsStore();
   const [currentView, setCurrentView] = useState<View>('designer');
 
-  if (!token) return <LoginPage />;
-
-  if (currentView === 'my-designs') {
-    return <MyDesignsPage onBack={() => setCurrentView('designer')} />;
-  }
-
   const previewActive = !!(previewUrl || previewLoading || previewError);
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
-      <KeyboardShortcuts />
-      <Toolbar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <TabSwitcher />
-          <div className="flex flex-1 overflow-hidden">
-            {activeTab === 'design' ? (
-              <>
-                <div className="flex-1 overflow-hidden">
-                  <Canvas />
-                </div>
-                <PreviewPanel />
-              </>
-            ) : (
-              <CodeEditor />
-            )}
+  let content: React.ReactNode;
+  if (!token) {
+    content = <LoginPage />;
+  } else if (currentView === 'my-designs') {
+    content = <MyDesignsPage onBack={() => setCurrentView('designer')} />;
+  } else {
+    content = (
+      <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+        <KeyboardShortcuts />
+        <Toolbar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <TabSwitcher />
+            <div className="flex flex-1 overflow-hidden">
+              {activeTab === 'design' ? (
+                <>
+                  <div className="flex-1 overflow-hidden">
+                    <Canvas />
+                  </div>
+                  <PreviewPanel />
+                </>
+              ) : (
+                <CodeEditor />
+              )}
+            </div>
           </div>
+          {activeTab === 'design' && !previewActive && <PropertiesPanel />}
         </div>
-        {activeTab === 'design' && !previewActive && <PropertiesPanel />}
+        {showSaveModal && <SaveDesignModal />}
       </div>
-      {showSaveModal && <SaveDesignModal />}
-    </div>
+    );
+  }
+
+  return (
+    <>
+      {content}
+      <Toasts />
+    </>
   );
 }
