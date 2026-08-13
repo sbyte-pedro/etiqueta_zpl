@@ -6,6 +6,7 @@ import { ExportModal } from './ExportModal';
 import { SampleValuesModal } from './SampleValuesModal';
 import { extractVariables, substituteVariables } from '../utils/variables';
 import { mmToDots, dotsToMm } from '../utils/units';
+import { useHistory } from '../hooks/useHistory';
 
 interface Props {
   onNavigateToMyDesigns: () => void;
@@ -15,6 +16,7 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
   const { labelWidth, labelHeight, setLabelSize, fetchPreview, previewLoading, selectedIds, alignElements, zplCode } = useDesignerStore();
   const { logout } = useAuthStore();
   const { openSaveModal, activeDesignName } = useDesignsStore();
+  const { undo, redo, canUndo, canRedo } = useHistory();
   const [showExport, setShowExport] = useState(false);
   const [exportZplOverride, setExportZplOverride] = useState<string | undefined>(undefined);
   const [samplesFor, setSamplesFor] = useState<null | 'preview' | 'export'>(null);
@@ -57,6 +59,10 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
         </span>
       )}
       <div className="flex-1 flex items-center justify-center gap-1">
+        <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1">
+          <button onClick={undo} disabled={!canUndo} className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs disabled:opacity-30 disabled:hover:bg-transparent" title="Undo (Ctrl+Z)">↶</button>
+          <button onClick={redo} disabled={!canRedo} className="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded text-xs disabled:opacity-30 disabled:hover:bg-transparent" title="Redo (Ctrl+Shift+Z)">↷</button>
+        </div>
         {selectedIds.length >= 2 && (
           <>
             <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1">

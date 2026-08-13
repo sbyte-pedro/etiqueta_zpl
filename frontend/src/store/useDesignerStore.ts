@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { temporal } from 'zundo';
 import { DesignElement, ElementType } from '../types';
 import { generateZpl, parseZpl, previewZpl } from '../utils/zplClient';
 
@@ -59,7 +60,9 @@ let parseTimeout: ReturnType<typeof setTimeout> | null = null;
 // (the canvas already produced it — no need to re-parse).
 let lastCanvasZpl = '';
 
-export const useDesignerStore = create<DesignerStore>((set, get) => ({
+export const useDesignerStore = create<DesignerStore>()(
+  temporal(
+    (set, get) => ({
   labelWidth: 800,
   labelHeight: 1200,
   elements: [],
@@ -237,4 +240,23 @@ export const useDesignerStore = create<DesignerStore>((set, get) => ({
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     set({ previewUrl: null, previewError: '' });
   },
-}));
+    }),
+    {
+      // Track only design content — never UI state (selection, zoom, tab, preview).
+      limit: 100,
+      partialize: (state) => ({
+        elements: state.elements,
+        labelWidth: state.labelWidth,
+        labelHeight: state.labelHeight,
+      }),
+      // Collapse rapid mutations (e.g. a resize drag) into a single history entry.
+      handleSet: (handleSet) => {
+        let t: ReturnType<typeof setTimeout> | null = null;
+        return (...args: Parameters<typeof handleSet>) => {
+          if (t) clearTimeout(t);
+          t = setTimeout(() => handleSet(...args), 300);
+        };
+      },
+    },
+  ),
+);
