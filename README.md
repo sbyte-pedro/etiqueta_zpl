@@ -48,6 +48,25 @@ The backend runs migrations automatically on first start — no manual SQL neede
 
 Open [http://localhost:5173](http://localhost:5173), register an account, and start designing.
 
+### With Docker Compose
+
+If you have Docker, you can skip installing Node and PostgreSQL locally:
+
+```bash
+# Start Postgres + backend + frontend (with hot reload) in one command
+docker compose up
+
+# …or just Postgres, then run the apps on the host as above
+docker compose up db
+
+# Stop everything (add -v to also delete the database volume)
+docker compose down
+```
+
+Source is mounted into the containers, so edits hot-reload. The frontend is on
+[http://localhost:5173](http://localhost:5173) and the backend on
+[http://localhost:3001](http://localhost:3001).
+
 ---
 
 ## Features

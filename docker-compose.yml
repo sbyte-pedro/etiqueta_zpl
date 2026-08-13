@@ -1,0 +1,65 @@
+# Docker Compose for local development.
+#
+#   docker compose up            # start Postgres + backend + frontend (hot reload)
+#   docker compose up db         # just Postgres, then run the apps on the host
+#   docker compose down          # stop everything (add -v to also wipe the DB volume)
+#
+# The apps run straight from the mounted source via their dev servers, so edits
+# on the host hot-reload inside the containers. node_modules lives in a named
+# volume per service so the host's (or absent) node_modules never clobbers it.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: etiqueta_zpl
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d etiqueta_zpl"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev --workspace=backend"
+    environment:
+      DATABASE_URL: postgresql://postgres:root@db:5432/etiqueta_zpl
+      JWT_SECRET: dev-secret
+      PORT: "3001"
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - backend_node_modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    # --host binds Vite to 0.0.0.0 so the port is reachable from the host.
+    command: sh -c "npm install && npm run dev --workspace=frontend -- --host"
+    environment:
+      # In-container the backend is reachable by service name, not localhost.
+      VITE_PROXY_TARGET: http://backend:3001
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  backend_node_modules:
+  frontend_node_modules:
