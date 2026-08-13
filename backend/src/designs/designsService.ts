@@ -24,6 +24,19 @@ export interface VersionSummary {
   createdAt: string;
 }
 
+/** A page of results plus the total count for building pagination controls. */
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface PageParams {
+  limit: number;
+  offset: number;
+}
+
 export interface VersionDetail {
   id: number;
   versionNumber: number;
@@ -53,8 +66,14 @@ export async function createDesign(userId: number, name: string, payload: Design
   return { designId, versionId };
 }
 
-export async function listDesigns(userId: number): Promise<DesignSummary[]> {
+export async function listDesigns(userId: number, page: PageParams): Promise<Paginated<DesignSummary>> {
   const db = getDb();
+  const totalRows = await db
+    .select({ n: count() })
+    .from(designsTable)
+    .where(eq(designsTable.userId, userId));
+  const total = Number(totalRows[0]?.n ?? 0);
+
   const rows = await db
     .select({
       id: designsTable.id,
@@ -67,14 +86,18 @@ export async function listDesigns(userId: number): Promise<DesignSummary[]> {
     .leftJoin(designVersionsTable, eq(designVersionsTable.designId, designsTable.id))
     .where(eq(designsTable.userId, userId))
     .groupBy(designsTable.id)
-    .orderBy(sql`${designsTable.updatedAt} DESC`);
-  return rows.map(r => ({
+    .orderBy(sql`${designsTable.updatedAt} DESC`)
+    .limit(page.limit)
+    .offset(page.offset);
+
+  const items = rows.map(r => ({
     id: r.id,
     name: r.name,
     createdAt: toIso(r.createdAt),
     updatedAt: toIso(r.updatedAt),
     versionCount: Number(r.versionCount),
   }));
+  return { items, total, limit: page.limit, offset: page.offset };
 }
 
 export async function getDesign(userId: number, designId: number): Promise<DesignSummary | undefined> {
@@ -153,16 +176,29 @@ export async function createVersion(userId: number, designId: number, payload: D
   return toVersionDetail(rows[0]);
 }
 
-export async function listVersions(userId: number, designId: number): Promise<VersionSummary[]> {
-  if (!await ownershipCheck(userId, designId)) return [];
-  const rows = await getDb().select({
+export async function listVersions(userId: number, designId: number, page: PageParams): Promise<Paginated<VersionSummary>> {
+  if (!await ownershipCheck(userId, designId)) {
+    return { items: [], total: 0, limit: page.limit, offset: page.offset };
+  }
+  const db = getDb();
+  const totalRows = await db
+    .select({ n: count() })
+    .from(designVersionsTable)
+    .where(eq(designVersionsTable.designId, designId));
+  const total = Number(totalRows[0]?.n ?? 0);
+
+  const rows = await db.select({
     id: designVersionsTable.id,
     versionNumber: designVersionsTable.versionNumber,
     createdAt: designVersionsTable.createdAt,
   }).from(designVersionsTable)
     .where(eq(designVersionsTable.designId, designId))
-    .orderBy(designVersionsTable.versionNumber);
-  return rows.map(r => ({ id: r.id, versionNumber: r.versionNumber, createdAt: toIso(r.createdAt) }));
+    .orderBy(desc(designVersionsTable.versionNumber)) // newest first
+    .limit(page.limit)
+    .offset(page.offset);
+
+  const items = rows.map(r => ({ id: r.id, versionNumber: r.versionNumber, createdAt: toIso(r.createdAt) }));
+  return { items, total, limit: page.limit, offset: page.offset };
 }
 
 export async function getVersion(userId: number, designId: number, versionNumber: number): Promise<VersionDetail | undefined> {

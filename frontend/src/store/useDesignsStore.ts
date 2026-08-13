@@ -8,6 +8,7 @@ import {
 
 interface DesignsStore {
   designs: DesignSummary[];
+  designsTotal: number;
   activeDesignId: number | null;
   activeDesignName: string;
   activeVersionNumber: number | null;
@@ -16,6 +17,7 @@ interface DesignsStore {
   error: string;
 
   fetchDesigns(): Promise<void>;
+  loadMoreDesigns(): Promise<void>;
   saveNewDesign(name: string): Promise<void>;
   saveVersion(): Promise<void>;
   overwriteVersion(): Promise<void>;
@@ -28,8 +30,11 @@ interface DesignsStore {
   setError(msg: string): void;
 }
 
+const DESIGNS_PAGE_SIZE = 24;
+
 export const useDesignsStore = create<DesignsStore>((set, get) => ({
   designs: [],
+  designsTotal: 0,
   activeDesignId: null,
   activeDesignName: '',
   activeVersionNumber: null,
@@ -39,10 +44,20 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
 
   async fetchDesigns() {
     try {
-      const designs = await apiListDesigns();
-      set({ designs });
+      const { items, total } = await apiListDesigns(DESIGNS_PAGE_SIZE, 0);
+      set({ designs: items, designsTotal: total });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Failed to load designs' });
+    }
+  },
+
+  async loadMoreDesigns() {
+    try {
+      const { designs } = get();
+      const { items, total } = await apiListDesigns(DESIGNS_PAGE_SIZE, designs.length);
+      set({ designs: [...designs, ...items], designsTotal: total });
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : 'Failed to load more designs' });
     }
   },
 
@@ -94,8 +109,8 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
   },
 
   async fetchVersions(designId: number) {
-    const versions = await apiListVersions(designId);
-    set({ versions });
+    const { items } = await apiListVersions(designId, 100, 0);
+    set({ versions: items });
   },
 
   openSaveModal() { set({ showSaveModal: true, error: '' }); },

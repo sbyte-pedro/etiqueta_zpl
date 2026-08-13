@@ -32,6 +32,14 @@ export interface DesignPayload {
   labelHeight: number;
 }
 
+/** A page of results plus the total count, mirroring the backend envelope. */
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export async function apiCreateDesign(name: string, payload: DesignPayload): Promise<{ designId: number; versionId: number }> {
   return apiFetch('/api/designs', {
     method: 'POST',
@@ -39,8 +47,8 @@ export async function apiCreateDesign(name: string, payload: DesignPayload): Pro
   });
 }
 
-export async function apiListDesigns(): Promise<DesignSummary[]> {
-  return apiFetch('/api/designs');
+export async function apiListDesigns(limit = 50, offset = 0): Promise<Paginated<DesignSummary>> {
+  return apiFetch(`/api/designs?limit=${limit}&offset=${offset}`);
 }
 
 export async function apiGetDesign(id: number): Promise<DesignSummary> {
@@ -58,8 +66,8 @@ export async function apiCreateVersion(designId: number, payload: DesignPayload)
   });
 }
 
-export async function apiListVersions(designId: number): Promise<VersionSummary[]> {
-  return apiFetch(`/api/designs/${designId}/versions`);
+export async function apiListVersions(designId: number, limit = 50, offset = 0): Promise<Paginated<VersionSummary>> {
+  return apiFetch(`/api/designs/${designId}/versions?limit=${limit}&offset=${offset}`);
 }
 
 export async function apiGetVersion(designId: number, versionNumber: number): Promise<VersionDetail> {

@@ -27,8 +27,8 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion }: {
     if (!expanded && versions.length === 0) {
       setVersionsLoading(true);
       try {
-        const v = await apiListVersions(design.id);
-        setVersions(v);
+        const { items } = await apiListVersions(design.id, 100, 0);
+        setVersions(items);
       } finally {
         setVersionsLoading(false);
       }
@@ -87,8 +87,9 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion }: {
 }
 
 export function MyDesignsPage({ onBack }: Props) {
-  const { designs, fetchDesigns, deleteDesign, loadVersion, error } = useDesignsStore();
+  const { designs, designsTotal, fetchDesigns, loadMoreDesigns, deleteDesign, loadVersion, error } = useDesignsStore();
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [openingId, setOpeningId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -96,13 +97,22 @@ export function MyDesignsPage({ onBack }: Props) {
     fetchDesigns().finally(() => setLoading(false));
   }, [fetchDesigns]);
 
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    try {
+      await loadMoreDesigns();
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   const handleOpen = async (design: DesignSummary) => {
     setOpeningId(design.id);
     try {
-      const versions = await apiListVersions(design.id);
-      if (versions.length === 0) return;
-      const latest = versions.reduce((a, b) => a.versionNumber > b.versionNumber ? a : b);
-      await loadVersion(design.id, latest.versionNumber);
+      // Versions come back newest-first, so the first item is the latest.
+      const { items } = await apiListVersions(design.id, 1, 0);
+      if (items.length === 0) return;
+      await loadVersion(design.id, items[0].versionNumber);
       onBack();
     } finally {
       setOpeningId(null);
@@ -149,17 +159,31 @@ export function MyDesignsPage({ onBack }: Props) {
         )}
 
         {!loading && designs.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {designs.map(design => (
-              <DesignCard
-                key={design.id}
-                design={design}
-                onOpen={() => handleOpen(design)}
-                onDelete={() => handleDelete(design)}
-                onLoadVersion={(vn) => handleLoadVersion(design, vn)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {designs.map(design => (
+                <DesignCard
+                  key={design.id}
+                  design={design}
+                  onOpen={() => handleOpen(design)}
+                  onDelete={() => handleDelete(design)}
+                  onLoadVersion={(vn) => handleLoadVersion(design, vn)}
+                />
+              ))}
+            </div>
+            <div className="flex flex-col items-center gap-2 mt-6">
+              <p className="text-xs text-gray-400">Showing {designs.length} of {designsTotal}</p>
+              {designs.length < designsTotal && (
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="text-sm px-4 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  {loadingMore ? 'Loading…' : 'Load more'}
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
 

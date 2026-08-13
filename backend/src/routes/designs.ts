@@ -11,6 +11,12 @@ export const designsRouter = Router();
 /** Coerces and validates a route param that must be a positive integer. */
 const IdParam = z.coerce.number().int().positive();
 
+/** Pagination query params, with safe defaults and an upper bound on page size. */
+const PaginationSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
 const VersionPayloadSchema = z.object({
   zpl: z.string().min(1),
   elements: z.array(ElementSchema),
@@ -40,8 +46,10 @@ designsRouter.post('/', async (req: Request, res: Response, next: NextFunction) 
 });
 
 designsRouter.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  const page = PaginationSchema.safeParse(req.query);
+  if (!page.success) { res.status(400).json({ error: 'Invalid pagination parameters' }); return; }
   try {
-    res.json(await listDesigns(req.user!.userId));
+    res.json(await listDesigns(req.user!.userId, page.data));
   } catch (e) {
     next(e);
   }
@@ -103,8 +111,10 @@ designsRouter.post('/:id/versions', async (req: Request, res: Response, next: Ne
 designsRouter.get('/:id/versions', async (req: Request, res: Response, next: NextFunction) => {
   const idResult = IdParam.safeParse(req.params.id);
   if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
+  const page = PaginationSchema.safeParse(req.query);
+  if (!page.success) { res.status(400).json({ error: 'Invalid pagination parameters' }); return; }
   try {
-    const versions = await listVersions(req.user!.userId, idResult.data);
+    const versions = await listVersions(req.user!.userId, idResult.data, page.data);
     res.json(versions);
   } catch (e) {
     next(e);

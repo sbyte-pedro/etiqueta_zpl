@@ -51,21 +51,24 @@ test('different users can have designs with the same name', async () => {
   await expect(createDesign(userId2, 'My Label', payload)).resolves.toBeDefined();
 });
 
+const PAGE = { limit: 50, offset: 0 };
+
 test('listDesigns returns only the requesting user designs', async () => {
   await createDesign(userId1, 'Label A', payload);
   await createDesign(userId1, 'Label B', payload);
   await createDesign(userId2, 'Label C', payload);
-  const list = await listDesigns(userId1);
-  expect(list).toHaveLength(2);
-  expect(list.map((d) => d.name)).toContain('Label A');
-  expect(list.map((d) => d.name)).not.toContain('Label C');
+  const list = await listDesigns(userId1, PAGE);
+  expect(list.items).toHaveLength(2);
+  expect(list.total).toBe(2);
+  expect(list.items.map((d) => d.name)).toContain('Label A');
+  expect(list.items.map((d) => d.name)).not.toContain('Label C');
 });
 
 test('listDesigns includes versionCount', async () => {
   const { designId } = await createDesign(userId1, 'Label A', payload);
   await createVersion(userId1, designId, { ...payload, zpl: '^XA^XZ2' });
-  const list = await listDesigns(userId1);
-  expect(list[0].versionCount).toBe(2);
+  const list = await listDesigns(userId1, PAGE);
+  expect(list.items[0].versionCount).toBe(2);
 });
 
 test('getDesign returns summary for owner', async () => {
@@ -83,7 +86,7 @@ test('getDesign returns undefined for non-owner', async () => {
 test('deleteDesign returns true for owner', async () => {
   const { designId } = await createDesign(userId1, 'My Label', payload);
   expect(await deleteDesign(userId1, designId)).toBe(true);
-  expect(await listDesigns(userId1)).toHaveLength(0);
+  expect((await listDesigns(userId1, PAGE)).items).toHaveLength(0);
 });
 
 test('deleteDesign returns false for non-owner', async () => {
@@ -102,19 +105,20 @@ test('createVersion throws DESIGN_NOT_FOUND for non-owner', async () => {
   await expect(createVersion(userId2, designId, payload)).rejects.toThrow('DESIGN_NOT_FOUND');
 });
 
-test('listVersions returns ordered versions for owner', async () => {
+test('listVersions returns versions newest-first for owner', async () => {
   const { designId } = await createDesign(userId1, 'My Label', payload);
   await createVersion(userId1, designId, payload);
   await createVersion(userId1, designId, payload);
-  const versions = await listVersions(userId1, designId);
-  expect(versions).toHaveLength(3);
-  expect(versions[0].versionNumber).toBe(1);
-  expect(versions[2].versionNumber).toBe(3);
+  const versions = await listVersions(userId1, designId, PAGE);
+  expect(versions.items).toHaveLength(3);
+  expect(versions.total).toBe(3);
+  expect(versions.items[0].versionNumber).toBe(3);
+  expect(versions.items[2].versionNumber).toBe(1);
 });
 
 test('listVersions returns empty array for non-owner', async () => {
   const { designId } = await createDesign(userId1, 'My Label', payload);
-  expect(await listVersions(userId2, designId)).toHaveLength(0);
+  expect((await listVersions(userId2, designId, PAGE)).items).toHaveLength(0);
 });
 
 test('getVersion returns VersionDetail with parsed elements', async () => {
