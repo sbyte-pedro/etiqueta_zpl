@@ -38,6 +38,7 @@ interface DesignerStore {
   addElement(type: ElementType, x?: number, y?: number): void;
   updateElement(id: string, patch: Partial<DesignElement>): void;
   deleteElement(id: string): void;
+  deleteSelected(): void;
   clearAll(): void;
   selectElement(id: string | null): void;
   toggleSelectElement(id: string): void;
@@ -105,6 +106,18 @@ export const useDesignerStore = create<DesignerStore>()(
       elements: s.elements.filter(e => e.id !== id),
       selectedId: s.selectedId === id ? null : s.selectedId,
       selectedIds: s.selectedIds.filter(sid => sid !== id),
+    }));
+    get().syncToCode();
+  },
+
+  deleteSelected() {
+    const { selectedIds, selectedId } = get();
+    const ids = new Set(selectedIds.length ? selectedIds : selectedId ? [selectedId] : []);
+    if (ids.size === 0) return;
+    set(s => ({
+      elements: s.elements.filter(e => !ids.has(e.id)),
+      selectedId: null,
+      selectedIds: [],
     }));
     get().syncToCode();
   },

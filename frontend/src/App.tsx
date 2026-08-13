@@ -7,6 +7,7 @@ import { TabSwitcher } from './components/TabSwitcher';
 import { CodeEditor } from './components/CodeEditor';
 import { SaveDesignModal } from './components/SaveDesignModal';
 import { PreviewPanel } from './components/PreviewPanel';
+import { KeyboardShortcuts } from './components/KeyboardShortcuts';
 import { useDesignerStore } from './store/useDesignerStore';
 import { useAuthStore } from './store/useAuthStore';
 import { useDesignsStore } from './store/useDesignsStore';
@@ -31,6 +32,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      <KeyboardShortcuts />
       <Toolbar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
