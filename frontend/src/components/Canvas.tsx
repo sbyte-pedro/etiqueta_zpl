@@ -1,5 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
+import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { DesignElement } from '../types';
 import { ResizeHandle } from './ResizeHandle';
@@ -8,8 +9,8 @@ import { BarcodeElement } from './elements/BarcodeElement';
 import { QRCodeElement } from './elements/QRCodeElement';
 import { RectElement } from './elements/RectElement';
 import { LineElement } from './elements/LineElement';
-
-const SCALE = 2; // base scale — actual scale comes from the store zoom
+import { usePanning } from '../hooks/usePanning';
+import { useElementResize } from '../hooks/useElementResize';
 
 function ElementRenderer({ element, scale }: { element: DesignElement; scale: number }) {
   switch (element.type) {
@@ -23,42 +24,33 @@ function ElementRenderer({ element, scale }: { element: DesignElement; scale: nu
 }
 
 function DraggableElement({ element, scale }: { element: DesignElement; scale: number }) {
-  const { selectedId, selectedIds, selectElement, toggleSelectElement, updateElement, deleteElement } = useDesignerStore();
+  const { selectedId, selectedIds, selectElement, toggleSelectElement, updateElement, deleteElement } =
+    useDesignerStore(useShallow(s => ({
+      selectedId: s.selectedId,
+      selectedIds: s.selectedIds,
+      selectElement: s.selectElement,
+      toggleSelectElement: s.toggleSelectElement,
+      updateElement: s.updateElement,
+      deleteElement: s.deleteElement,
+    })));
+
   const isSelected = selectedId === element.id;
   const isInSelection = selectedIds.includes(element.id);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: element.id });
+  const { handleResizeStart, handleResize } = useElementResize(element, scale, updateElement);
 
-  // Snapshot of the element state at the moment a resize drag starts
-  const resizeSnapshot = useRef<DesignElement | null>(null);
-
-  const handleResizeStart = useCallback(() => {
-    resizeSnapshot.current = { ...element };
-  }, [element]);
-
-  const handleResize = useCallback((dx: number, dy: number, dir: string) => {
-    const snap = resizeSnapshot.current;
-    if (!snap) return;
-
-    const dotDx = Math.round(dx / scale);
-    const dotDy = Math.round(dy / scale);
-    const patch: Partial<DesignElement> = {};
-
-    if (dir.includes('e')) patch.width = Math.max(20, snap.width + dotDx);
-    if (dir.includes('s')) patch.height = Math.max(20, snap.height + dotDy);
-    if (dir.includes('w')) {
-      const newWidth = Math.max(20, snap.width - dotDx);
-      patch.x = snap.x + (snap.width - newWidth);
-      patch.width = newWidth;
+  const mergedPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button === 0) {
+      e.stopPropagation();
+      if (e.shiftKey) {
+        toggleSelectElement(element.id);
+      } else {
+        selectElement(element.id);
+      }
     }
-    if (dir.includes('n')) {
-      const newHeight = Math.max(20, snap.height - dotDy);
-      patch.y = snap.y + (snap.height - newHeight);
-      patch.height = newHeight;
-    }
-
-    updateElement(element.id, patch);
-  }, [element.id, scale, updateElement]);
+    listeners?.onPointerDown?.(e);
+  }, [element.id, selectElement, toggleSelectElement, listeners]);
 
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -71,18 +63,6 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
         ? '2px solid #93c5fd'
         : undefined,
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-  };
-
-  const mergedPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button === 0) {
-      e.stopPropagation();
-      if (e.shiftKey) {
-        toggleSelectElement(element.id);
-      } else {
-        selectElement(element.id);
-      }
-    }
-    listeners?.onPointerDown?.(e);
   };
 
   return (
@@ -112,50 +92,24 @@ function DraggableElement({ element, scale }: { element: DesignElement; scale: n
 }
 
 export function Canvas() {
-  const { labelWidth, labelHeight, elements, clearSelection, zoom } = useDesignerStore();
+  const { labelWidth, labelHeight, elements, clearSelection, zoom } =
+    useDesignerStore(useShallow(s => ({
+      labelWidth: s.labelWidth,
+      labelHeight: s.labelHeight,
+      elements: s.elements,
+      clearSelection: s.clearSelection,
+      zoom: s.zoom,
+    })));
+
   const { setNodeRef } = useDroppable({ id: 'canvas' });
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const panState = useRef({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
-  const [isPanning, setIsPanning] = useState(false);
+  const { wrapperRef, isPanning, handleMouseDown } = usePanning();
 
   const canvasWidth = labelWidth * zoom;
   const canvasHeight = labelHeight * zoom;
 
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 2) return;
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return;
-    panState.current = {
-      active: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      scrollLeft: wrapper.scrollLeft,
-      scrollTop: wrapper.scrollTop,
-    };
-    setIsPanning(true);
-
-    const onMouseMove = (ev: MouseEvent) => {
-      if (!panState.current.active) return;
-      const dx = ev.clientX - panState.current.startX;
-      const dy = ev.clientY - panState.current.startY;
-      wrapper.scrollLeft = panState.current.scrollLeft - dx;
-      wrapper.scrollTop = panState.current.scrollTop - dy;
-    };
-
-    const onMouseUp = () => {
-      panState.current.active = false;
-      setIsPanning(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  }, []);
-
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, delta } = event;
-    const el = elements.find(e => e.id === active.id);
+    const el = useDesignerStore.getState().elements.find(e => e.id === active.id);
     if (!el) return;
     const dotDx = Math.round(delta.x / zoom);
     const dotDy = Math.round(delta.y / zoom);
@@ -163,7 +117,7 @@ export function Canvas() {
       x: Math.max(0, el.x + dotDx),
       y: Math.max(0, el.y + dotDy),
     });
-  };
+  }, [zoom]);
 
   return (
     <DndContext onDragEnd={handleDragEnd}>

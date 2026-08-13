@@ -1,10 +1,11 @@
 import { eq, and, sql, count, desc } from 'drizzle-orm';
 import { getDb } from '../db/database';
 import { designsTable, designVersionsTable } from '../db/schema';
+import { Element } from '../zpl/types';
 
 export interface DesignPayload {
   zpl: string;
-  elements: object[];
+  elements: Element[];
   labelWidth: number;
   labelHeight: number;
 }
@@ -27,7 +28,7 @@ export interface VersionDetail {
   id: number;
   versionNumber: number;
   zpl: string;
-  elements: object[];
+  elements: Element[];
   labelWidth: number;
   labelHeight: number;
   createdAt: string;
@@ -110,9 +111,7 @@ export async function getDesignWithVersion(userId: number, designId: number, ver
 }
 
 export async function getLatestVersion(userId: number, designId: number): Promise<VersionDetail | undefined> {
-  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
-    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
-  if (!design.length) return undefined;
+  if (!await ownershipCheck(userId, designId)) return undefined;
   const rows = await getDb().select().from(designVersionsTable)
     .where(eq(designVersionsTable.designId, designId))
     .orderBy(desc(designVersionsTable.versionNumber))
@@ -148,18 +147,14 @@ async function insertVersion(designId: number, payload: DesignPayload): Promise<
 }
 
 export async function createVersion(userId: number, designId: number, payload: DesignPayload): Promise<VersionDetail> {
-  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
-    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
-  if (!design.length) throw new Error('DESIGN_NOT_FOUND');
+  if (!await ownershipCheck(userId, designId)) throw new Error('DESIGN_NOT_FOUND');
   const versionId = await insertVersion(designId, payload);
   const rows = await getDb().select().from(designVersionsTable).where(eq(designVersionsTable.id, versionId));
   return toVersionDetail(rows[0]);
 }
 
 export async function listVersions(userId: number, designId: number): Promise<VersionSummary[]> {
-  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
-    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
-  if (!design.length) return [];
+  if (!await ownershipCheck(userId, designId)) return [];
   const rows = await getDb().select({
     id: designVersionsTable.id,
     versionNumber: designVersionsTable.versionNumber,
@@ -171,12 +166,18 @@ export async function listVersions(userId: number, designId: number): Promise<Ve
 }
 
 export async function getVersion(userId: number, designId: number, versionNumber: number): Promise<VersionDetail | undefined> {
-  const design = await getDb().select({ id: designsTable.id }).from(designsTable)
-    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
-  if (!design.length) return undefined;
+  if (!await ownershipCheck(userId, designId)) return undefined;
   const rows = await getDb().select().from(designVersionsTable)
     .where(and(eq(designVersionsTable.designId, designId), eq(designVersionsTable.versionNumber, versionNumber)));
   return rows[0] ? toVersionDetail(rows[0]) : undefined;
+}
+
+async function ownershipCheck(userId: number, designId: number): Promise<boolean> {
+  const rows = await getDb()
+    .select({ id: designsTable.id })
+    .from(designsTable)
+    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
+  return rows.length > 0;
 }
 
 function toVersionDetail(r: typeof designVersionsTable.$inferSelect): VersionDetail {
@@ -184,7 +185,7 @@ function toVersionDetail(r: typeof designVersionsTable.$inferSelect): VersionDet
     id: r.id,
     versionNumber: r.versionNumber,
     zpl: r.zpl,
-    elements: JSON.parse(r.elementsJson) as object[],
+    elements: JSON.parse(r.elementsJson) as Element[],
     labelWidth: r.labelWidth,
     labelHeight: r.labelHeight,
     createdAt: toIso(r.createdAt),
@@ -198,9 +199,7 @@ export async function updateVersion(
   payload: DesignPayload
 ): Promise<VersionDetail | undefined> {
   const db = getDb();
-  const design = await db.select({ id: designsTable.id }).from(designsTable)
-    .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)));
-  if (!design.length) return undefined;
+  if (!await ownershipCheck(userId, designId)) return undefined;
 
   const rows = await db
     .update(designVersionsTable)

@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { generateZpl } from '../zpl/generator';
 import { parseZpl } from '../zpl/parser';
+import { ElementSchema } from '../zpl/schema';
 import { LABELARY_BASE_URL, LABELARY_TIMEOUT_MS, MAX_ZPL_LENGTH } from '../config';
 
 export const zplRouter = Router();
@@ -11,24 +12,6 @@ const zplField = z.string().max(MAX_ZPL_LENGTH);
 
 /** Label dimensions in dots, positive and upper-bounded to sane physical sizes. */
 const dimension = z.number().positive().max(10_000);
-
-const ElementSchema = z.object({
-  id: z.string(),
-  type: z.enum(['text', 'barcode128', 'qrcode', 'rect', 'line', 'comment']),
-  x: z.number(),
-  y: z.number(),
-  width: z.number(),
-  height: z.number(),
-  value: z.string().optional(),
-  fontSize: z.number().optional(),
-  fontName: z.string().optional(),
-  fontSource: z.enum(['cf', 'a']).optional(),
-  reversed: z.boolean().optional(),
-  filled: z.boolean().optional(),
-  thickness: z.number().optional(),
-  dynamic: z.boolean().optional(),
-  variableName: z.string().optional(),
-});
 
 const GenerateSchema = z.object({
   labelWidth: dimension,

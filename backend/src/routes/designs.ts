@@ -4,6 +4,7 @@ import {
   createDesign, listDesigns, getDesignWithVersion, deleteDesign,
   createVersion, listVersions, getVersion, updateVersion,
 } from '../designs/designsService';
+import { ElementSchema } from '../zpl/schema';
 
 export const designsRouter = Router();
 
@@ -12,7 +13,7 @@ const IdParam = z.coerce.number().int().positive();
 
 const VersionPayloadSchema = z.object({
   zpl: z.string().min(1),
-  elements: z.array(z.record(z.unknown())),
+  elements: z.array(ElementSchema),
   labelWidth: z.number().positive(),
   labelHeight: z.number().positive(),
 });

@@ -1,6 +1,6 @@
 const TOKEN_KEY = 'zpl_token';
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
+export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);

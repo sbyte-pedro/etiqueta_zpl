@@ -5,9 +5,7 @@ import { useDesignsStore } from '../store/useDesignsStore';
 import { ExportModal } from './ExportModal';
 import { SampleValuesModal } from './SampleValuesModal';
 import { extractVariables, substituteVariables } from '../utils/variables';
-
-const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
-const DOTS_TO_MM = (dots: number) => Math.round(dots / 8.03);
+import { mmToDots, dotsToMm } from '../utils/units';
 
 interface Props {
   onNavigateToMyDesigns: () => void;
@@ -78,19 +76,19 @@ export function Toolbar({ onNavigateToMyDesigns }: Props) {
       <input
         type="number"
         className="w-20 border border-gray-200 rounded px-2 py-1 text-sm"
-        value={DOTS_TO_MM(labelWidth)}
+        value={dotsToMm(labelWidth)}
         min={10}
         max={500}
-        onChange={e => setLabelSize(MM_TO_DOTS(Number(e.target.value)), labelHeight)}
+        onChange={e => setLabelSize(mmToDots(Number(e.target.value)), labelHeight)}
       />
       <label className="text-xs text-gray-500">Height (mm)</label>
       <input
         type="number"
         className="w-20 border border-gray-200 rounded px-2 py-1 text-sm"
-        value={DOTS_TO_MM(labelHeight)}
+        value={dotsToMm(labelHeight)}
         min={10}
         max={1000}
-        onChange={e => setLabelSize(labelWidth, MM_TO_DOTS(Number(e.target.value)))}
+        onChange={e => setLabelSize(labelWidth, mmToDots(Number(e.target.value)))}
       />
       <div className="flex gap-1 ml-2">
         <button

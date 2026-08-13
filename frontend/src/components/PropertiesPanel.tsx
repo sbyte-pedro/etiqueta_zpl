@@ -1,9 +1,7 @@
 import React from 'react';
 import { useDesignerStore } from '../store/useDesignerStore';
 import { ZPL_FONTS } from '../utils/zplFonts';
-
-const MM_TO_DOTS = (mm: number) => Math.round(mm * 8.03);
-const DOTS_TO_MM = (dots: number) => parseFloat((dots / 8.03).toFixed(1));
+import { mmToDots, dotsToMm } from '../utils/units';
 
 export function PropertiesPanel() {
   const { elements, selectedId, updateElement, deleteElement } = useDesignerStore();
@@ -28,11 +26,11 @@ export function PropertiesPanel() {
         onChange={e => {
           const v = type === 'number' ? Number(e.target.value) : e.target.value;
           if (key === 'thickness') {
-            updateElement(el.id, { thickness: Math.max(1, MM_TO_DOTS(Number(v))) });
+            updateElement(el.id, { thickness: Math.max(1, mmToDots(Number(v))) });
           } else if (['x', 'y'].includes(key)) {
-            updateElement(el.id, { [key]: Math.max(0, MM_TO_DOTS(Number(v))) });
+            updateElement(el.id, { [key]: Math.max(0, mmToDots(Number(v))) });
           } else if (['width', 'height'].includes(key)) {
-            updateElement(el.id, { [key]: Math.max(1, MM_TO_DOTS(Number(v))) });
+            updateElement(el.id, { [key]: Math.max(1, mmToDots(Number(v))) });
           } else {
             updateElement(el.id, { [key]: v });
           }
@@ -74,12 +72,12 @@ export function PropertiesPanel() {
   return (
     <div className="w-56 bg-white border-l border-gray-200 p-3 overflow-y-auto">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{el.type}</p>
-      {field('X (mm)', DOTS_TO_MM(el.x), 'x', 'number', 0)}
-      {field('Y (mm)', DOTS_TO_MM(el.y), 'y', 'number', 0)}
-      {field('Width (mm)', DOTS_TO_MM(el.width), 'width', 'number', 0.1)}
-      {field('Height (mm)', DOTS_TO_MM(el.height), 'height', 'number', 0.1)}
+      {field('X (mm)', dotsToMm(el.x), 'x', 'number', 0)}
+      {field('Y (mm)', dotsToMm(el.y), 'y', 'number', 0)}
+      {field('Width (mm)', dotsToMm(el.width), 'width', 'number', 0.1)}
+      {field('Height (mm)', dotsToMm(el.height), 'height', 'number', 0.1)}
       {(el.type === 'line' || (el.type === 'rect' && !el.filled)) && (
-        field('Thickness (mm)', DOTS_TO_MM(el.thickness ?? (el.type === 'line' ? Math.min(el.width, el.height) : 8)), 'thickness', 'number', 0.1)
+        field('Thickness (mm)', dotsToMm(el.thickness ?? (el.type === 'line' ? Math.min(el.width, el.height) : 8)), 'thickness', 'number', 0.1)
       )}
       {el.type === 'text' && (
         <>

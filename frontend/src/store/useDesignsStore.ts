@@ -5,7 +5,6 @@ import {
   apiCreateVersion, apiListVersions, apiGetVersion, apiUpdateVersion,
   DesignSummary, VersionSummary,
 } from '../utils/designsClient';
-import { DesignElement } from '../types';
 
 interface DesignsStore {
   designs: DesignSummary[];
@@ -49,7 +48,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
 
   async saveNewDesign(name: string) {
     const { elements, zplCode: zpl, labelWidth, labelHeight } = useDesignerStore.getState();
-    const result = await apiCreateDesign(name, { zpl, elements: elements as object[], labelWidth, labelHeight });
+    const result = await apiCreateDesign(name, { zpl, elements, labelWidth, labelHeight });
     set({ activeDesignId: result.designId, activeDesignName: name, activeVersionNumber: 1, showSaveModal: false });
     await get().fetchDesigns();
   },
@@ -58,7 +57,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     const { activeDesignId } = get();
     if (!activeDesignId) return;
     const { elements, zplCode: zpl, labelWidth, labelHeight } = useDesignerStore.getState();
-    const version = await apiCreateVersion(activeDesignId, { zpl, elements: elements as object[], labelWidth, labelHeight });
+    const version = await apiCreateVersion(activeDesignId, { zpl, elements, labelWidth, labelHeight });
     set({ activeVersionNumber: version.versionNumber });
     await get().fetchDesigns();
     await get().fetchVersions(activeDesignId);
@@ -69,7 +68,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     if (!activeDesignId || activeVersionNumber === null) return;
     const { elements, zplCode: zpl, labelWidth, labelHeight } = useDesignerStore.getState();
     await apiUpdateVersion(activeDesignId, activeVersionNumber, {
-      zpl, elements: elements as object[], labelWidth, labelHeight,
+      zpl, elements, labelWidth, labelHeight,
     });
     await get().fetchDesigns();
     set({ showSaveModal: false });
@@ -78,7 +77,7 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
   async loadVersion(designId: number, versionNumber: number) {
     const version = await apiGetVersion(designId, versionNumber);
     useDesignerStore.setState({
-      elements: version.elements as DesignElement[],
+      elements: version.elements,
       zplCode: version.zpl,
       labelWidth: version.labelWidth,
       labelHeight: version.labelHeight,

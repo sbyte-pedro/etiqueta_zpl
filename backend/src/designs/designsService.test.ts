@@ -10,7 +10,7 @@ import {
 } from './designsService';
 import { eq } from 'drizzle-orm';
 
-const payload = { zpl: '^XA^XZ', elements: [{ id: '1', type: 'text' }], labelWidth: 800, labelHeight: 1200 };
+const payload = { zpl: '^XA^XZ', elements: [{ id: '1', type: 'text' as const, x: 0, y: 0, width: 100, height: 40 }], labelWidth: 800, labelHeight: 1200 };
 let userId1: number;
 let userId2: number;
 
