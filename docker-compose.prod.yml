@@ -1,0 +1,46 @@
+# Production stack.
+#
+#   Required env vars (pass via --env-file or export before running):
+#     DATABASE_URL  e.g. postgresql://postgres:<password>@db:5432/etiqueta_zpl
+#     JWT_SECRET    generate with: openssl rand -hex 32
+#     DB_PASSWORD   password for the postgres superuser
+#
+#   Start:  docker compose -f docker-compose.prod.yml up -d
+#   Stop:   docker compose -f docker-compose.prod.yml down
+#   Wipe DB: docker compose -f docker-compose.prod.yml down -v
+#
+#   Migrations run automatically on first startup via initDb()
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: etiqueta_zpl
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d etiqueta_zpl"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      target: production
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: "3001"
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
