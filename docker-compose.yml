@@ -26,7 +26,9 @@ services:
       retries: 10
 
   backend:
-    image: node:20-alpine
+    build:
+      context: .
+      target: backend-dev
     working_dir: /app
     command: sh -c "npm install && npm run dev --workspace=backend"
     environment:
@@ -44,7 +46,9 @@ services:
         condition: service_healthy
 
   frontend:
-    image: node:20-alpine
+    build:
+      context: .
+      target: frontend-dev
     working_dir: /app
     # --host binds Vite to 0.0.0.0 so the port is reachable from the host.
     command: sh -c "npm install && npm run dev --workspace=frontend -- --host"
