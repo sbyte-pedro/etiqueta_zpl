@@ -4,6 +4,7 @@
 #     DATABASE_URL  e.g. postgresql://postgres:<password>@db:5432/etiqueta_zpl
 #     JWT_SECRET    generate with: openssl rand -hex 32
 #     DB_PASSWORD   password for the postgres superuser
+#     FRONTEND_URL  public URL of the server (default: http://localhost:3001)
 #
 #   Start:  docker compose -f docker-compose.prod.yml up -d
 #   Stop:   docker compose -f docker-compose.prod.yml down
@@ -35,6 +36,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       PORT: "3001"
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
     ports:
       - "3001:3001"
     depends_on:
