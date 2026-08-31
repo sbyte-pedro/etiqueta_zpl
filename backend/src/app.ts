@@ -12,6 +12,7 @@ import { designsRouter } from './routes/designs';
 import { healthRouter } from './routes/health';
 import logger from './logger';
 import { FRONTEND_URL, isProduction, MAX_BODY_SIZE } from './config';
+import path from 'path';
 
 const app = express();
 
@@ -43,6 +44,13 @@ app.use('/health', healthRouter);
 app.use('/api/auth', authRouter);                         // public; limiters applied per-route
 app.use('/api/designs', authenticate, designsRouter);     // protected
 app.use('/api', authenticate, proxyLimiter, zplRouter);   // protected, rate-limited
+
+if (isProduction) {
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.get('*', (_req, res) =>
+    res.sendFile(path.join(__dirname, 'public', 'index.html'))
+  );
+}
 
 // Centralized error handler — must be last
 app.use(errorHandler);
