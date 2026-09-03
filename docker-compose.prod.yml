@@ -29,9 +29,7 @@ services:
     restart: unless-stopped
 
   backend:
-    build:
-      context: .
-      target: production
+    image: yourusername/etiqueta-zpl:latest
     environment:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
