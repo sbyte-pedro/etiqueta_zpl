@@ -22,7 +22,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
-RUN npm ci --omit=dev
+COPY --from=deps /app/node_modules ./node_modules
+RUN npm prune --omit=dev
 COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=frontend-builder /app/frontend/dist ./backend/dist/public
 COPY backend/drizzle ./backend/drizzle
