@@ -17,7 +17,7 @@ import path from 'path';
 const app = express();
 
 // Security headers (CSP, HSTS, X-Content-Type-Options, etc.)
-app.use(helmet());
+app.use(helmet({ crossOriginOpenerPolicy: false }));
 
 // Structured HTTP request logging
 app.use(pinoHttp({ logger }));
