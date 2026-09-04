@@ -55,6 +55,13 @@ export async function apiGetDesign(id: number): Promise<DesignSummary> {
   return apiFetch(`/api/designs/${id}`);
 }
 
+export async function apiRenameDesign(id: number, name: string): Promise<DesignSummary> {
+  return apiFetch(`/api/designs/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  });
+}
+
 export async function apiDeleteDesign(id: number): Promise<void> {
   return apiFetch(`/api/designs/${id}`, { method: 'DELETE' });
 }

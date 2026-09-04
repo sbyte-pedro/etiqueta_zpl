@@ -142,6 +142,22 @@ export async function getLatestVersion(userId: number, designId: number): Promis
   return rows[0] ? toVersionDetail(rows[0]) : undefined;
 }
 
+export async function renameDesign(userId: number, designId: number, name: string): Promise<DesignSummary | undefined> {
+  const db = getDb();
+  try {
+    const rows = await db
+      .update(designsTable)
+      .set({ name, updatedAt: new Date() })
+      .where(and(eq(designsTable.id, designId), eq(designsTable.userId, userId)))
+      .returning();
+    if (!rows.length) return undefined;
+  } catch (e) {
+    if ((e as { code?: string }).code === '23505') throw new Error('DESIGN_NAME_TAKEN');
+    throw e;
+  }
+  return getDesign(userId, designId);
+}
+
 export async function deleteDesign(userId: number, designId: number): Promise<boolean> {
   const rows = await getDb()
     .delete(designsTable)
@@ -161,7 +177,7 @@ async function insertVersion(designId: number, payload: DesignPayload): Promise<
     designId,
     versionNumber: nextVn,
     zpl: payload.zpl,
-    elementsJson: JSON.stringify(payload.elements),
+    elementsJson: payload.elements as object[],
     labelWidth: payload.labelWidth,
     labelHeight: payload.labelHeight,
   }).returning({ id: designVersionsTable.id });
@@ -221,7 +237,7 @@ function toVersionDetail(r: typeof designVersionsTable.$inferSelect): VersionDet
     id: r.id,
     versionNumber: r.versionNumber,
     zpl: r.zpl,
-    elements: JSON.parse(r.elementsJson) as Element[],
+    elements: r.elementsJson as unknown as Element[],
     labelWidth: r.labelWidth,
     labelHeight: r.labelHeight,
     createdAt: toIso(r.createdAt),
@@ -241,7 +257,7 @@ export async function updateVersion(
     .update(designVersionsTable)
     .set({
       zpl: payload.zpl,
-      elementsJson: JSON.stringify(payload.elements),
+      elementsJson: payload.elements as object[],
       labelWidth: payload.labelWidth,
       labelHeight: payload.labelHeight,
     })

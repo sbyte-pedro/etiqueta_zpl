@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useDesignerStore } from './useDesignerStore';
 import { toast } from './useToastStore';
 import {
-  apiCreateDesign, apiListDesigns, apiDeleteDesign,
+  apiCreateDesign, apiListDesigns, apiDeleteDesign, apiRenameDesign,
   apiCreateVersion, apiListVersions, apiGetVersion, apiUpdateVersion,
   DesignSummary, VersionSummary,
 } from '../utils/designsClient';
@@ -24,6 +24,7 @@ interface DesignsStore {
   overwriteVersion(): Promise<void>;
   loadVersion(designId: number, versionNumber: number): Promise<void>;
   deleteDesign(id: number): Promise<void>;
+  renameDesign(id: number, newName: string): Promise<void>;
   fetchVersions(designId: number): Promise<void>;
 
   openSaveModal(): void;
@@ -104,6 +105,19 @@ export const useDesignsStore = create<DesignsStore>((set, get) => ({
     });
     const designName = get().designs.find(d => d.id === designId)?.name ?? '';
     set({ activeDesignId: designId, activeDesignName: designName, activeVersionNumber: versionNumber });
+  },
+
+  async renameDesign(id: number, newName: string) {
+    try {
+      const updated = await apiRenameDesign(id, newName);
+      set(s => ({
+        designs: s.designs.map(d => d.id === id ? { ...d, name: updated.name } : d),
+        activeDesignName: s.activeDesignId === id ? updated.name : s.activeDesignName,
+      }));
+      toast.success(`Renamed to "${updated.name}"`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to rename design');
+    }
   },
 
   async deleteDesign(id: number) {

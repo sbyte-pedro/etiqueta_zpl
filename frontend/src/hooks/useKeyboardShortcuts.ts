@@ -17,7 +17,7 @@ function isEditableTarget(el: EventTarget | null): boolean {
  *   Ctrl/Cmd+Shift+Z  — redo
  *   Ctrl/Cmd+Y        — redo
  *   Delete/Backspace  — delete the current selection
- *   Escape            — clear the selection
+ *   Ctrl/Cmd+D        — duplicate selection
  * All shortcuts except Ctrl+S are suppressed while typing in an input/editor.
  */
 export function useKeyboardShortcuts() {
@@ -37,6 +37,11 @@ export function useKeyboardShortcuts() {
 
       if (isEditableTarget(e.target)) return;
 
+      if (mod && key === 'd') {
+        e.preventDefault();
+        useDesignerStore.getState().duplicateSelected();
+        return;
+      }
       if (mod && key === 'z') {
         e.preventDefault();
         if (e.shiftKey) redo();
