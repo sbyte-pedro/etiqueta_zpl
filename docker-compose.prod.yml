@@ -52,6 +52,7 @@ services:
       WATCHTOWER_POLL_INTERVAL: "300"        # check every 5 minutes
       WATCHTOWER_CLEANUP: "true"             # remove old images after update
       WATCHTOWER_INCLUDE_STOPPED: "false"
+      DOCKER_API_VERSION: "1.41"             # match server's Docker daemon version
     restart: unless-stopped
 
 volumes:
