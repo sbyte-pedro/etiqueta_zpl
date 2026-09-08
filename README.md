@@ -16,6 +16,7 @@ A web-based visual designer for Zebra printer labels. Draw labels by dragging el
 - [Environment Variables](#environment-variables)
 - [API Reference](#api-reference)
 - [Database Schema](#database-schema)
+- [Deployment](#deployment)
 - [Running Tests](#running-tests)
 - [Project Structure](#project-structure)
 
@@ -33,7 +34,6 @@ npm install
 createdb etiqueta_dev
 
 # 3. Set required environment variables for the backend
-#    (add these to your shell profile or a local .env loader)
 export DATABASE_URL=postgresql://localhost/etiqueta_dev
 export JWT_SECRET=any-random-secret-string
 
@@ -48,16 +48,13 @@ The backend runs migrations automatically on first start — no manual SQL neede
 
 Open [http://localhost:5173](http://localhost:5173), register an account, and start designing.
 
-### With Docker Compose
+### With Docker Compose (dev)
 
 If you have Docker, you can skip installing Node and PostgreSQL locally:
 
 ```bash
 # Start Postgres + backend + frontend (with hot reload) in one command
 docker compose up
-
-# …or just Postgres, then run the apps on the host as above
-docker compose up db
 
 # Stop everything (add -v to also delete the database volume)
 docker compose down
@@ -76,24 +73,28 @@ Source is mounted into the containers, so edits hot-reload. The frontend is on
 - **Drag elements from the sidebar** onto the canvas: Text, Barcode 128, QR Code, Box (rectangle), Line
 - **Select and move** elements by dragging them
 - **Resize** any element with 8 directional handles (n, s, e, w, ne, nw, se, sw)
+- **Multi-select** with Shift+click; alignment tools appear in the toolbar when ≥2 elements are selected
+- **Duplicate** a selected element with `Ctrl+D` or the button in the Properties Panel (16-dot offset)
+- **Z-order controls** — bring forward / backward / to front / to back in the Properties Panel
 - **Delete** a selected element with the `Delete` key or the button in the Properties Panel
+- **Snap to grid** toggle in the toolbar (8-dot grid)
 - **Dot-grid background** that scales with zoom to help with alignment
-- **Click canvas background** to deselect the current element
+- **Undo / Redo** (`Ctrl+Z` / `Ctrl+Shift+Z`) — 100-step history tracking elements and label dimensions
 
 ### Dynamic Variables
 
-Text, Barcode 128, and QR Code elements can be marked **dynamic** in the Properties Panel. A dynamic element stores a **variable name** (restricted to `[A-Za-z0-9_]`) instead of a fixed value and emits a `{{variableName}}` placeholder into the ZPL `^FD` field. Whoever consumes the ZPL downstream is responsible for substituting real values.
+Text, Barcode 128, and QR Code elements can be marked **dynamic** in the Properties Panel. A dynamic element stores a **variable name** (restricted to `[A-Za-z0-9_]`) instead of a fixed value and emits a `{{variableName}}` placeholder into the ZPL `^FD` field.
 
-- The canvas shows the literal `{{variableName}}`; dynamic barcodes/QR codes render a dashed placeholder box (their braces can't be encoded into a real code).
-- Parsing ZPL that contains a `{{name}}` field marks the element dynamic on the way back in — full round-trip.
-- When **Preview** or **Export** runs on a label that has variables, a **Sample values** dialog first collects an example value per variable and substitutes them into the ZPL sent to Labelary, so you see a realistic render. Labels with no variables preview/export unchanged.
+- The canvas shows the literal `{{variableName}}`; dynamic barcodes/QR codes render a dashed placeholder box
+- Parsing ZPL that contains a `{{name}}` field marks the element dynamic — full round-trip
+- When **Preview** or **Export** runs on a label with variables, a **Sample values** dialog collects an example value per variable and substitutes them before sending to Labelary
 
 ### ZPL Code Editor
 
 - Monaco-based editor (same engine as VS Code) showing the live ZPL output
 - **Edits sync back to the canvas** automatically after a 600ms pause in typing
 - **Invalid ZPL** shows a red error banner above the editor without crashing the canvas
-- Unknown ZPL commands are ignored gracefully — recognized elements are still parsed
+- Unknown ZPL commands are ignored gracefully
 
 ### Zoom Controls
 
@@ -107,11 +108,20 @@ Zoom range: 25% – 300%. The displayed percentage uses 2× as the baseline (zoo
 
 ### Label Dimensions
 
-Set label **width** and **height** in mm via the toolbar. Internally converted to ZPL dots at 8.03 dots/mm (standard 203 DPI). Changing dimensions immediately regenerates the ZPL.
+Set label **width** and **height** in mm via the toolbar. Internally converted to ZPL dots at 8.03 dots/mm (203 DPI). Changing dimensions immediately regenerates the ZPL.
 
 ### Labelary Preview & Export
 
-`POST /api/preview` proxies the label to the [Labelary public API](http://labelary.com/service.html) and returns a PNG render, shown in the preview panel. `POST /api/export` proxies to Labelary for downloadable output in PNG, PDF, EPL, or ZPL. When the label contains dynamic `{{variables}}`, both actions first prompt for sample values and substitute them before sending to Labelary.
+`POST /api/preview` proxies the label to the [Labelary public API](http://labelary.com/service.html) and returns a PNG render. `POST /api/export` returns downloadable output in PNG, PDF, EPL, or ZPL. Preview is cached — if the ZPL hasn't changed since the last preview, no new request is made.
+
+### My Designs page
+
+- Card grid showing all saved designs
+- **Search bar** — filter designs by name in real time
+- **Inline rename** — click a design name to edit it in place
+- Expandable version list per card (lazy-loaded)
+- "Open latest" shortcut and per-version load buttons
+- Delete (prompts confirmation, cascades to all versions)
 
 ---
 
@@ -129,11 +139,11 @@ etiqueta_zpl/
 
 ```
 Canvas change
-  → POST /api/generate-zpl  (debounced 200ms)
+  → POST /api/generate-zpl  (debounced 200ms, previous request cancelled via AbortController)
   → ZPL string written to Monaco editor
 
 Monaco edit (600ms pause)
-  → POST /api/parse-zpl
+  → POST /api/parse-zpl     (previous request cancelled via AbortController)
   → elements[] written back to canvas
 ```
 
@@ -146,7 +156,7 @@ Monaco edit (600ms pause)
 | `backend/src/db/schema.ts` | Drizzle table definitions |
 | `backend/src/db/database.ts` | Drizzle client singleton, migrations on startup |
 | `frontend/src/store/useDesignerStore.ts` | All designer state (elements, ZPL, zoom, sync logic) |
-| `frontend/src/store/useAuthStore.ts` | JWT token state |
+| `frontend/src/store/useAuthStore.ts` | JWT token + refresh logic |
 | `frontend/src/store/useDesignsStore.ts` | Active design / version tracking |
 
 ### Tech stack
@@ -171,31 +181,11 @@ All positions and sizes are stored in **ZPL dots** (203 DPI → 8.03 dots/mm). T
 
 | Type | Default size (dots) | ZPL command |
 |---|---|---|
-| `text` | 200 × 40 | `^FO{x},{y}^A{font}N,{size},{size}^FD{value}^FS` (or `^CF{font},{size}` + `^FO..^FD{value}^FS` for `^CF`-sourced fonts) |
+| `text` | 200 × 40 | `^FO{x},{y}^A{font}N,{size},{size}^FD{value}^FS` |
 | `barcode128` | 300 × 100 | `^FO{x},{y}^BY{module}^BCN,{height},Y,N,N^FD{value}^FS` |
 | `qrcode` | 100 × 100 | `^FO{x},{y}^BQN,2,{mag}^FDMA,{value}^FS` |
 | `rect` | 200 × 100 | `^FO{x},{y}^GB{w},{h},8^FS` |
 | `line` | 200 × 8 | `^FO{x},{y}^GB{w},{h},3^FS` |
-
-For **dynamic** text/barcode/qr elements, `{value}` is replaced by the `{{variableName}}` placeholder.
-
-**Fonts** — text elements support Zebra built-in fonts `0`, `A`, `B`, `D`, `F`, `G`, `P` via a selector in the Properties Panel. Font `0`/`P` are proportional (rendered with Arial on the canvas); `A`/`B`/`D`/`F`/`G` are fixed-pitch (rendered with Courier New); font `B` is bold and uppercase-only. A field with no inline `^A` inherits the active `^CF` default font, and this distinction is preserved through a code→design→code round-trip.
-
-**Line orientation** is determined at render time: if width ≥ height, it is horizontal; otherwise vertical. This is reflected in both the canvas visual and the ZPL output.
-
-**QR magnification** is computed automatically: `max(1, round(width / 40))`.
-
-**Barcode module width** is computed from the element width and the data length (`floor(width / (11×chars + 35))`). Because Code 128 width scales with data length, a barcode's rendered width naturally changes with its value — matching real Zebra printer behavior.
-
-### Properties per element type
-
-| Type | Editable fields |
-|---|---|
-| All | X, Y, Width, Height (mm) |
-| `text` | Value, Font Size, Font, Dynamic (+ variable name) |
-| `barcode128`, `qrcode` | Value, Dynamic (+ variable name) |
-| `rect` | — (Thickness when not filled) |
-| `line` | Thickness, orientation toggle |
 
 ---
 
@@ -203,19 +193,15 @@ For **dynamic** text/barcode/qr elements, `{value}` is replaced by the `{{variab
 
 ### Canvas → Code
 
-Any canvas change (add, move, resize, delete, label size change) triggers a call to `POST /api/generate-zpl`. The result updates the Monaco editor. Rapid changes are batched with a 200ms debounce on `updateElement`.
+Any canvas change triggers `POST /api/generate-zpl` (debounced 200ms). The previous in-flight request is cancelled via `AbortController` before a new one fires, preventing stale responses from corrupting the editor.
 
 ### Code → Canvas
 
-Every keystroke in the Monaco editor calls `onCodeChange`. After a **600ms pause**, it calls `POST /api/parse-zpl`. Recognized elements replace the canvas state; unrecognized ZPL commands are listed in `unknownCommands` and ignored without error.
+Every keystroke calls `onCodeChange`. After a **600ms pause**, it calls `POST /api/parse-zpl`. Same `AbortController` pattern — rapid typing cancels previous requests. Recognized elements replace the canvas state; unknown commands are ignored.
 
 ### Infinite-loop prevention
 
-The store maintains a `lastCanvasZpl` sentinel. When the code editor receives a new ZPL value that was just generated by the canvas, `onCodeChange` returns immediately without triggering a re-parse. This prevents the cycle: canvas change → editor update → `onChange` fires → re-parses → updates canvas → re-generates → …
-
-### ZPL parse errors
-
-If `POST /api/parse-zpl` returns an error, a red banner appears above the editor with the message. The canvas is not modified. The banner clears on the next successful parse.
+The store maintains a `lastCanvasZpl` sentinel. When the editor receives a value just generated by the canvas, `onCodeChange` returns immediately without triggering a re-parse.
 
 ---
 
@@ -223,57 +209,37 @@ If `POST /api/parse-zpl` returns an error, a red banner appears above the editor
 
 Designs are stored per user in a three-level hierarchy: **user → design → versions**.
 
-### Saving
-
-| Mode | When | What happens |
+| Save mode | When | What happens |
 |---|---|---|
 | New design | First save, or user chooses "New design" | Creates a design record + version 1 |
 | New version | User chooses "New version" | Appends the next incremented version |
 | Overwrite | User chooses "Overwrite v{N}" | Replaces the current version's content in-place |
 
-Design names are unique per user. Versions within a design are numbered from 1 and are never renumbered.
-
-### Loading
-
-The Load modal shows all your designs. Clicking a design reveals its version list. Clicking any version loads it into the canvas immediately (sets elements, ZPL code, and label dimensions).
-
-### My Designs page
-
-The My Designs page is a card grid showing all designs with:
-- Version count
-- Last-updated relative timestamp
-- Expandable version list (lazy-loaded on demand)
-- "Open latest" shortcut — loads the highest-numbered version
-- Per-version individual load buttons
-- Delete (prompts confirmation, cascades to all versions)
-
-### Active design indicator
-
-When a design is loaded, its name appears in the toolbar next to the app title. The save modal defaults to "Overwrite" or "New version" rather than "New design" when a design is active.
+Design names are unique per user. Designs can be renamed inline from the My Designs page.
 
 ---
 
 ## Authentication
 
-### Registration & Login
+The app uses a **dual-token scheme**:
 
-- Register with username (min 3 chars) and password (min 6 chars)
-- Registering automatically logs you in (no separate step)
-- Session is a JWT stored in `localStorage` under the key `zpl_token`, valid for **60 minutes**
-- Refreshing the page preserves the session (until the token expires)
-- After the token expires, the next API call returns 401 and the app logs you out automatically; the token expiry is also checked on page load
+- **Access token** — short-lived JWT (60 minutes), stored in `localStorage`. Sent as `Authorization: Bearer <token>` on every API request.
+- **Refresh token** — long-lived opaque token (30 days), stored as a SHA-256 hash in the database. Delivered and rotated via an `httpOnly` cookie scoped to `/api/auth`. Single-use — each refresh issues a new token and invalidates the old one.
 
-### Logout
+### Flow
 
-Click the Logout button in the toolbar. The token is removed from localStorage immediately and the login screen appears.
+1. Login → server returns `{ token }` (access token) + sets `zpl_refresh` httpOnly cookie
+2. On page load, if no valid access token is found in localStorage, the client silently calls `POST /api/auth/refresh` using the cookie
+3. On any 401 response, the client retries once with a silent refresh; if that also fails, it logs out
+4. Logout calls `POST /api/auth/logout` to revoke the refresh token server-side, then clears localStorage
 
 ### Security notes
 
 - Passwords are hashed with bcrypt (cost factor 10)
 - JWT is signed with `JWT_SECRET` — **keep this value secret and never commit it**
-- The server refuses to start if `JWT_SECRET` is not set
-- CORS is restricted to `FRONTEND_URL` (default: `http://localhost:5173`)
-- All `/api/designs` and `/api/generate-zpl` / `/api/parse-zpl` / `/api/preview` routes require a valid JWT
+- The server refuses to start if `JWT_SECRET` or `DATABASE_URL` are not set
+- CORS is restricted to `FRONTEND_URL`
+- All `/api/designs` and ZPL proxy routes require a valid JWT
 
 ---
 
@@ -283,18 +249,11 @@ Click the Logout button in the toolbar. The token is removed from localStorage i
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | **Yes** | — | PostgreSQL connection string. Server will not start without it. Example: `postgresql://user:pass@localhost:5432/etiqueta_dev` |
-| `JWT_SECRET` | **Yes** | — | Secret for signing and verifying JWTs. Server will not start without it. Generate with `openssl rand -hex 32`. |
+| `DATABASE_URL` | **Yes** | — | PostgreSQL connection string. Example: `postgresql://user:pass@localhost:5432/etiqueta_dev` |
+| `JWT_SECRET` | **Yes** | — | Secret for signing JWTs. Generate with `openssl rand -hex 32` |
 | `PORT` | No | `3001` | Port for the Express server |
-| `FRONTEND_URL` | No | `http://localhost:5173` | Allowed CORS origin |
-
-### Frontend
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `VITE_API_URL` | No | `''` | Base URL for API calls. Leave unset in local dev — Vite proxy handles `/api/*` automatically. Set to the backend's full URL when deploying (e.g. `https://api.yourdomain.com`). |
-
-See `frontend/.env.example` for reference.
+| `FRONTEND_URL` | No | `http://localhost:5173` | Allowed CORS origin. In production set to `http://<server-ip>:3001` |
+| `NODE_ENV` | No | `development` | Set to `production` in the Docker image |
 
 ---
 
@@ -304,55 +263,35 @@ See `frontend/.env.example` for reference.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/health` | Health check with DB ping. `{ ok: true, db: "up" }`, or 503 `{ ok: false, db: "down" }` |
+| `GET` | `/health` | Health check. Returns `{ ok: true, db: "up" }` or 503 |
 | `POST` | `/api/auth/register` | Register. Body: `{ username, password }`. Returns 201 or 409 |
-| `POST` | `/api/auth/login` | Login. Body: `{ username, password }`. Returns `{ token }` or 401 |
+| `POST` | `/api/auth/login` | Login. Body: `{ username, password }`. Returns `{ token }`, sets refresh cookie |
+| `POST` | `/api/auth/refresh` | Rotate refresh token. Returns `{ token }` or 401. Reads `zpl_refresh` cookie |
+| `POST` | `/api/auth/logout` | Revoke refresh token. Clears cookie. Returns 204 |
 
 ### Protected endpoints (require `Authorization: Bearer <token>`)
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/generate-zpl` | Generate ZPL from design. Returns `{ zpl: string }` |
+| `POST` | `/api/generate-zpl` | Generate ZPL from elements. Returns `{ zpl }` |
 | `POST` | `/api/parse-zpl` | Parse ZPL to elements. Returns `{ elements, labelWidth, labelHeight, unknownCommands }` |
 | `POST` | `/api/preview` | Proxy to Labelary. Returns PNG binary |
-| `POST` | `/api/export` | Export label. Body: `{ zpl, labelWidth, labelHeight, format }` where `format` is `png \| pdf \| epl \| zpl` |
-| `GET` | `/api/designs` | List current user's designs (summary — no ZPL) |
-| `POST` | `/api/designs` | Create new design + first version |
-| `GET` | `/api/designs/:id` | Get design with ZPL — **latest version by default**. Add `?version=N` for a specific version. |
-| `DELETE` | `/api/designs/:id` | Delete design and all its versions |
-| `GET` | `/api/designs/:id/versions` | List all versions for a design (summary — no ZPL) |
+| `POST` | `/api/export` | Export label. Body includes `format: png\|pdf\|epl\|zpl` |
+| `GET` | `/api/designs` | List designs (paginated). Query: `?limit=&offset=` |
+| `POST` | `/api/designs` | Create new design + version 1 |
+| `GET` | `/api/designs/:id` | Get design with version. Add `?version=N` for a specific version |
+| `PATCH` | `/api/designs/:id` | Rename design. Body: `{ name }`. Returns 409 if name taken |
+| `DELETE` | `/api/designs/:id` | Delete design and all versions |
+| `GET` | `/api/designs/:id/versions` | List all versions (summary) |
 | `POST` | `/api/designs/:id/versions` | Create a new version |
-| `GET` | `/api/designs/:id/versions/:vn` | Get a specific version (full detail including ZPL) |
+| `GET` | `/api/designs/:id/versions/:vn` | Get a specific version (full detail with ZPL) |
 | `PUT` | `/api/designs/:id/versions/:vn` | Overwrite a specific version |
-
-#### `GET /api/designs/:id` — response shape
-
-```json
-{
-  "id": 1,
-  "name": "Shipping Label",
-  "createdAt": "2026-07-27T10:00:00.000Z",
-  "updatedAt": "2026-07-27T12:00:00.000Z",
-  "versionCount": 3,
-  "version": {
-    "id": 7,
-    "versionNumber": 3,
-    "zpl": "^XA\n^PW800\n^LL1200\n...\n^XZ",
-    "elements": [],
-    "labelWidth": 800,
-    "labelHeight": 1200,
-    "createdAt": "2026-07-27T12:00:00.000Z"
-  }
-}
-```
-
-Use `?version=2` to retrieve version 2 instead of the latest.
 
 ---
 
 ## Database Schema
 
-Three tables, all managed by Drizzle migrations (run automatically on startup).
+Four tables, managed by Drizzle migrations (run automatically on startup).
 
 ```
 users
@@ -368,20 +307,26 @@ designs
   created_at timestamp DEFAULT now()
   updated_at timestamp DEFAULT now()
   UNIQUE(user_id, name)
+  INDEX idx_designs_user_id (user_id)
 
 design_versions
   id             serial PK
   design_id      integer FK → designs.id ON DELETE CASCADE
   version_number integer NOT NULL
   zpl            text NOT NULL
-  elements_json  text NOT NULL   ← JSON-encoded elements array
+  elements_json  jsonb NOT NULL    ← stored as jsonb for server-side validation
   label_width    integer NOT NULL
   label_height   integer NOT NULL
   created_at     timestamp DEFAULT now()
   UNIQUE(design_id, version_number)
-```
 
-Deleting a user cascades to all their designs and versions. Deleting a design cascades to all its versions.
+refresh_tokens
+  id         serial PK
+  user_id    integer FK → users.id ON DELETE CASCADE
+  token_hash text UNIQUE NOT NULL   ← SHA-256 hex of the raw token
+  expires_at timestamp NOT NULL
+  created_at timestamp DEFAULT now()
+```
 
 ### Generating a new migration
 
@@ -395,9 +340,55 @@ The generated SQL file is committed to `backend/drizzle/` and applied automatica
 
 ---
 
+## Deployment
+
+The app ships as a single Docker image. The Express server serves the compiled React frontend as static files — no separate web server needed.
+
+### CI/CD
+
+Every merge to `master` triggers a GitHub Actions workflow (`.github/workflows/docker-publish.yml`) that:
+1. Builds the production Docker image
+2. Pushes two tags to Docker Hub: `:latest` and `:<version from package.json>`
+
+**Required GitHub repository secrets:**
+- `DOCKERHUB_USERNAME` — your Docker Hub username
+- `DOCKERHUB_TOKEN` — a Docker Hub access token (hub.docker.com → Account Settings → Security)
+
+### Running on a server
+
+Copy `docker-compose.prod.yml` and a `.env` file to the server:
+
+```bash
+# .env
+DB_PASSWORD=your-postgres-password
+DATABASE_URL=postgresql://postgres:your-postgres-password@db:5432/etiqueta_zpl
+JWT_SECRET=generate-with-openssl-rand-hex-32
+FRONTEND_URL=http://<server-ip>:3001
+```
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+This starts three containers: `db` (Postgres), `backend` (the app), and `watchtower`.
+
+### Automatic updates with Watchtower
+
+[Watchtower](https://containrrr.dev/watchtower/) runs as a sidecar container and polls Docker Hub every 5 minutes. When it detects a new `:latest` digest, it automatically pulls the new image and restarts the backend — no manual server intervention needed.
+
+The full automated deploy flow after a merge to `master`:
+```
+merge to master
+  → GitHub Actions builds + pushes :latest  (~50s)
+  → Watchtower detects new digest            (~5 min poll)
+  → pulls image + restarts backend           (automatic)
+```
+
+---
+
 ## Running Tests
 
-Tests live in the backend only. They require a running PostgreSQL instance.
+Tests live in the backend only and require a running PostgreSQL instance.
 
 ```bash
 # Create the test database (one-time)
@@ -407,16 +398,14 @@ createdb etiqueta_test
 cd backend && npm test
 ```
 
-The tests set `DATABASE_URL=postgresql://localhost/etiqueta_test` by default. Override by setting the env var before running.
-
-Each test suite truncates the database tables in the correct foreign-key order (`design_versions → designs → users`) before each test to ensure isolation.
+Each test suite truncates tables in the correct FK order before each test for isolation.
 
 ### What is tested
 
-- **`zpl/generator.test.ts`** — unit tests for each element type's ZPL output, including dynamic `{{variable}}` placeholders, no database
-- **`zpl/parser.test.ts`** — round-trip tests: `elements → ZPL → elements` must reproduce original state; `{{name}}` fields parse back as dynamic; unknown commands do not crash
+- **`zpl/generator.test.ts`** — unit tests for each element type's ZPL output, dynamic `{{variable}}` placeholders
+- **`zpl/parser.test.ts`** — round-trip tests: `elements → ZPL → elements`; unknown commands do not crash
 - **`auth/authService.test.ts`** — register, duplicate username, login, invalid credentials
-- **`designs/designsService.test.ts`** — create, list, get, delete designs; create/list/get versions; ownership isolation between users
+- **`designs/designsService.test.ts`** — create, list, get, delete designs; versions; ownership isolation
 
 ---
 
@@ -425,60 +414,67 @@ Each test suite truncates the database tables in the correct foreign-key order (
 ```
 etiqueta_zpl/
 ├── package.json                  # npm workspaces root
+├── Dockerfile                    # multi-stage: deps → build → production + dev stages
+├── docker-compose.yml            # dev stack (hot reload)
+├── docker-compose.prod.yml       # production stack (image from Docker Hub + Watchtower)
+├── .github/workflows/
+│   └── docker-publish.yml        # CI: build + push to Docker Hub on merge to master
 ├── frontend/
 │   ├── vite.config.ts            # dev server + /api proxy to :3001
-│   ├── src/
-│   │   ├── App.tsx               # root layout, auth gate, page routing
-│   │   ├── types.ts              # DesignElement type definition
-│   │   ├── store/
-│   │   │   ├── useDesignerStore.ts   # canvas state + sync logic
-│   │   │   ├── useAuthStore.ts       # JWT token
-│   │   │   └── useDesignsStore.ts    # active design/version tracking
-│   │   ├── components/
-│   │   │   ├── Canvas.tsx            # DnD canvas, element renderer
-│   │   │   ├── Sidebar.tsx           # element palette
-│   │   │   ├── Toolbar.tsx           # label size, save/preview/export, logout
-│   │   │   ├── PropertiesPanel.tsx   # selected element properties (incl. font, dynamic)
-│   │   │   ├── CodeEditor.tsx        # Monaco ZPL editor
-│   │   │   ├── TabSwitcher.tsx       # Design/Code toggle + zoom controls
-│   │   │   ├── SaveDesignModal.tsx   # save (new/version/overwrite)
-│   │   │   ├── ExportModal.tsx       # export format picker (png/pdf/epl/zpl)
-│   │   │   ├── PreviewPanel.tsx      # Labelary PNG render panel
-│   │   │   ├── SampleValuesModal.tsx # sample values for dynamic variables
-│   │   │   ├── ResizeHandle.tsx      # 8-handle resize UI
-│   │   │   └── elements/             # per-type visual renderers
-│   │   ├── pages/
-│   │   │   ├── LoginPage.tsx         # register / login form
-│   │   │   └── MyDesignsPage.tsx     # full-page design card grid
-│   │   └── utils/
-│   │       ├── zplClient.ts          # /api/generate-zpl, parse-zpl, preview, export
-│   │       ├── authClient.ts         # /api/auth/*
-│   │       ├── designsClient.ts      # /api/designs/*
-│   │       ├── zplFonts.ts           # Zebra font → CSS family/weight/transform map
-│   │       └── variables.ts          # {{var}} extraction + substitution
+│   └── src/
+│       ├── App.tsx               # root layout, auth gate, page routing
+│       ├── types.ts              # DesignElement type definition
+│       ├── store/
+│       │   ├── useDesignerStore.ts   # canvas state + sync logic + undo/redo
+│       │   ├── useAuthStore.ts       # JWT token + silent refresh
+│       │   └── useDesignsStore.ts    # active design/version tracking + rename
+│       ├── components/
+│       │   ├── Canvas.tsx            # DnD canvas, element renderer
+│       │   ├── Sidebar.tsx           # element palette
+│       │   ├── Toolbar.tsx           # label size, save/preview/export, logout
+│       │   ├── PropertiesPanel.tsx   # element properties, z-order, duplicate
+│       │   ├── CodeEditor.tsx        # Monaco ZPL editor
+│       │   ├── TabSwitcher.tsx       # Design/Code toggle + zoom controls
+│       │   ├── SaveDesignModal.tsx   # save (new/version/overwrite)
+│       │   ├── ExportModal.tsx       # export format picker
+│       │   ├── PreviewPanel.tsx      # Labelary PNG render panel
+│       │   ├── SampleValuesModal.tsx # sample values for dynamic variables
+│       │   └── elements/             # per-type visual renderers
+│       ├── pages/
+│       │   ├── LoginPage.tsx         # register / login form
+│       │   └── MyDesignsPage.tsx     # design grid with search + inline rename
+│       └── utils/
+│           ├── zplClient.ts          # /api/generate-zpl, parse-zpl, preview, export
+│           ├── authClient.ts         # /api/auth/* + silent refresh
+│           ├── designsClient.ts      # /api/designs/*
+│           ├── zplFonts.ts           # Zebra font → CSS family/weight/transform map
+│           └── variables.ts          # {{var}} extraction + substitution
 └── backend/
     ├── drizzle/                  # generated migration SQL files
-    ├── drizzle.config.ts         # drizzle-kit config
-    ├── src/
-    │   ├── index.ts              # startup: env var guards, initDb, listen
-    │   ├── app.ts                # Express app, CORS, route mounting
-    │   ├── db/
-    │   │   ├── schema.ts         # Drizzle table definitions
-    │   │   ├── database.ts       # singleton client + initDb
-    │   │   └── migrate.ts        # runs drizzle migrations
-    │   ├── zpl/
-    │   │   ├── generator.ts      # elements → ZPL
-    │   │   ├── parser.ts         # ZPL → elements
-    │   │   └── types.ts          # element type definitions
-    │   ├── auth/
-    │   │   └── authService.ts    # bcrypt + JWT
-    │   ├── designs/
-    │   │   └── designsService.ts # CRUD for designs and versions
-    │   ├── middleware/
-    │   │   └── authenticate.ts   # JWT verification middleware
-    │   └── routes/
-    │       ├── auth.ts
-    │       ├── designs.ts
-    │       ├── zpl.ts
-    │       └── health.ts
+    ├── drizzle.config.ts
+    └── src/
+        ├── index.ts              # startup: env var guards, initDb, listen
+        ├── app.ts                # Express app, CORS, helmet, route mounting
+        ├── config.ts             # centralised env var exports
+        ├── db/
+        │   ├── schema.ts         # Drizzle table definitions
+        │   ├── database.ts       # singleton client + initDb
+        │   └── migrate.ts        # runs drizzle migrations
+        ├── zpl/
+        │   ├── generator.ts      # elements → ZPL
+        │   ├── parser.ts         # ZPL → elements
+        │   └── types.ts          # element type definitions
+        ├── auth/
+        │   └── authService.ts    # bcrypt + JWT + refresh token rotation
+        ├── designs/
+        │   └── designsService.ts # CRUD for designs and versions
+        ├── middleware/
+        │   ├── authenticate.ts   # JWT verification
+        │   ├── errorHandler.ts   # centralised error handler
+        │   └── rateLimit.ts      # auth + proxy rate limiters
+        └── routes/
+            ├── auth.ts
+            ├── designs.ts
+            ├── zpl.ts
+            └── health.ts
 ```
