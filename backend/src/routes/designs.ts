@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import {
-  createDesign, listDesigns, getDesignWithVersion, deleteDesign,
+  createDesign, listDesigns, getDesignWithVersion, deleteDesign, renameDesign,
   createVersion, listVersions, getVersion, updateVersion,
 } from '../designs/designsService';
 import { ElementSchema } from '../zpl/schema';
@@ -76,6 +76,24 @@ designsRouter.get('/:id', async (req: Request, res: Response, next: NextFunction
     res.json(design);
   } catch (e) {
     next(e);
+  }
+});
+
+designsRouter.patch('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  const idResult = IdParam.safeParse(req.params.id);
+  if (!idResult.success) { res.status(400).json({ error: 'Invalid design ID' }); return; }
+  const parsed = z.object({ name: z.string().min(1).max(100) }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  try {
+    const result = await renameDesign(req.user!.userId, idResult.data, parsed.data.name);
+    if (!result) { res.status(404).json({ error: 'Design not found' }); return; }
+    res.json(result);
+  } catch (e) {
+    if (e instanceof Error && e.message === 'DESIGN_NAME_TAKEN') {
+      res.status(409).json({ error: 'Design name already taken' });
+    } else {
+      next(e);
+    }
   }
 });
 

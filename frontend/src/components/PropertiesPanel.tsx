@@ -4,7 +4,7 @@ import { ZPL_FONTS } from '../utils/zplFonts';
 import { mmToDots, dotsToMm } from '../utils/units';
 
 export function PropertiesPanel() {
-  const { elements, selectedId, updateElement, deleteElement } = useDesignerStore();
+  const { elements, selectedId, updateElement, deleteElement, duplicateSelected, bringForward, sendBackward, bringToFront, sendToBack } = useDesignerStore();
   const el = elements.find(e => e.id === selectedId);
 
   if (!el) {
@@ -117,6 +117,21 @@ export function PropertiesPanel() {
         className="mt-3 w-full text-xs text-red-500 border border-red-200 rounded py-1 hover:bg-red-50"
       >
         Delete element
+      </button>
+      <div className="mt-3 border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-400 mb-1.5">Order</p>
+        <div className="grid grid-cols-2 gap-1">
+          <button onClick={bringToFront} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Bring to front">↑↑ Front</button>
+          <button onClick={sendToBack} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Send to back">↓↓ Back</button>
+          <button onClick={bringForward} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Bring forward">↑ Forward</button>
+          <button onClick={sendBackward} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Send backward">↓ Backward</button>
+        </div>
+      </div>
+      <button
+        onClick={duplicateSelected}
+        className="mt-2 w-full text-xs text-blue-600 border border-blue-200 rounded py-1 hover:bg-blue-50"
+      >
+        Duplicate (Ctrl+D)
       </button>
     </div>
   );

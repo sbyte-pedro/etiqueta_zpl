@@ -13,15 +13,18 @@ function relativeDate(iso: string): string {
   return `${diff} days ago`;
 }
 
-function DesignCard({ design, onOpen, onDelete, onLoadVersion }: {
+function DesignCard({ design, onOpen, onDelete, onLoadVersion, onRename }: {
   design: DesignSummary;
   onOpen: () => void;
   onDelete: () => void;
   onLoadVersion: (versionNumber: number) => void;
+  onRename: (newName: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [versions, setVersions] = useState<VersionSummary[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draftName, setDraftName] = useState(design.name);
 
   const toggleVersions = async () => {
     if (!expanded && versions.length === 0) {
@@ -36,12 +39,37 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion }: {
     setExpanded(e => !e);
   };
 
+  const commitRename = () => {
+    const trimmed = draftName.trim();
+    if (trimmed && trimmed !== design.name) onRename(trimmed);
+    else setDraftName(design.name);
+    setEditing(false);
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
       <div>
-        <p className="font-semibold text-gray-800 line-clamp-2 break-words" title={design.name}>
-          {design.name}
-        </p>
+        {editing ? (
+          <input
+            autoFocus
+            className="w-full border border-blue-400 rounded px-2 py-0.5 text-sm font-semibold text-gray-800"
+            value={draftName}
+            onChange={e => setDraftName(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={e => {
+              if (e.key === 'Enter') commitRename();
+              if (e.key === 'Escape') { setDraftName(design.name); setEditing(false); }
+            }}
+          />
+        ) : (
+          <p
+            className="font-semibold text-gray-800 line-clamp-2 break-words cursor-pointer hover:text-blue-600 transition-colors"
+            title="Click to rename"
+            onClick={() => setEditing(true)}
+          >
+            {design.name}
+          </p>
+        )}
         <button
           onClick={toggleVersions}
           className="text-xs text-blue-500 hover:text-blue-700 mt-1 text-left"
@@ -87,10 +115,11 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion }: {
 }
 
 export function MyDesignsPage({ onBack }: Props) {
-  const { designs, designsTotal, fetchDesigns, loadMoreDesigns, deleteDesign, loadVersion, error } = useDesignsStore();
+  const { designs, designsTotal, fetchDesigns, loadMoreDesigns, deleteDesign, renameDesign, loadVersion, error } = useDesignsStore();
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [openingId, setOpeningId] = useState<number | null>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -109,7 +138,6 @@ export function MyDesignsPage({ onBack }: Props) {
   const handleOpen = async (design: DesignSummary) => {
     setOpeningId(design.id);
     try {
-      // Versions come back newest-first, so the first item is the latest.
       const { items } = await apiListVersions(design.id, 1, 0);
       if (items.length === 0) return;
       await loadVersion(design.id, items[0].versionNumber);
@@ -134,6 +162,10 @@ export function MyDesignsPage({ onBack }: Props) {
     await deleteDesign(design.id);
   };
 
+  const filtered = search.trim()
+    ? designs.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
+    : designs;
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-4">
@@ -144,6 +176,13 @@ export function MyDesignsPage({ onBack }: Props) {
           ← Back to Editor
         </button>
         <span className="text-sm font-semibold text-gray-700">My Designs</span>
+        <input
+          type="text"
+          placeholder="Search designs…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="ml-auto w-52 border border-gray-200 rounded px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
@@ -158,31 +197,38 @@ export function MyDesignsPage({ onBack }: Props) {
           </div>
         )}
 
-        {!loading && designs.length > 0 && (
+        {!loading && designs.length > 0 && filtered.length === 0 && (
+          <p className="text-sm text-gray-400 text-center mt-12">No designs match "{search}"</p>
+        )}
+
+        {!loading && filtered.length > 0 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {designs.map(design => (
+              {filtered.map(design => (
                 <DesignCard
                   key={design.id}
                   design={design}
                   onOpen={() => handleOpen(design)}
                   onDelete={() => handleDelete(design)}
                   onLoadVersion={(vn) => handleLoadVersion(design, vn)}
+                  onRename={(newName) => renameDesign(design.id, newName)}
                 />
               ))}
             </div>
-            <div className="flex flex-col items-center gap-2 mt-6">
-              <p className="text-xs text-gray-400">Showing {designs.length} of {designsTotal}</p>
-              {designs.length < designsTotal && (
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  className="text-sm px-4 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                  {loadingMore ? 'Loading…' : 'Load more'}
-                </button>
-              )}
-            </div>
+            {!search && (
+              <div className="flex flex-col items-center gap-2 mt-6">
+                <p className="text-xs text-gray-400">Showing {designs.length} of {designsTotal}</p>
+                {designs.length < designsTotal && (
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="text-sm px-4 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    {loadingMore ? 'Loading…' : 'Load more'}
+                  </button>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>

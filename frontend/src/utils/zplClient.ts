@@ -14,18 +14,20 @@ export interface ParseResult {
   unknownCommands: string[];
 }
 
-export async function generateZpl(payload: GeneratePayload): Promise<string> {
+export async function generateZpl(payload: GeneratePayload, signal?: AbortSignal): Promise<string> {
   const data = await apiFetch<{ zpl: string }>('/api/generate-zpl', {
     method: 'POST',
     body: JSON.stringify(payload),
+    signal,
   });
   return data.zpl;
 }
 
-export async function parseZpl(zpl: string): Promise<ParseResult> {
+export async function parseZpl(zpl: string, signal?: AbortSignal): Promise<ParseResult> {
   return apiFetch('/api/parse-zpl', {
     method: 'POST',
     body: JSON.stringify({ zpl }),
+    signal,
   });
 }
 
