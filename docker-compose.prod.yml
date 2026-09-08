@@ -11,6 +11,8 @@
 #   Wipe DB: docker compose -f docker-compose.prod.yml down -v
 #
 #   Migrations run automatically on first startup via initDb()
+#   Watchtower checks Docker Hub every 5 minutes and auto-restarts the backend
+#   when a new image is pushed.
 
 services:
   db:
@@ -40,6 +42,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_POLL_INTERVAL: "300"        # check every 5 minutes
+      WATCHTOWER_CLEANUP: "true"             # remove old images after update
+      WATCHTOWER_INCLUDE_STOPPED: "false"
     restart: unless-stopped
 
 volumes:
