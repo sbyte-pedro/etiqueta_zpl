@@ -77,7 +77,7 @@ export function PropertiesPanel() {
       {field('Width (mm)', dotsToMm(el.width), 'width', 'number', 0.1)}
       {field('Height (mm)', dotsToMm(el.height), 'height', 'number', 0.1)}
       {(el.type === 'line' || (el.type === 'rect' && !el.filled)) && (
-        field('Thickness (mm)', dotsToMm(el.thickness ?? (el.type === 'line' ? Math.min(el.width, el.height) : 8)), 'thickness', 'number', 0.1)
+        field('Thickness (mm)', dotsToMm(el.thickness ?? (el.type === 'line' ? 3 : 8)), 'thickness', 'number', 0.1)
       )}
       {el.type === 'text' && (
         <>

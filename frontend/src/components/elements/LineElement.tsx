@@ -7,7 +7,7 @@ export function LineElement({ element, scale }: Props) {
   const w = element.width * scale;
   const h = element.height * scale;
   const isHorizontal = w >= h;
-  const thickness = (element.thickness ?? Math.min(element.width, element.height)) * scale;
+  const thickness = (element.thickness ?? 3) * scale;
   return (
     <div style={{
       width: w,
