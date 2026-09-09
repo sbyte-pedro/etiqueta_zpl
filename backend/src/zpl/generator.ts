@@ -59,7 +59,12 @@ export function generateZpl(req: GenerateRequest): string {
         break;
       }
       case 'line': {
-        const t = el.thickness ?? Math.min(el.width, el.height);
+        // A line is a solid bar: its thickness is always its shorter dimension,
+        // derived from the bounding box rather than a stored value. This keeps
+        // the ZPL a line (w===t or h===t) no matter how the box is resized —
+        // dragging the perpendicular edge thickens the line instead of turning
+        // it into a hollow box (e.g. ^GB200,163,3).
+        const t = Math.min(el.width, el.height);
         lines.push(`${fo}^GB${el.width},${el.height},${t}^FS`);
         break;
       }

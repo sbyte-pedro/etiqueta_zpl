@@ -19,7 +19,6 @@ const DEFAULT_VALUES: Partial<Record<ElementType, Partial<DesignElement>>> = {
   text: { value: 'New Text', fontSize: 34, fontName: '0' },
   barcode128: { value: '123456789' },
   qrcode: { value: 'https://example.com' },
-  line: { thickness: 3 },
 };
 
 interface DesignerStore {
