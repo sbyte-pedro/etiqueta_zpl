@@ -71,20 +71,31 @@ it('defaults rect border thickness to 8 when not provided', () => {
   expect(result).toContain('^GB200,100,8');
 });
 
-it('uses element thickness for line when provided', () => {
+it('derives line thickness from the shorter dimension, ignoring a stored thickness', () => {
+  // Regression: a resized line must not become a hollow box. A stored
+  // thickness of 3 on a 200x163 box must NOT emit ^GB200,163,3 (a box).
   const result = generateZpl({
     labelWidth: 800, labelHeight: 1200,
-    elements: [{ id: '1', type: 'line', x: 10, y: 10, width: 200, height: 4, thickness: 4 }],
+    elements: [{ id: '1', type: 'line', x: 10, y: 10, width: 200, height: 163, thickness: 3 }],
   });
-  expect(result).toContain('^GB200,4,4');
+  expect(result).toContain('^GB200,163,163');
+  expect(result).not.toContain('^GB200,163,3');
 });
 
-it('defaults line thickness to min(width, height) when not provided', () => {
+it('emits line thickness as min(width, height)', () => {
   const result = generateZpl({
     labelWidth: 800, labelHeight: 1200,
     elements: [{ id: '1', type: 'line', x: 10, y: 10, width: 200, height: 6 }],
   });
   expect(result).toContain('^GB200,6,6');
+});
+
+it('emits a vertical line as a solid bar of its width', () => {
+  const result = generateZpl({
+    labelWidth: 800, labelHeight: 1200,
+    elements: [{ id: '1', type: 'line', x: 10, y: 10, width: 4, height: 300 }],
+  });
+  expect(result).toContain('^GB4,300,4');
 });
 
 test('dynamic text emits {{variableName}} placeholder', () => {

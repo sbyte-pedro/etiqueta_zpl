@@ -3,24 +3,15 @@ import { DesignElement } from '../../types';
 
 interface Props { element: DesignElement; scale: number; }
 
+// A line is a solid bar filling its bounding box — the shorter dimension is its
+// thickness. This mirrors the ZPL (^GB{w},{h},{min(w,h)}) and Labelary render,
+// so resizing the box thickens the line instead of drawing a hollow outline.
 export function LineElement({ element, scale }: Props) {
-  const w = element.width * scale;
-  const h = element.height * scale;
-  const isHorizontal = w >= h;
-  const thickness = (element.thickness ?? 3) * scale;
   return (
     <div style={{
-      width: w,
-      height: h,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}>
-      <div style={{
-        width: isHorizontal ? '100%' : thickness,
-        height: isHorizontal ? thickness : '100%',
-        background: 'black',
-      }} />
-    </div>
+      width: element.width * scale,
+      height: element.height * scale,
+      background: 'black',
+    }} />
   );
 }
