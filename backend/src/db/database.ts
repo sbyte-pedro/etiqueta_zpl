@@ -25,3 +25,17 @@ export async function initDb(): Promise<void> {
 export async function _resetDb(): Promise<void> {
   if (pool) { await pool.end(); pool = null; db = null; }
 }
+
+/**
+ * True if the error is a Postgres unique_violation (code 23505). Drizzle wraps
+ * driver errors in a DrizzleQueryError, so the pg code lives on `.cause` — walk
+ * the cause chain to find it.
+ */
+export function isUniqueViolation(e: unknown): boolean {
+  let cur: unknown = e;
+  while (cur) {
+    if ((cur as { code?: string }).code === '23505') return true;
+    cur = (cur as { cause?: unknown }).cause;
+  }
+  return false;
+}

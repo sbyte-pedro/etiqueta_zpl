@@ -1,5 +1,5 @@
 import { eq, and, sql, count, desc } from 'drizzle-orm';
-import { getDb } from '../db/database';
+import { getDb, isUniqueViolation } from '../db/database';
 import { designsTable, designVersionsTable } from '../db/schema';
 import { Element } from '../zpl/types';
 
@@ -59,7 +59,7 @@ export async function createDesign(userId: number, name: string, payload: Design
     designId = rows[0].id;
   } catch (e) {
     // PG unique_violation — only the (user_id, name) constraint can fire here
-    if ((e as { code?: string }).code === '23505') throw new Error('DESIGN_NAME_TAKEN');
+    if (isUniqueViolation(e)) throw new Error('DESIGN_NAME_TAKEN');
     throw e;
   }
   const versionId = await insertVersion(designId, payload);
@@ -152,7 +152,7 @@ export async function renameDesign(userId: number, designId: number, name: strin
       .returning();
     if (!rows.length) return undefined;
   } catch (e) {
-    if ((e as { code?: string }).code === '23505') throw new Error('DESIGN_NAME_TAKEN');
+    if (isUniqueViolation(e)) throw new Error('DESIGN_NAME_TAKEN');
     throw e;
   }
   return getDesign(userId, designId);

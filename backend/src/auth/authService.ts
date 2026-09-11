@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { eq } from 'drizzle-orm';
-import { getDb } from '../db/database';
+import { getDb, isUniqueViolation } from '../db/database';
 import { usersTable, refreshTokensTable } from '../db/schema';
 import { JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRES_IN, REFRESH_TOKEN_TTL_MS } from '../config';
 
@@ -22,7 +22,7 @@ export async function registerUser(username: string, password: string): Promise<
     await getDb().insert(usersTable).values({ username, passwordHash: hash });
   } catch (e) {
     // PG unique_violation — only the username constraint can fire here
-    if ((e as { code?: string }).code === '23505') throw new Error('USERNAME_TAKEN');
+    if (isUniqueViolation(e)) throw new Error('USERNAME_TAKEN');
     throw e;
   }
 }
