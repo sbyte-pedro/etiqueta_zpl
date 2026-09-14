@@ -8,13 +8,30 @@ export function CodeEditor() {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden h-full">
-      <div className="flex items-center justify-between px-3 py-2 bg-gray-900 border-b border-gray-700">
-        <span className="text-xs text-gray-400 font-mono">ZPL Code</span>
-        <span className="text-xs text-gray-500">Changes sync automatically</span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '6px 12px',
+        background: 'var(--chrome-surface)',
+        borderBottom: '1px solid var(--chrome-border)',
+        flexShrink: 0,
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--chrome-text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>ZPL</span>
+        <span style={{ fontSize: 11, color: 'var(--chrome-text-faint)' }}>Changes sync automatically</span>
       </div>
 
       {zplError && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-900/80 border-b border-red-700 text-xs text-red-200">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '6px 12px',
+          background: 'var(--status-error-subtle)',
+          borderBottom: '1px solid rgba(247,92,92,0.3)',
+          fontSize: 11,
+          color: 'var(--status-error)',
+        }}>
           <span>⚠</span>
           <span>{zplError}</span>
         </div>

@@ -7,21 +7,48 @@ export function PropertiesPanel() {
   const { elements, selectedId, updateElement, deleteElement, duplicateSelected, bringForward, sendBackward, bringToFront, sendToBack } = useDesignerStore();
   const el = elements.find(e => e.id === selectedId);
 
+  const sectionStyle: React.CSSProperties = {
+    borderTop: '1px solid var(--chrome-border)',
+    paddingTop: 12,
+    marginTop: 12,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: 10,
+    fontWeight: 500,
+    color: 'var(--chrome-text-faint)',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  };
+
   if (!el) {
     return (
-      <div className="w-56 bg-white border-l border-gray-200 p-3">
-        <p className="text-xs text-gray-400 italic">Select an element to edit its properties.</p>
+      <div style={{
+        width: 200,
+        background: 'var(--chrome-surface)',
+        borderLeft: '1px solid var(--chrome-border)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        padding: 16,
+      }}>
+        <p style={{ fontSize: 11, color: 'var(--chrome-text-faint)', textAlign: 'center', lineHeight: 1.5 }}>
+          Select an element<br />to edit properties
+        </p>
       </div>
     );
   }
 
   const field = (label: string, value: string | number, key: string, type = 'text', min?: number) => (
-    <div key={key} className="mb-2">
-      <label className="block text-xs text-gray-500 mb-0.5">{label}</label>
+    <div key={key} style={{ marginBottom: 8 }}>
+      <label style={labelStyle}>{label}</label>
       <input
+        className="chrome-input"
         type={type}
         min={min}
-        className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
         value={value}
         onChange={e => {
           const v = type === 'number' ? Number(e.target.value) : e.target.value;
@@ -41,27 +68,28 @@ export function PropertiesPanel() {
 
   const dynamicControls = (
     <>
-      <label className="flex items-center gap-2 mb-2 text-xs text-gray-600">
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, cursor: 'pointer' }}>
         <input
           type="checkbox"
           checked={el.dynamic ?? false}
           onChange={e => updateElement(el.id, { dynamic: e.target.checked })}
+          style={{ accentColor: 'var(--accent)' }}
         />
-        Dynamic (variable)
+        <span style={{ fontSize: 12, color: 'var(--chrome-text-muted)' }}>Dynamic variable</span>
       </label>
       {el.dynamic && (
-        <div className="mb-2">
-          <label className="block text-xs text-gray-500 mb-0.5">Variable name</label>
+        <div style={{ marginBottom: 8 }}>
+          <label style={labelStyle}>Variable name</label>
           <input
+            className="chrome-input"
             type="text"
-            className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
             value={el.variableName ?? ''}
             placeholder="e.g. company"
             onChange={e =>
               updateElement(el.id, { variableName: e.target.value.replace(/[^A-Za-z0-9_]/g, '') })
             }
           />
-          <p className="text-[10px] text-gray-400 mt-0.5">
+          <p style={{ fontSize: 10, color: 'var(--chrome-text-faint)', marginTop: 3 }}>
             Emits {`{{${el.variableName || 'name'}}}`} in ZPL
           </p>
         </div>
@@ -70,69 +98,170 @@ export function PropertiesPanel() {
   );
 
   return (
-    <div className="w-56 bg-white border-l border-gray-200 p-3 overflow-y-auto">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{el.type}</p>
-      {field('X (mm)', dotsToMm(el.x), 'x', 'number', 0)}
-      {field('Y (mm)', dotsToMm(el.y), 'y', 'number', 0)}
-      {field('Width (mm)', dotsToMm(el.width), 'width', 'number', 0.1)}
-      {field('Height (mm)', dotsToMm(el.height), 'height', 'number', 0.1)}
-      {el.type === 'rect' && !el.filled && (
-        field('Thickness (mm)', dotsToMm(el.thickness ?? 8), 'thickness', 'number', 0.1)
-      )}
-      {el.type === 'text' && (
-        <>
-          {!el.dynamic && field('Value', el.value ?? '', 'value')}
-          {field('Font Size', el.fontSize ?? 30, 'fontSize', 'number')}
-          <div className="mb-2">
-            <label className="block text-xs text-gray-500 mb-0.5">Font</label>
-            <select
-              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-              value={el.fontName ?? '0'}
-              onChange={e => updateElement(el.id, { fontName: e.target.value })}
-            >
-              {ZPL_FONTS.map(f => (
-                <option key={f.name} value={f.name}>{f.label}</option>
-              ))}
-            </select>
-          </div>
-          {dynamicControls}
-        </>
-      )}
-      {(el.type === 'barcode128' || el.type === 'qrcode') && (
-        <>
-          {!el.dynamic && field('Value', el.value ?? '', 'value')}
-          {dynamicControls}
-        </>
-      )}
-      {el.type === 'line' && (
-        <button
-          onClick={() => updateElement(el.id, { width: el.height, height: el.width })}
-          className="mb-2 w-full text-xs text-blue-600 border border-blue-200 rounded py-1 hover:bg-blue-50 transition-colors"
-        >
-          {el.width >= el.height ? '↔ Horizontal' : '↕ Vertical'}
-        </button>
-      )}
-      <button
-        onClick={() => deleteElement(el.id)}
-        className="mt-3 w-full text-xs text-red-500 border border-red-200 rounded py-1 hover:bg-red-50"
-      >
-        Delete element
-      </button>
-      <div className="mt-3 border-t border-gray-100 pt-3">
-        <p className="text-xs text-gray-400 mb-1.5">Order</p>
-        <div className="grid grid-cols-2 gap-1">
-          <button onClick={bringToFront} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Bring to front">↑↑ Front</button>
-          <button onClick={sendToBack} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Send to back">↓↓ Back</button>
-          <button onClick={bringForward} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Bring forward">↑ Forward</button>
-          <button onClick={sendBackward} className="text-xs border border-gray-200 rounded py-1 hover:bg-gray-50" title="Send backward">↓ Backward</button>
+    <div
+      className="chrome-scroll"
+      style={{
+        width: 200,
+        background: 'var(--chrome-surface)',
+        borderLeft: '1px solid var(--chrome-border)',
+        padding: '12px 12px',
+        overflowY: 'auto',
+        flexShrink: 0,
+      }}
+    >
+      {/* Element type badge */}
+      <div style={{
+        display: 'inline-block',
+        background: 'var(--chrome-elevated)',
+        border: '1px solid var(--chrome-border)',
+        borderRadius: 4,
+        padding: '2px 8px',
+        fontSize: 10,
+        fontWeight: 600,
+        color: 'var(--accent)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        marginBottom: 14,
+      }}>
+        {el.type}
+      </div>
+
+      {/* Position & size */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 4 }}>
+        <div>
+          <label style={labelStyle}>X mm</label>
+          <input className="chrome-input" type="number" min={0}
+            value={parseFloat(dotsToMm(el.x).toFixed(1))}
+            onChange={e => updateElement(el.id, { x: Math.max(0, mmToDots(Number(e.target.value))) })}
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Y mm</label>
+          <input className="chrome-input" type="number" min={0}
+            value={parseFloat(dotsToMm(el.y).toFixed(1))}
+            onChange={e => updateElement(el.id, { y: Math.max(0, mmToDots(Number(e.target.value))) })}
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>W mm</label>
+          <input className="chrome-input" type="number" min={0.1}
+            value={parseFloat(dotsToMm(el.width).toFixed(1))}
+            onChange={e => updateElement(el.id, { width: Math.max(1, mmToDots(Number(e.target.value))) })}
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>H mm</label>
+          <input className="chrome-input" type="number" min={0.1}
+            value={parseFloat(dotsToMm(el.height).toFixed(1))}
+            onChange={e => updateElement(el.id, { height: Math.max(1, mmToDots(Number(e.target.value))) })}
+          />
         </div>
       </div>
-      <button
-        onClick={duplicateSelected}
-        className="mt-2 w-full text-xs text-blue-600 border border-blue-200 rounded py-1 hover:bg-blue-50"
-      >
-        Duplicate (Ctrl+D)
-      </button>
+
+      {el.type === 'rect' && !el.filled && (
+        <div style={{ marginBottom: 8 }}>
+          <label style={labelStyle}>Border thickness mm</label>
+          <input className="chrome-input" type="number" min={0.1}
+            value={parseFloat(dotsToMm(el.thickness ?? 8).toFixed(1))}
+            onChange={e => updateElement(el.id, { thickness: Math.max(1, mmToDots(Number(e.target.value))) })}
+          />
+        </div>
+      )}
+
+      {el.type === 'text' && (
+        <div style={sectionStyle}>
+          {!el.dynamic && field('Value', el.value ?? '', 'value')}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div>
+              <label style={labelStyle}>Font size</label>
+              <input className="chrome-input" type="number"
+                value={el.fontSize ?? 30}
+                onChange={e => updateElement(el.id, { fontSize: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Font</label>
+              <select
+                className="chrome-input"
+                value={el.fontName ?? '0'}
+                onChange={e => updateElement(el.id, { fontName: e.target.value })}
+                style={{ paddingRight: 4 }}
+              >
+                {ZPL_FONTS.map(f => (
+                  <option key={f.name} value={f.name}>{f.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {dynamicControls}
+        </div>
+      )}
+
+      {(el.type === 'barcode128' || el.type === 'qrcode') && (
+        <div style={sectionStyle}>
+          {!el.dynamic && field('Value', el.value ?? '', 'value')}
+          {dynamicControls}
+        </div>
+      )}
+
+      {el.type === 'line' && (
+        <div style={sectionStyle}>
+          <button
+            onClick={() => updateElement(el.id, { width: el.height, height: el.width })}
+            className="chrome-btn chrome-btn-ghost"
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            {el.width >= el.height ? '↔ Horizontal' : '↕ Vertical'}
+          </button>
+        </div>
+      )}
+
+      {/* Layer order */}
+      <div style={sectionStyle}>
+        <span className="panel-label" style={{ display: 'block', marginBottom: 8 }}>Layer order</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+          {[
+            { label: '↑↑ Front', action: bringToFront },
+            { label: '↓↓ Back', action: sendToBack },
+            { label: '↑ Forward', action: bringForward },
+            { label: '↓ Backward', action: sendBackward },
+          ].map(({ label, action }) => (
+            <button
+              key={label}
+              onClick={action}
+              className="chrome-btn chrome-btn-ghost"
+              style={{ fontSize: 11, padding: '4px 6px', justifyContent: 'center' }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Duplicate & Delete */}
+      <div style={sectionStyle}>
+        <button
+          onClick={duplicateSelected}
+          className="chrome-btn chrome-btn-ghost"
+          style={{ width: '100%', justifyContent: 'center', marginBottom: 6 }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="1" y="3" width="7" height="7" rx="0.75" stroke="currentColor" strokeWidth="1.2"/>
+            <path d="M4 3V2a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H9" stroke="currentColor" strokeWidth="1.2"/>
+          </svg>
+          Duplicate
+        </button>
+        <button
+          onClick={() => deleteElement(el.id)}
+          className="chrome-btn chrome-btn-danger"
+          style={{ width: '100%', justifyContent: 'center' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1.5 3h9M4.5 3V2h3v1M4.5 5.5v4M7.5 5.5v4M2.5 3l.5 7h6l.5-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          Delete
+        </button>
+      </div>
     </div>
   );
 }

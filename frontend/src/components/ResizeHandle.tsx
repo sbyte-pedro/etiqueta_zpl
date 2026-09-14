@@ -55,8 +55,8 @@ export function ResizeHandle({ direction, onResizeStart, onResize }: Props) {
       style={{
         position: 'absolute',
         width: 8, height: 8,
-        background: '#2563eb',
-        border: '1px solid white',
+        background: 'var(--accent)',
+        border: '1.5px solid var(--canvas-bg)',
         borderRadius: 2,
         cursor: CURSOR_MAP[direction],
         zIndex: 10,

@@ -67,9 +67,9 @@ function DraggableElement({ element, scale, groupOffset }: { element: DesignElem
     top: element.y * scale,
     cursor: 'move',
     outline: isSelected
-      ? '2px solid #2563eb'
+      ? '2px solid var(--accent)'
       : isInSelection
-        ? '2px solid #93c5fd'
+        ? '2px solid rgba(76,142,245,0.5)'
         : undefined,
     transform: activeTransform ? `translate(${activeTransform.x}px, ${activeTransform.y}px)` : undefined,
   };
@@ -160,8 +160,8 @@ export function Canvas() {
     <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
       <div
         ref={wrapperRef}
-        className="h-full overflow-auto bg-gray-100 p-4"
-        style={{ cursor: isPanning ? 'grabbing' : undefined }}
+        className="h-full overflow-auto p-4"
+        style={{ cursor: isPanning ? 'grabbing' : undefined, background: 'var(--canvas-bg)' }}
         onMouseDown={handleMouseDown}
         onContextMenu={e => e.preventDefault()}
       >
@@ -174,7 +174,7 @@ export function Canvas() {
             height: canvasHeight,
             background: 'white',
             margin: '0 auto',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2)',
             overflow: 'hidden',
           }}
         >
