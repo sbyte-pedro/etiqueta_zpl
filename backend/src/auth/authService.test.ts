@@ -1,7 +1,7 @@
 process.env.DATABASE_URL = process.env.DATABASE_URL ?? 'postgresql://localhost/etiqueta_test';
 process.env.JWT_SECRET = 'test-secret';
 
-import { initDb, _resetDb, getDb } from '../db/database';
+import { initDb, getDb } from '../db/database';
 import { usersTable } from '../db/schema';
 import { designsTable } from '../db/schema';
 import { designVersionsTable } from '../db/schema';
@@ -12,8 +12,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await _resetDb();
-  await initDb();
   const db = getDb();
   await db.delete(designVersionsTable);
   await db.delete(designsTable);
