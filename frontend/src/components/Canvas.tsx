@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DndContext, DragEndEvent, DragMoveEvent, DragStartEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '../store/useDesignerStore';
@@ -67,9 +67,9 @@ function DraggableElement({ element, scale, groupOffset }: { element: DesignElem
     top: element.y * scale,
     cursor: 'move',
     outline: isSelected
-      ? '2px solid #2563eb'
+      ? '2px solid var(--accent)'
       : isInSelection
-        ? '2px solid #93c5fd'
+        ? '2px solid rgba(76,142,245,0.5)'
         : undefined,
     transform: activeTransform ? `translate(${activeTransform.x}px, ${activeTransform.y}px)` : undefined,
   };
@@ -112,6 +112,21 @@ export function Canvas() {
 
   const { setNodeRef } = useDroppable({ id: 'canvas' });
   const { wrapperRef, isPanning, handleMouseDown } = usePanning();
+
+  // Register as non-passive so preventDefault() actually suppresses browser zoom.
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      const { zoom: current, setZoom: sz } = useDesignerStore.getState();
+      const delta = e.deltaY < 0 ? 0.1 : -0.1;
+      sz(Math.round((current + delta) * 100) / 100);
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, [wrapperRef]);
 
   const canvasWidth = labelWidth * zoom;
   const canvasHeight = labelHeight * zoom;
@@ -160,8 +175,8 @@ export function Canvas() {
     <DndContext onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
       <div
         ref={wrapperRef}
-        className="h-full overflow-auto bg-gray-100 p-4"
-        style={{ cursor: isPanning ? 'grabbing' : undefined }}
+        className="h-full overflow-auto p-4"
+        style={{ cursor: isPanning ? 'grabbing' : undefined, background: 'var(--canvas-bg)' }}
         onMouseDown={handleMouseDown}
         onContextMenu={e => e.preventDefault()}
       >
@@ -174,7 +189,7 @@ export function Canvas() {
             height: canvasHeight,
             background: 'white',
             margin: '0 auto',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2)',
             overflow: 'hidden',
           }}
         >

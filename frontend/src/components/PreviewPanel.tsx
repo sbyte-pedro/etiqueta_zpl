@@ -10,36 +10,61 @@ export function PreviewPanel() {
 
   return (
     <div
-      className="h-full bg-white border-l border-gray-200 flex flex-col overflow-hidden"
-      style={{ width: colWidth, minWidth: colWidth, maxWidth: colWidth }}
+      style={{
+        height: '100%',
+        width: colWidth, minWidth: colWidth, maxWidth: colWidth,
+        background: 'var(--chrome-surface)',
+        borderLeft: '1px solid var(--chrome-border)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
     >
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 shrink-0">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Label Preview</span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '8px 12px',
+        borderBottom: '1px solid var(--chrome-border)',
+        flexShrink: 0,
+      }}>
+        <span className="panel-label">Preview</span>
         <button
           onClick={closePreview}
-          className="text-xs px-3 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          className="chrome-btn chrome-btn-ghost"
+          style={{ fontSize: 11, padding: '2px 8px' }}
         >
-          Close Preview
+          Close
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
+      <div className="chrome-scroll" style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
         {previewLoading && (
-          <div className="text-xs text-gray-400 py-2">Loading…</div>
+          <p style={{ fontSize: 11, color: 'var(--chrome-text-faint)' }}>Rendering…</p>
         )}
-
         {previewError && (
-          <div className="text-xs text-red-500 bg-red-50 border border-red-200 rounded px-3 py-2">
+          <div style={{
+            fontSize: 11,
+            color: 'var(--status-error)',
+            background: 'var(--status-error-subtle)',
+            border: '1px solid rgba(247,92,92,0.3)',
+            borderRadius: 6,
+            padding: '8px 10px',
+          }}>
             {previewError}
           </div>
         )}
-
         {previewUrl && (
           <img
             src={previewUrl}
             alt="Label preview"
-            className="border border-gray-200 rounded shadow-sm"
-            style={{ imageRendering: 'pixelated', width: colWidth, display: 'block' }}
+            style={{
+              imageRendering: 'pixelated',
+              width: colWidth - 24,
+              display: 'block',
+              borderRadius: 4,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+            }}
           />
         )}
       </div>

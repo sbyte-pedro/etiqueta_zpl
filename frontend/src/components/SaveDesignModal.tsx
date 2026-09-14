@@ -36,66 +36,100 @@ export function SaveDesignModal() {
     }
   };
 
+  const tabs = [
+    ...(activeVersionNumber !== null ? [{ id: 'overwrite' as Mode, label: `Overwrite v${activeVersionNumber}` }] : []),
+    { id: 'version' as Mode, label: 'New version' },
+    { id: 'new' as Mode, label: 'New design' },
+  ];
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closeSaveModal}>
-      <div className="bg-white rounded-lg shadow-xl w-96 p-6" onClick={e => e.stopPropagation()}>
-        <h2 className="text-base font-semibold text-gray-800 mb-4">Save Design</h2>
+    <div className="modal-overlay" onClick={closeSaveModal}>
+      <div className="modal-card" style={{ width: 360 }} onClick={e => e.stopPropagation()}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--chrome-text)', marginBottom: 16 }}>Save design</h2>
 
         {activeDesignId && (
-          <div className="flex rounded border border-gray-200 overflow-hidden text-sm mb-4">
-            {activeVersionNumber !== null && (
+          <div style={{
+            display: 'flex',
+            background: 'var(--chrome-elevated)',
+            borderRadius: 6,
+            padding: 2,
+            gap: 2,
+            marginBottom: 16,
+          }}>
+            {tabs.map(t => (
               <button
-                onClick={() => setMode('overwrite')}
-                className={`flex-1 py-1.5 transition-colors ${mode === 'overwrite' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                key={t.id}
+                onClick={() => setMode(t.id)}
+                style={{
+                  flex: 1,
+                  padding: '4px 8px',
+                  borderRadius: 4,
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  background: mode === t.id ? 'var(--chrome-surface)' : 'transparent',
+                  color: mode === t.id ? 'var(--chrome-text)' : 'var(--chrome-text-muted)',
+                  boxShadow: mode === t.id ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+                  transition: 'background 0.1s, color 0.1s',
+                  whiteSpace: 'nowrap',
+                }}
               >
-                Overwrite v{activeVersionNumber}
+                {t.label}
               </button>
-            )}
-            <button
-              onClick={() => setMode('version')}
-              className={`flex-1 py-1.5 transition-colors ${mode === 'version' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-            >
-              New version
-            </button>
-            <button
-              onClick={() => setMode('new')}
-              className={`flex-1 py-1.5 transition-colors ${mode === 'new' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-            >
-              New design
-            </button>
+            ))}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {mode === 'overwrite' && (
-            <p className="text-xs text-gray-500">
-              This will replace the content of <strong>v{activeVersionNumber}</strong> of "{activeDesignName}" with the current canvas. This cannot be undone.
+            <p style={{ fontSize: 12, color: 'var(--chrome-text-muted)', lineHeight: 1.5 }}>
+              This will replace <strong style={{ color: 'var(--chrome-text)' }}>v{activeVersionNumber}</strong> of "{activeDesignName}" with the current canvas.
             </p>
           )}
 
           {mode === 'new' && (
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Design name</label>
+              <label style={{ display: 'block', fontSize: 10, color: 'var(--chrome-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                Design name
+              </label>
               <input
                 autoFocus
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                placeholder="e.g. Shipping Label 4x6"
+                className="chrome-input"
+                placeholder="e.g. Shipping Label 4×6"
               />
             </div>
           )}
 
-          {error && <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+          {error && (
+            <p style={{
+              fontSize: 11,
+              color: 'var(--status-error)',
+              background: 'var(--status-error-subtle)',
+              border: '1px solid rgba(247,92,92,0.3)',
+              borderRadius: 5,
+              padding: '6px 10px',
+            }}>
+              {error}
+            </p>
+          )}
 
-          <div className="flex gap-2 justify-end mt-1">
-            <button type="button" onClick={closeSaveModal} className="text-sm px-4 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50">
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button type="button" onClick={closeSaveModal} className="chrome-btn chrome-btn-ghost">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="text-sm px-4 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
-              {loading ? 'Saving…' : mode === 'overwrite' ? 'Overwrite' : mode === 'version' ? 'Save Version' : 'Create & Save'}
+            <button
+              type="submit"
+              disabled={loading}
+              className="chrome-btn chrome-btn-primary"
+              style={{ opacity: loading ? 0.6 : 1 }}
+            >
+              {loading ? 'Saving…' : mode === 'overwrite' ? 'Overwrite' : mode === 'version' ? 'Save version' : 'Create'}
             </button>
           </div>
         </form>

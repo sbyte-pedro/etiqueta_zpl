@@ -47,12 +47,25 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion, onRename }: {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
+    <div style={{
+      background: 'var(--chrome-surface)',
+      border: '1px solid var(--chrome-border)',
+      borderRadius: 8,
+      padding: 14,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+      transition: 'border-color 0.15s',
+    }}
+    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--chrome-text-faint)')}
+    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--chrome-border)')}
+    >
       <div>
         {editing ? (
           <input
             autoFocus
-            className="w-full border border-blue-400 rounded px-2 py-0.5 text-sm font-semibold text-gray-800"
+            className="chrome-input"
+            style={{ fontWeight: 500, fontSize: 13 }}
             value={draftName}
             onChange={e => setDraftName(e.target.value)}
             onBlur={commitRename}
@@ -63,31 +76,68 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion, onRename }: {
           />
         ) : (
           <p
-            className="font-semibold text-gray-800 line-clamp-2 break-words cursor-pointer hover:text-blue-600 transition-colors"
+            style={{
+              fontWeight: 500,
+              fontSize: 13,
+              color: 'var(--chrome-text)',
+              marginBottom: 4,
+              cursor: 'pointer',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
             title="Click to rename"
             onClick={() => setEditing(true)}
           >
             {design.name}
           </p>
         )}
-        <button
-          onClick={toggleVersions}
-          className="text-xs text-blue-500 hover:text-blue-700 mt-1 text-left"
-        >
-          {design.versionCount} version{design.versionCount !== 1 ? 's' : ''} {expanded ? '▲' : '▼'}
-        </button>
-        <p className="text-xs text-gray-400">Updated {relativeDate(design.updatedAt)}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={toggleVersions}
+            style={{
+              fontSize: 11,
+              color: 'var(--accent)',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            {design.versionCount} version{design.versionCount !== 1 ? 's' : ''} {expanded ? '▲' : '▼'}
+          </button>
+          <span style={{ fontSize: 11, color: 'var(--chrome-text-faint)' }}>
+            {relativeDate(design.updatedAt)}
+          </span>
+        </div>
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 pt-2 flex flex-col gap-1">
-          {versionsLoading && <p className="text-xs text-gray-400">Loading…</p>}
+        <div style={{
+          borderTop: '1px solid var(--chrome-border)',
+          paddingTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+        }}>
+          {versionsLoading && <p style={{ fontSize: 11, color: 'var(--chrome-text-faint)' }}>Loading…</p>}
           {versions.map(v => (
-            <div key={v.id} className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">v{v.versionNumber} · {relativeDate(v.createdAt)}</span>
+            <div key={v.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 11, color: 'var(--chrome-text-muted)' }}>
+                v{v.versionNumber} · {relativeDate(v.createdAt)}
+              </span>
               <button
                 onClick={() => onLoadVersion(v.versionNumber)}
-                className="text-blue-600 hover:text-blue-800"
+                style={{
+                  fontSize: 11,
+                  color: 'var(--accent)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                }}
               >
                 Load
               </button>
@@ -96,16 +146,18 @@ function DesignCard({ design, onOpen, onDelete, onLoadVersion, onRename }: {
         </div>
       )}
 
-      <div className="flex gap-2 mt-auto">
+      <div style={{ display: 'flex', gap: 6, marginTop: 'auto' }}>
         <button
           onClick={onOpen}
-          className="flex-1 text-sm py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          className="chrome-btn chrome-btn-primary"
+          style={{ flex: 1, justifyContent: 'center', fontSize: 12 }}
         >
           Open latest
         </button>
         <button
           onClick={onDelete}
-          className="text-sm px-3 py-1.5 rounded border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+          className="chrome-btn chrome-btn-danger"
+          style={{ fontSize: 12, padding: '4px 10px' }}
         >
           Delete
         </button>
@@ -128,11 +180,7 @@ export function MyDesignsPage({ onBack }: Props) {
 
   const handleLoadMore = async () => {
     setLoadingMore(true);
-    try {
-      await loadMoreDesigns();
-    } finally {
-      setLoadingMore(false);
-    }
+    try { await loadMoreDesigns(); } finally { setLoadingMore(false); }
   };
 
   const handleOpen = async (design: DesignSummary) => {
@@ -142,19 +190,13 @@ export function MyDesignsPage({ onBack }: Props) {
       if (items.length === 0) return;
       await loadVersion(design.id, items[0].versionNumber);
       onBack();
-    } finally {
-      setOpeningId(null);
-    }
+    } finally { setOpeningId(null); }
   };
 
   const handleLoadVersion = async (design: DesignSummary, versionNumber: number) => {
     setOpeningId(design.id);
-    try {
-      await loadVersion(design.id, versionNumber);
-      onBack();
-    } finally {
-      setOpeningId(null);
-    }
+    try { await loadVersion(design.id, versionNumber); onBack(); }
+    finally { setOpeningId(null); }
   };
 
   const handleDelete = async (design: DesignSummary) => {
@@ -167,62 +209,112 @@ export function MyDesignsPage({ onBack }: Props) {
     : designs;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--chrome-bg)' }}>
+      {/* Top bar */}
+      <div style={{
+        height: 44,
+        background: 'var(--chrome-surface)',
+        borderBottom: '1px solid var(--chrome-border)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 16px',
+        gap: 12,
+        flexShrink: 0,
+      }}>
         <button
           onClick={onBack}
-          className="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1 transition-colors"
+          className="chrome-btn chrome-btn-ghost"
+          style={{ gap: 6, fontSize: 12 }}
         >
-          ← Back to Editor
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Editor
         </button>
-        <span className="text-sm font-semibold text-gray-700">My Designs</span>
-        <input
-          type="text"
-          placeholder="Search designs…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="ml-auto w-52 border border-gray-200 rounded px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-        />
+
+        <div style={{ width: 1, height: 18, background: 'var(--chrome-border)' }} />
+
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--chrome-text)' }}>My Designs</span>
+
+        <div style={{ flex: 1 }} />
+
+        <div style={{ position: 'relative' }}>
+          <svg
+            width="13" height="13" viewBox="0 0 13 13" fill="none"
+            style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--chrome-text-faint)', pointerEvents: 'none' }}
+          >
+            <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" strokeWidth="1.3"/>
+            <path d="M8 8l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search designs"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="chrome-input"
+            style={{ paddingLeft: 26, width: 200 }}
+          />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        {loading && <p className="text-sm text-gray-400 text-center mt-12">Loading…</p>}
+      {/* Content */}
+      <div className="chrome-scroll" style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        {loading && (
+          <p style={{ fontSize: 13, color: 'var(--chrome-text-faint)', textAlign: 'center', marginTop: 60 }}>Loading…</p>
+        )}
 
-        {!loading && error && <p className="text-sm text-red-500 text-center mt-12">{error}</p>}
+        {!loading && error && (
+          <p style={{ fontSize: 13, color: 'var(--status-error)', textAlign: 'center', marginTop: 60 }}>{error}</p>
+        )}
 
         {!loading && !error && designs.length === 0 && (
-          <div className="text-center mt-24">
-            <p className="text-gray-400 text-sm">No saved designs yet.</p>
-            <p className="text-gray-400 text-sm">Head back to the editor to create your first one.</p>
+          <div style={{ textAlign: 'center', marginTop: 80 }}>
+            <p style={{ fontSize: 13, color: 'var(--chrome-text-faint)', lineHeight: 1.8 }}>
+              No saved designs yet.<br />
+              Go back to the editor to create your first one.
+            </p>
+            <button onClick={onBack} className="chrome-btn chrome-btn-primary" style={{ marginTop: 16, justifyContent: 'center' }}>
+              Go to editor
+            </button>
           </div>
         )}
 
         {!loading && designs.length > 0 && filtered.length === 0 && (
-          <p className="text-sm text-gray-400 text-center mt-12">No designs match "{search}"</p>
+          <p style={{ fontSize: 13, color: 'var(--chrome-text-faint)', textAlign: 'center', marginTop: 60 }}>
+            No designs match "{search}"
+          </p>
         )}
 
         {!loading && filtered.length > 0 && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: 12,
+            }}>
               {filtered.map(design => (
                 <DesignCard
                   key={design.id}
                   design={design}
                   onOpen={() => handleOpen(design)}
                   onDelete={() => handleDelete(design)}
-                  onLoadVersion={(vn) => handleLoadVersion(design, vn)}
-                  onRename={(newName) => renameDesign(design.id, newName)}
+                  onLoadVersion={vn => handleLoadVersion(design, vn)}
+                  onRename={newName => renameDesign(design.id, newName)}
                 />
               ))}
             </div>
+
             {!search && (
-              <div className="flex flex-col items-center gap-2 mt-6">
-                <p className="text-xs text-gray-400">Showing {designs.length} of {designsTotal}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 24 }}>
+                <p style={{ fontSize: 11, color: 'var(--chrome-text-faint)' }}>
+                  Showing {designs.length} of {designsTotal}
+                </p>
                 {designs.length < designsTotal && (
                   <button
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="text-sm px-4 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="chrome-btn chrome-btn-ghost"
+                    style={{ opacity: loadingMore ? 0.5 : 1 }}
                   >
                     {loadingMore ? 'Loading…' : 'Load more'}
                   </button>
@@ -234,8 +326,10 @@ export function MyDesignsPage({ onBack }: Props) {
       </div>
 
       {openingId !== null && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <p className="text-white text-sm bg-black/60 px-4 py-2 rounded">Opening design…</p>
+        <div className="modal-overlay">
+          <p style={{ fontSize: 13, color: 'var(--chrome-text)', background: 'var(--chrome-elevated)', padding: '10px 20px', borderRadius: 8, border: '1px solid var(--chrome-border)' }}>
+            Opening design…
+          </p>
         </div>
       )}
     </div>

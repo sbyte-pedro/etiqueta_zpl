@@ -32,7 +32,7 @@ export default function App() {
     content = <MyDesignsPage onBack={() => setCurrentView('designer')} />;
   } else {
     content = (
-      <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'var(--chrome-bg)' }}>
         <KeyboardShortcuts />
         <Toolbar onNavigateToMyDesigns={() => setCurrentView('my-designs')} />
         <div className="flex flex-1 overflow-hidden">

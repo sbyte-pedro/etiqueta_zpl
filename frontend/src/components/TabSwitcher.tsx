@@ -3,56 +3,88 @@ import { useDesignerStore } from '../store/useDesignerStore';
 
 export function TabSwitcher() {
   const { activeTab, setActiveTab, zoom, setZoom } = useDesignerStore();
-  const pct = Math.round(zoom * 50); // zoom=2 → 100%, zoom=1 → 50%, etc.
+  const displayPct = Math.round(zoom * 50);
 
   return (
-    <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-gray-200">
-      {/* Tab toggle */}
-      <div className="flex rounded-full border border-gray-200 overflow-hidden text-sm">
-        <button
-          onClick={() => setActiveTab('design')}
-          className={`px-4 py-1.5 flex items-center gap-1.5 transition-colors ${
-            activeTab === 'design' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <span>⊞</span> Design
-        </button>
-        <button
-          onClick={() => setActiveTab('code')}
-          className={`px-4 py-1.5 flex items-center gap-1.5 transition-colors ${
-            activeTab === 'code' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <span>&lt;/&gt;</span> Code
-        </button>
+    <div style={{
+      height: 38,
+      background: 'var(--chrome-bg)',
+      borderBottom: '1px solid var(--chrome-border)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 12px',
+      flexShrink: 0,
+      userSelect: 'none',
+    }}>
+      {/* Design / Code tabs */}
+      <div style={{
+        display: 'flex',
+        background: 'var(--chrome-elevated)',
+        borderRadius: 6,
+        padding: 2,
+        gap: 1,
+      }}>
+        {(['design', 'code'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: '3px 14px',
+              borderRadius: 4,
+              border: 'none',
+              fontSize: 12,
+              fontWeight: 500,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'background 0.12s, color 0.12s',
+              background: activeTab === tab ? 'var(--chrome-surface)' : 'transparent',
+              color: activeTab === tab ? 'var(--chrome-text)' : 'var(--chrome-text-muted)',
+              boxShadow: activeTab === tab ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+            }}
+          >
+            {tab === 'design' ? 'Design' : '</> Code'}
+          </button>
+        ))}
       </div>
 
-      {/* Zoom controls — only visible in design mode */}
+      {/* Zoom controls */}
       {activeTab === 'design' && (
-        <div className="flex items-center gap-1">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <button
+            className="chrome-icon-btn"
             onClick={() => setZoom(zoom - 0.25)}
-            disabled={zoom <= 0.5}
-            className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 text-base leading-none"
+            style={{ width: 24, height: 24, fontSize: 16 }}
             title="Zoom out"
-          >
-            −
-          </button>
+          >−</button>
           <button
             onClick={() => setZoom(2)}
-            className="w-16 text-xs text-center text-gray-500 hover:text-blue-600 tabular-nums"
-            title="Reset zoom"
+            style={{
+              minWidth: 44,
+              height: 24,
+              borderRadius: 4,
+              border: '1px solid var(--chrome-border)',
+              background: 'transparent',
+              color: 'var(--chrome-text-muted)',
+              fontSize: 11,
+              fontWeight: 500,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              padding: '0 6px',
+              transition: 'color 0.1s',
+            }}
+            title="Reset to 100%"
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--chrome-text)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--chrome-text-muted)')}
           >
-            {pct}%
+            {displayPct}%
           </button>
           <button
+            className="chrome-icon-btn"
             onClick={() => setZoom(zoom + 0.25)}
-            disabled={zoom >= 6}
-            className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 text-base leading-none"
+            style={{ width: 24, height: 24, fontSize: 16 }}
             title="Zoom in"
-          >
-            +
-          </button>
+          >+</button>
         </div>
       )}
     </div>

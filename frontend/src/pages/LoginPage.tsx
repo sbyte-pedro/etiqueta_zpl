@@ -27,67 +27,140 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-md w-full max-w-sm p-8">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">Zebra Label Designer</h1>
-        <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
-
-        {/* Tab switcher */}
-        <div className="flex rounded border border-gray-200 overflow-hidden text-sm mb-6">
-          <button
-            onClick={() => { setMode('login'); setError(''); }}
-            className={`flex-1 py-2 transition-colors ${mode === 'login' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => { setMode('register'); setError(''); }}
-            className={`flex-1 py-2 transition-colors ${mode === 'register' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-          >
-            Register
-          </button>
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--chrome-bg)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    }}>
+      <div style={{ width: '100%', maxWidth: 340 }}>
+        {/* Mark + wordmark */}
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 48,
+            height: 48,
+            background: 'var(--chrome-elevated)',
+            border: '1px solid var(--chrome-border)',
+            borderRadius: 12,
+            marginBottom: 14,
+          }}>
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+              <rect x="2" y="4" width="22" height="14" rx="2" stroke="var(--accent)" strokeWidth="1.5"/>
+              <rect x="5" y="7" width="6" height="8" fill="var(--accent)" opacity="0.9"/>
+              <rect x="14" y="7" width="8" height="2" fill="var(--chrome-text-muted)"/>
+              <rect x="14" y="11" width="6" height="2" fill="var(--chrome-text-muted)"/>
+              <rect x="6" y="21" width="14" height="1.5" rx="0.75" fill="var(--chrome-border)"/>
+            </svg>
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--chrome-text)', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
+            ZPL Designer
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--chrome-text-faint)', margin: 0 }}>
+            Zebra label design tool
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Username</label>
-            <input
-              type="text"
-              autoComplete="username"
-              required
-              minLength={3}
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-              placeholder="At least 3 characters"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Password</label>
-            <input
-              type="password"
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              required
-              minLength={6}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-              placeholder="At least 6 characters"
-            />
+        {/* Card */}
+        <div style={{
+          background: 'var(--chrome-surface)',
+          border: '1px solid var(--chrome-border)',
+          borderRadius: 10,
+          padding: 24,
+        }}>
+          {/* Mode toggle */}
+          <div style={{
+            display: 'flex',
+            background: 'var(--chrome-elevated)',
+            borderRadius: 6,
+            padding: 2,
+            marginBottom: 20,
+          }}>
+            {(['login', 'register'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => { setMode(m); setError(''); }}
+                style={{
+                  flex: 1,
+                  padding: '5px 0',
+                  borderRadius: 4,
+                  border: 'none',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  background: mode === m ? 'var(--chrome-bg)' : 'transparent',
+                  color: mode === m ? 'var(--chrome-text)' : 'var(--chrome-text-muted)',
+                  boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+                  transition: 'background 0.12s, color 0.12s',
+                }}
+              >
+                {m === 'login' ? 'Sign in' : 'Create account'}
+              </button>
+            ))}
           </div>
 
-          {error && (
-            <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>
-          )}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--chrome-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+                Username
+              </label>
+              <input
+                className="chrome-input"
+                type="text"
+                autoComplete="username"
+                autoFocus
+                required
+                minLength={3}
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="At least 3 characters"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white rounded py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
+            <div>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--chrome-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+                Password
+              </label>
+              <input
+                className="chrome-input"
+                type="password"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                required
+                minLength={6}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="At least 6 characters"
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                fontSize: 11,
+                color: 'var(--status-error)',
+                background: 'var(--status-error-subtle)',
+                border: '1px solid rgba(247,92,92,0.3)',
+                borderRadius: 5,
+                padding: '7px 10px',
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="chrome-btn chrome-btn-primary"
+              style={{ justifyContent: 'center', padding: '9px 0', fontSize: 13, opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
